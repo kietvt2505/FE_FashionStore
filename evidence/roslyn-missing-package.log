@@ -1,0 +1,2 @@
+MSBuild version 17.11.69+4d6a29faa for .NET
+/workspace/scratch/571aae16b48f/implementation/FashionStore/FashionStore.Web/FashionStore.Web.csproj(253,5): error : This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is ..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props.
