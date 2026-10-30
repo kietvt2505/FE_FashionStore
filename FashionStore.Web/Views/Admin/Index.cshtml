@@ -2,7 +2,7 @@
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewBag.Title = "Tổng quan"; }
 <div class="admin-shell">
     <aside class="admin-sidebar">
-        <a class="admin-wordmark" href="@Url.Action("Index", "Admin")">MỘC <strong>NHIÊN</strong><small>CỔNG QUẢN TRỊ</small></a>
+        <a class="admin-wordmark" href="@Url.Action("Index", "Admin")"><span class="yody-logo-panel">@Html.Partial("_BrandLogo")</span><small>CỔNG QUẢN TRỊ</small></a>
         <div class="admin-menu-caption">KHÔNG GIAN LÀM VIỆC</div>
         <nav class="admin-nav" aria-label="Menu quản trị">
             <a class="active" href="@Url.Action("Index","Admin")" aria-current="page">▦ &nbsp; Tổng quan</a>

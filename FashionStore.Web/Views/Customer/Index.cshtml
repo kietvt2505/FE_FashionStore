@@ -9,7 +9,7 @@
     <div class="customer-account-grid">
         <a class="customer-membership-card" href="@Url.Action("Promotions", "Customer")" aria-label="Thẻ thành viên hạng @Model.Membership, xem ưu đãi">
             <span class="customer-member-watermark" aria-hidden="true">Y</span>
-            <span class="customer-member-top"><span class="customer-member-logo">YODY</span><span class="customer-member-rank">HẠNG @Model.Membership</span></span>
+            <span class="customer-member-top"><span class="customer-member-logo">@Html.Partial("_BrandLogo")</span><span class="customer-member-rank">HẠNG @Model.Membership</span></span>
             <span class="customer-member-identity"><span class="customer-member-caption">GẮN KẾT CÙNG YODY</span><strong>Thẻ thành viên</strong><span>@Model.FullName</span></span>
             <span class="customer-member-bottom"><span>Tích điểm · Nhận ưu đãi</span><span aria-hidden="true">↗</span></span>
         </a>

@@ -307,6 +307,11 @@
     <Content Include="Scripts\home.js" />
     <Content Include="Content\storefront-polish.css" />
     <Content Include="Scripts\storefront-motion.js" />
+    <Content Include="Content\brand.css" />
+    <Content Include="Content\images\brand\yody-logo-source.png" />
+    <Content Include="Content\images\brand\yody-logo.svg" />
+    <Content Include="Content\images\brand\yody-favicon.svg" />
+    <Content Include="Views\Shared\_BrandLogo.cshtml" />
     <Compile Include="Controllers\CustomerController.cs" />
     <Compile Include="Controllers\PaymentsController.cs" />
     <Compile Include="Helpers\CustomerViewHelper.cs" />

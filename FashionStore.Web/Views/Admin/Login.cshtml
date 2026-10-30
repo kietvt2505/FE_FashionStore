@@ -2,7 +2,8 @@
 @{ Layout = "~/Views/Shared/_AdminLayout.cshtml"; ViewBag.Title = "Đăng nhập quản trị"; }
 <section class="admin-login-wrap">
     <div class="admin-login-card">
-        <span class="admin-eyebrow">MỘC NHIÊN · BACK OFFICE</span>
+        <a class="admin-login-brand" href="@Url.Action("Index", "Home")" aria-label="YODY - Trang chủ">@Html.Partial("_BrandLogo")</a>
+        <span class="admin-eyebrow">YODY · CỔNG QUẢN TRỊ</span>
         <h1>Chào mừng trở lại.</h1>
         <p>Đăng nhập bằng mã nhân viên đã được cấp quyền quản trị. Tài khoản mua sắm không đăng nhập được tại đây.</p>
         @using (Html.BeginForm("Login", "Admin", FormMethod.Post, new { @class = "admin-form", autocomplete = "off" }))

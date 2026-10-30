@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="YODY - thời trang tinh giản, thanh lịch dành cho mọi khoảnh khắc." />
     <title>@siteTitle</title>
+    <link rel="icon" type="image/svg+xml" href="@Url.Content("~/Content/images/brand/yody-favicon.svg")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/images/brand/yody-favicon.svg")).Ticks" />
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
     <link rel="stylesheet" href="@Url.Content("~/Content/moc-nhien.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/moc-nhien.css")).Ticks" />
@@ -16,6 +17,7 @@
     <link rel="stylesheet" href="@Url.Content("~/Content/navy-theme.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/navy-theme.css")).Ticks" />
     <link rel="stylesheet" href="@Url.Content("~/Content/customer-account.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/customer-account.css")).Ticks" />
     <link rel="stylesheet" href="@Url.Content("~/Content/storefront-polish.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/storefront-polish.css")).Ticks" />
+    <link rel="stylesheet" href="@Url.Content("~/Content/brand.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/brand.css")).Ticks" />
 </head>
 <body class="customer-site">
     <a class="skip-link" href="#main-content">Chuyển đến nội dung chính</a>
@@ -29,7 +31,7 @@
     <header class="site-header yody-header">
         <div class="mn-container header-inner">
             <a class="brand-logo" href="@Url.Action("Index", "Home")" aria-label="YODY - Trang chủ">
-                <span>YODY</span>
+                @Html.Partial("_BrandLogo")
             </a>
 
             @Html.Action("Navigation", "Product")
@@ -89,7 +91,7 @@
         </div>
         <div class="mn-container footer-grid">
             <div class="footer-brand-block">
-                <div class="footer-logo">YODY</div>
+                <div class="footer-logo">@Html.Partial("_BrandLogo")</div>
                 <p>Trang phục tinh giản, dễ kết hợp và thoải mái cho cuộc sống thường ngày.</p>
             </div>
             <div>

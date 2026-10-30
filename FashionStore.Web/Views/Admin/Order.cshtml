@@ -2,7 +2,7 @@
 @using FashionStore.Web.Helpers
 @{ Layout="~/Views/Shared/_AdminLayout.cshtml"; ViewBag.Title="Chi tiết đơn"; }
 <div class="admin-shell"><aside class="admin-sidebar">
-<a class="admin-wordmark" href="@Url.Action("Index","Admin")">MỘC <strong>NHIÊN</strong><small>CỔNG QUẢN TRỊ</small></a>
+<a class="admin-wordmark" href="@Url.Action("Index","Admin")"><span class="yody-logo-panel">@Html.Partial("_BrandLogo")</span><small>CỔNG QUẢN TRỊ</small></a>
 <div class="admin-menu-caption">QUẢN LÝ CỬA HÀNG</div><nav class="admin-nav"><a href="@Url.Action("Index","Admin")">▦ &nbsp; Tổng quan</a><a class="active" href="@Url.Action("Orders","Admin")">▤ &nbsp; Đơn hàng</a></nav>
 <a class="admin-back-link" href="@Url.Action("Index","Home")">← Quay lại cửa hàng</a></aside>
 <main class="admin-main" id="main-content"><header class="admin-topbar"><div><span class="admin-eyebrow"><a href="@Url.Action("Orders","Admin")">ĐƠN TRỰC TUYẾN</a> / CHI TIẾT</span><h1>@Model.OrderId</h1><p>@FashionStore.Web.Helpers.CustomerViewHelper.VietnamDate(Model.CreatedAt)</p></div></header>

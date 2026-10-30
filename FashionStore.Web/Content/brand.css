@@ -1,0 +1,18 @@
+/* Shared brand image. The supplied artwork is reused without altering its colors or lettering. */
+.yody-brand-image {display:block;width:var(--yody-logo-width,112px);height:auto;max-width:100%;aspect-ratio:141 / 70;object-fit:contain;}
+.yody-logo-panel {display:inline-flex;align-items:center;justify-content:center;padding:5px 8px;border-radius:8px;background:#FFF;line-height:0;}
+.customer-site .brand-logo {line-height:0;letter-spacing:normal;text-decoration:none;}
+.customer-site .brand-logo .yody-brand-image {--yody-logo-width:112px;}
+.customer-site .footer-logo {display:inline-flex;padding:7px 11px;border-radius:10px;background:#FFF;line-height:0;letter-spacing:normal;}
+.customer-site .footer-logo .yody-brand-image {--yody-logo-width:122px;}
+.customer-site .yody-home-refresh .hp-member-logo,.customer-site .customer-member-logo {display:inline-flex;align-items:center;padding:4px 7px;border-radius:7px;background:#FFF;line-height:0;letter-spacing:normal;}
+.customer-site .hp-member-logo .yody-brand-image,.customer-site .customer-member-logo .yody-brand-image {--yody-logo-width:88px;}
+.admin-body .admin-wordmark {display:block;}
+.admin-body .admin-wordmark .yody-brand-image {--yody-logo-width:116px;}
+.admin-body .admin-login-brand {display:inline-block;margin-bottom:15px;}
+.admin-body .admin-login-brand .yody-brand-image {--yody-logo-width:112px;}
+.admin-body .admin-login-card .admin-eyebrow {display:block;}
+@media(max-width:767px) {
+    .customer-site .brand-logo .yody-brand-image {--yody-logo-width:86px;}
+    .customer-site .hp-member-logo .yody-brand-image,.customer-site .customer-member-logo .yody-brand-image {--yody-logo-width:72px;}
+}
