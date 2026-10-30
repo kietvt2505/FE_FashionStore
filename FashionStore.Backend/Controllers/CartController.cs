@@ -11,6 +11,7 @@ namespace FashionStore.Backend.Controllers;
 public sealed class CartController(CartService carts) : ControllerBase
 {
     [HttpGet] public Task<CartResponse> Get(CancellationToken ct) => carts.GetAsync(CustomerId, ct);
+    [HttpPost("merge")] public Task<CartResponse> Merge(GuestCartMergeRequest request,CancellationToken ct)=>carts.MergeAsync(CustomerId,request,ct);
     [HttpPost("items")] public Task<CartResponse> Add(CartItemRequest request, CancellationToken ct) =>
         carts.SetAsync(CustomerId, request.Sku, request.Quantity, true, ct);
     [HttpPut("items/{sku}")] public Task<CartResponse> Set([StringLength(40, MinimumLength = 1)] string sku, CartQuantityRequest request, CancellationToken ct) =>

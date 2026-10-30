@@ -14,6 +14,11 @@ public sealed class OrdersController(OrderService orders) : ControllerBase
     [HttpPost] public Task<PlaceOrderResponse> Place(CheckoutRequest request, CancellationToken ct) => orders.PlaceAsync(CustomerId, request, ct);
     [HttpGet] public Task<IReadOnlyList<OrderSummary>> List(CancellationToken ct,[System.ComponentModel.DataAnnotations.StringLength(30)]string? q=null,[System.ComponentModel.DataAnnotations.RegularExpression("^(MOI|XAC_NHAN|DANG_XU_LY|HOAN_TAT|HUY)$")]string? status=null,[System.ComponentModel.DataAnnotations.Range(1,100000)]int page=1) => orders.ListCustomerAsync(CustomerId, ct,q,status,page);
     [HttpGet("quote")] public Task<CheckoutQuote> Quote(CancellationToken ct,[System.ComponentModel.DataAnnotations.StringLength(20)]string? voucher=null)=>orders.QuoteAsync(CustomerId,voucher,ct);
-    [HttpPost("{id}/cancel")] public async Task<IActionResult> Cancel([System.ComponentModel.DataAnnotations.StringLength(30,MinimumLength=1)]string id,CancellationToken ct){await orders.CancelCustomerAsync(CustomerId,id,ct);return NoContent();}
+    [HttpPost("{id}/cancel")] public async Task<IActionResult> Cancel([System.ComponentModel.DataAnnotations.StringLength(30,MinimumLength=1)]string id,
+        [FromBody(EmptyBodyBehavior=Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)]CancelOrderRequest? input,CancellationToken ct)
+    {await orders.CancelCustomerAsync(CustomerId,id,ct,input);return NoContent();}
+    [HttpPost("{id}/refund-account")] public async Task<IActionResult> RefundAccount([System.ComponentModel.DataAnnotations.StringLength(30,MinimumLength=1)]string id,
+        CancelOrderRequest input,CancellationToken ct)
+    {await orders.SaveRefundAccountAsync(CustomerId,id,input,ct);return NoContent();}
     [HttpGet("{id}")] public Task<OrderDetails> Details(string id, CancellationToken ct) => orders.DetailAsync(id, CustomerId, ct);
 }

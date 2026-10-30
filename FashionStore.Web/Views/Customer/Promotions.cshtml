@@ -1,13 +1,21 @@
 @model Newtonsoft.Json.Linq.JArray
 @using FashionStore.Web.Helpers
-@{ ViewBag.Title = "Ưu đãi"; }
+@{ ViewBag.Title = "Ưu đãi"; var membershipProfile = ViewBag.MembershipProfile as FashionStore.Web.Models.CustomerProfile; }
 <div class="yody-account-shell">
     @Html.Partial("_CustomerNav")
     @Html.Partial("_CustomerMessages")
-    <header class="yody-page-heading"><p class="eyebrow">YODY / ĐẶC QUYỀN THÀNH VIÊN</p><h1>Ưu đãi dành cho bạn</h1><p>Khám phá các chương trình còn hiệu lực. Hệ thống kiểm tra lại điều kiện và lượt sử dụng khi đặt hàng.</p></header>
+    <header class="yody-page-heading"><p class="eyebrow">YODY / ĐẶC QUYỀN THÀNH VIÊN</p><h1>Ưu đãi dành cho bạn</h1><p>Website tự động giảm theo hạng: Bạc 0%, Vàng 5%, Kim Cương 10%. Nhập thêm một mã hợp lệ tại bước thanh toán để nhận ưu đãi trên số tiền còn lại. Điểm tiếp tục tích lũy, chưa đổi thành tiền.</p></header>
+    @if (membershipProfile != null)
+    {
+        <section class="customer-benefits-summary" aria-label="Điểm và hạng thành viên hiện tại">
+            <div><span>Hạng thành viên</span><strong>@membershipProfile.Membership</strong></div>
+            <div><span>Điểm hiện có</span><strong>@membershipProfile.Points điểm</strong></div>
+            <a class="yody-text-link" href="@Url.Action("Points", "Customer")">Xem lịch sử tích điểm →</a>
+        </section>
+    }
     @if (Model.Count == 0)
     {
-        <div class="yody-empty-state"><h2>Chưa có chương trình đang áp dụng</h2><p>Bạn vẫn có thể khám phá những sản phẩm hiện có của cửa hàng.</p><a class="mn-btn mn-btn-primary" href="@Url.Action("Index", "Product")">XEM SẢN PHẨM</a></div>
+        <div class="yody-empty-state"><h2>Chưa có mã ưu đãi đang áp dụng</h2><p>Website vẫn tính ưu đãi theo hạng thành viên khi đặt hàng.</p><a class="mn-btn mn-btn-primary" href="@Url.Action("Index", "Product")">XEM SẢN PHẨM</a></div>
     }
     else
     {
@@ -24,7 +32,12 @@
                     {
                         <p class="yody-muted">Còn @((int)p["SoLuotToiDa"] - (int)p["SoLuotDaDung"]) lượt tại thời điểm tải trang</p>
                     }
-                    <a class="yody-text-link" href="@Url.Action("Index", "Checkout")">Dùng tại thanh toán →</a>
+                    @if((bool?)p["CheckoutSupported"]==true) {
+                        <p class="yody-muted">Nhập mã tại trang thanh toán. Mức giảm được tính thêm sau ưu đãi hạng thành viên; hệ thống kiểm tra lại điều kiện khi đặt hàng.</p>
+                        <a class="mn-btn mn-btn-outline voucher-use-link" href="@Url.Action("Index","Checkout",new{voucher=(string)p["MaKM"]})">DÙNG KHI THANH TOÁN</a>
+                    }
+                    else if((bool?)p["ProductPromotion"]==true) {<p class="yody-muted">Ưu đãi áp dụng riêng cho sản phẩm và đã tính trong giá bán. Không nhập thêm mã này để giảm toàn đơn.</p><a class="yody-text-link voucher-use-link" href="@Url.Action("Index","Product",new{saleOnly=true,sort="price_asc"})">Xem sản phẩm khuyến mãi →</a>}
+                    else {<p class="yody-muted">Mã này chưa áp dụng trực tuyến. Vui lòng nhờ nhân viên kiểm tra khi mua tại cửa hàng.</p>}
                 </article>
             }
         </div>

@@ -14,24 +14,42 @@ namespace FashionStore.Web.Controllers
         public async Task<ActionResult> Index() {
             try{return View(await api.ProfileAsync(Token));}catch(Exception e){return Error(e);}
         }
-        [AllowAnonymous] public Task<ActionResult> Promotions(){return List("Promotions","promotions",1);}
+        [AllowAnonymous] public async Task<ActionResult> Promotions(){
+            try{
+                var promotions=await api.FeatureListAsync(Token,"promotions?page=1");
+                if(User.Identity.IsAuthenticated)ViewBag.MembershipProfile=await api.ProfileAsync(Token);
+                return View(promotions);
+            }catch(Exception e){return Error(e);}
+        }
+        public async Task<ActionResult> Security(){
+            try{return View(await api.ProfileAsync(Token));}catch(Exception e){return Error(e);}
+        }
         public Task<ActionResult> Points(int page=1){return List("Points","points",page);}
         public Task<ActionResult> Wishlist(){return List("Wishlist","wishlist",1);}
-        public Task<ActionResult> Addresses(){return List("Addresses","addresses",1);}
+        public async Task<ActionResult> Addresses(long? editId=null){
+            try{
+                var addresses=await api.FeatureListAsync(Token,"addresses");
+                if(editId.HasValue){
+                    foreach(var address in addresses) if((long)address["Id"]==editId.Value){ViewBag.EditAddress=address;break;}
+                    if(ViewBag.EditAddress==null)return HttpNotFound();
+                }
+                return View(addresses);
+            }catch(Exception e){return Error(e);}
+        }
         public Task<ActionResult> Returns(int page=1){return List("Returns","returns",page);}
-        [AllowAnonymous] public Task<ActionResult> Reviews(string id,int page=1){if(String.IsNullOrWhiteSpace(id)||id.Length>20)return Task.FromResult<ActionResult>(HttpNotFound());ViewBag.ProductId=id;return List("Reviews","reviews/"+Uri.EscapeDataString(id),page);}
+        [AllowAnonymous] public Task<ActionResult> Reviews(string id,int page=1,string orderId=null){if(String.IsNullOrWhiteSpace(id)||id.Length>20||orderId!=null&&orderId.Length>30)return Task.FromResult<ActionResult>(HttpNotFound());ViewBag.ProductId=id;ViewBag.ReviewOrderId=orderId;return List("Reviews","reviews/"+Uri.EscapeDataString(id),page);}
         public async Task<ActionResult> Return(string id) {
             if(String.IsNullOrWhiteSpace(id)||id.Length>30)return HttpNotFound();
             try{ViewBag.RequestId=Guid.NewGuid();return View(await api.OrderAsync(Token,id));}catch(Exception e){return Error(e);}
         }
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> SaveWishlist(string id) {return Change("Wishlist",()=>api.FeatureAsync(Token,"wishlist/"+Uri.EscapeDataString(id??""),null,"PUT"));}
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> RemoveWishlist(string id){return Change("Wishlist",()=>api.FeatureAsync(Token,"wishlist/"+Uri.EscapeDataString(id??""),null,"DELETE"));}
-        [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> SaveAddress(string recipient,string phone,string address){return Change("Addresses",()=>api.FeatureAsync(Token,"addresses",new{Recipient=recipient,Phone=phone,Address=address}));}
+        [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> SaveAddress(string recipient,string phone,string address,long? id=null){return Change("Addresses",()=>api.FeatureAsync(Token,id.HasValue?"addresses/"+id.Value:"addresses",new{Recipient=recipient,Phone=phone,Address=address},id.HasValue?"PUT":"POST"));}
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> RemoveAddress(long id){return Change("Addresses",()=>api.FeatureAsync(Token,"addresses/"+id,null,"DELETE"));}
         [HttpPost,ValidateAntiForgeryToken] public async Task<ActionResult> Review(string productId,string orderId,int stars,string body){
             try{await api.FeatureAsync(Token,"reviews",new{ProductId=productId,OrderId=orderId,Stars=stars,Body=body});TempData["CustomerMessage"]="Đã gửi đánh giá, đang chờ cửa hàng duyệt.";}
             catch(Exception e){if(IsUnauthorized(e))return Error(e);TempData["CustomerError"]=Message(e);}
-            return RedirectToAction("Reviews",new{id=productId});
+            return RedirectToAction("Reviews",new{id=productId,orderId=orderId});
         }
         [HttpPost,ValidateAntiForgeryToken] public async Task<ActionResult> SendReturn(string orderId,string sku,int quantity,string kind,string newSku,string reason,Guid requestId){
             try{await api.FeatureAsync(Token,"returns",new{OrderId=orderId,Sku=sku,Quantity=quantity,Kind=kind,NewSku=newSku,Reason=reason,RequestId=requestId});TempData["CustomerMessage"]="Đã gửi yêu cầu. Cửa hàng sẽ kiểm tra trước khi duyệt.";return RedirectToAction("Returns");}

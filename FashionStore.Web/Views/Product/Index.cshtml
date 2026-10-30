@@ -1,13 +1,16 @@
 @model FashionStore.Web.Models.CatalogListViewModel
 @using FashionStore.Web.Helpers
+@using System.Linq
 @{
-    ViewBag.Title = "Sản phẩm";
+    var audienceLabel = String.IsNullOrEmpty(Model.Audience) ? "" : CatalogViewHelper.AudienceLabel(Model.Audience);
+    var categoryLabel = Model.Categories.Where(c=>c.MaLoai == Model.CategoryId).Select(c=>c.TenLoai).FirstOrDefault() ?? CatalogViewHelper.KindLabel(Model.Kind);
+    var pageLabel = Model.SaleOnly ? "Khuyến mãi" : String.IsNullOrEmpty(audienceLabel) ? (Model.Kind=="phu-kien"?"Phụ kiện":"Sản phẩm") : "Thời trang " + audienceLabel.ToLower();
+    ViewBag.Title = pageLabel;
     ViewBag.IsCatalogPage = true;
 }
 <main class="mn-container catalog-page yody-catalog-page">
-    <nav class="breadcrumbs" aria-label="Đường dẫn"><a href="@Url.Action("Index", "Home")">Trang chủ</a><span aria-hidden="true">/</span><span aria-current="page">Sản phẩm</span></nav>
-    <header class="yody-catalog-header">
-        <div><p class="eyebrow">YODY / BỘ SƯU TẬP</p><h1>Khám phá sản phẩm</h1><p>Tìm những thiết kế phù hợp với phong cách của bạn.</p></div>
+<header class="yody-catalog-header">
+        <div><p class="eyebrow">YODY / BỘ SƯU TẬP</p><h1>@pageLabel</h1><p>@(Model.SaleOnly ? "Tất cả sản phẩm đang có giá ưu đãi, dành cho mọi phong cách." : String.IsNullOrEmpty(categoryLabel) ? "Tìm những thiết kế phù hợp với phong cách của bạn." : categoryLabel + (String.IsNullOrEmpty(audienceLabel) ? "" : " dành cho " + audienceLabel.ToLower()))</p></div>
         <span class="yody-catalog-count" aria-live="polite">@Model.Total sản phẩm</span>
     </header>
     <div class="yody-catalog-layout">
@@ -15,15 +18,17 @@
             <details id="yody-catalog-filters" class="yody-filter-details" open>
                 <summary><span>Bộ lọc sản phẩm</span><span class="yody-filter-chevron" aria-hidden="true">⌄</span></summary>
                 <form action="@Url.Action("Index", "Product")" method="get" class="filter-panel yody-catalog-form">
+                    @if (!String.IsNullOrEmpty(Model.Kind)) { <input type="hidden" name="kind" value="@Model.Kind" /> }
+                    @if (Model.SaleOnly) { <input type="hidden" name="saleOnly" value="true" /> }
+                    @if (!Model.SupportsAudience && !Model.SaleOnly && !String.IsNullOrEmpty(Model.Audience)) { <input type="hidden" name="audience" value="@Model.Audience" /> }
                     <div class="yody-filter-top"><span>Lọc theo nhu cầu</span><a href="@Url.Action("Index", "Product")">Đặt lại</a></div>
                     <div class="yody-filter-field"><label for="catalog-query">Tìm kiếm</label><input id="catalog-query" type="search" name="q" value="@Model.Query" maxlength="100" class="filter-input" placeholder="Tên sản phẩm..." /></div>
-                    @if (Model.SupportsAudience) {
+                    @if (Model.SupportsAudience && !Model.SaleOnly) {
                     <div class="yody-filter-field"><label for="catalog-audience">Đối tượng</label><select id="catalog-audience" name="audience" class="filter-input">
                         <option value="">Tất cả</option>
                         <option value="NAM" @(Model.Audience == "NAM" ? "selected" : "")>Thời trang nam</option>
                         <option value="NU" @(Model.Audience == "NU" ? "selected" : "")>Thời trang nữ</option>
-                        <option value="TRE_EM" @(Model.Audience == "TRE_EM" ? "selected" : "")>Trẻ em</option>
-                        <option value="UNISEX" @(Model.Audience == "UNISEX" ? "selected" : "")>Unisex</option>
+                        <option value="UNISEX" @(Model.Audience == "UNISEX" ? "selected" : "")>Nam và nữ</option>
                     </select></div>
                     }
                     <div class="yody-filter-field"><label for="catalog-category">Danh mục</label><select id="catalog-category" name="category" class="filter-input">
@@ -37,8 +42,8 @@
                         <div class="yody-filter-field"><label for="minPrice">Giá từ (đ)</label><input class="filter-input" type="number" min="0" name="minPrice" id="minPrice" value="@Model.MinPrice" /></div>
                         <div class="yody-filter-field"><label for="maxPrice">Giá đến (đ)</label><input class="filter-input" type="number" min="0" name="maxPrice" id="maxPrice" value="@Model.MaxPrice" /></div>
                     </div>
-                    <div class="yody-filter-field"><label for="size">Kích cỡ</label><input class="filter-input" name="size" id="size" maxlength="30" value="@Model.Size" placeholder="Ví dụ: M, L, XL" /></div>
-                    <div class="yody-filter-field"><label for="color">Màu sắc</label><input class="filter-input" name="color" id="color" maxlength="60" value="@Model.Color" placeholder="Ví dụ: Đen" /></div>
+                    <div class="yody-filter-field"><label for="size">Kích cỡ</label><select class="filter-input" name="size" id="size"><option value="">Tất cả kích cỡ</option>@foreach(var size in CatalogViewHelper.OrderedSizes(Model.Sizes)){<option value="@size" @(size==Model.Size?"selected":"")>@size</option>}</select></div>
+                    <fieldset class="yody-filter-colors"><legend>Màu sắc</legend><label class="filter-color-all"><input type="radio" name="color" value="" @(String.IsNullOrEmpty(Model.Color)?"checked":"") /> Tất cả màu</label><div class="filter-color-list">@foreach(var color in Model.Colors){<label class="filter-color" title="@color"><input type="radio" name="color" value="@color" @(color==Model.Color?"checked":"")/><span style="background:@CatalogViewHelper.ColorCss(color)" aria-hidden="true"></span><small>@color</small></label>}</div></fieldset>
                     <label class="yody-stock-filter"><input type="checkbox" name="inStock" value="true" @(Model.InStock ? "checked" : "") /><span>Chỉ hiển thị sản phẩm còn hàng</span></label>
                     <div class="yody-filter-field"><label for="catalog-sort">Sắp xếp</label><select id="catalog-sort" name="sort" class="filter-input">
                         <option value="new" @(Model.Sort == "new" ? "selected" : "")>@(Model.SupportsNewest ? "Mới nhất" : "Mặc định")</option>
@@ -55,6 +60,10 @@
             @if (!String.IsNullOrEmpty(Model.CatalogError))
             {
                 <div class="catalog-alert" role="alert">@Model.CatalogError</div>
+            }
+            else if (!String.IsNullOrEmpty(Model.CatalogNotice))
+            {
+                <div class="catalog-empty" role="status"><h2>@Model.CatalogNotice</h2><a href="@Url.Action("Index", "Product")">Xem tất cả sản phẩm</a></div>
             }
             else if (Model.Products.Count == 0)
             {
@@ -73,12 +82,12 @@
                     <nav class="catalog-pagination" aria-label="Trang sản phẩm">
                         @if (Model.Page > 1)
                         {
-                            <a href="@Url.Action("Index", "Product", new { q = Model.Query, audience = Model.Audience, category = Model.CategoryId, sort = Model.Sort, minPrice=Model.MinPrice, maxPrice=Model.MaxPrice, size=Model.Size, color=Model.Color, inStock=Model.InStock, page = Model.Page - 1 })" rel="prev" aria-label="Trang trước">← Trước</a>
+                            <a href="@Url.Action("Index", "Product", new { q = Model.Query, audience = Model.Audience, category = Model.CategoryId, kind=Model.Kind, saleOnly=Model.SaleOnly, sort = Model.Sort, minPrice=Model.MinPrice, maxPrice=Model.MaxPrice, size=Model.Size, color=Model.Color, inStock=Model.InStock, page = Model.Page - 1 })" rel="prev" aria-label="Trang trước">← Trước</a>
                         }
                         <span aria-current="page">Trang @Model.Page / @Model.TotalPages</span>
                         @if (Model.Page < Model.TotalPages)
                         {
-                            <a href="@Url.Action("Index", "Product", new { q = Model.Query, audience = Model.Audience, category = Model.CategoryId, sort = Model.Sort, minPrice=Model.MinPrice, maxPrice=Model.MaxPrice, size=Model.Size, color=Model.Color, inStock=Model.InStock, page = Model.Page + 1 })" rel="next" aria-label="Trang tiếp theo">Tiếp →</a>
+                            <a href="@Url.Action("Index", "Product", new { q = Model.Query, audience = Model.Audience, category = Model.CategoryId, kind=Model.Kind, saleOnly=Model.SaleOnly, sort = Model.Sort, minPrice=Model.MinPrice, maxPrice=Model.MaxPrice, size=Model.Size, color=Model.Color, inStock=Model.InStock, page = Model.Page + 1 })" rel="next" aria-label="Trang tiếp theo">Tiếp →</a>
                         }
                     </nav>
                 }

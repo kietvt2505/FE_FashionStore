@@ -8,11 +8,14 @@ namespace FashionStore.Backend.Services;
 public sealed class CatalogService(FashionStoreDbContext db) : ICatalogService
 {
     private IQueryable<SanPham> VisibleProducts() => db.Products.Where(p =>
-        p.TrangThai && p.Loai.TrangThai && p.Variants.Any(v => v.TrangThai));
+        p.TrangThai && p.Loai.TrangThai && p.TenSanPham.Trim() != "123" &&
+        p.Loai.TenLoai.Trim() != "123" && p.Variants.Any(v => v.TrangThai));
 
     private IQueryable<SanPham> FilterProducts(ProductQuery query)
     {
         var products = VisibleProducts();
+        // Legacy SQL Server has no per-product sale/merchandising contract.
+        if (query.SaleOnly || !string.IsNullOrEmpty(query.Kind)) return products.Where(p => false);
         var text = query.Q?.Trim();
         if (!string.IsNullOrEmpty(text))
             products = products.Where(p => p.TenSanPham.Contains(text) || p.MaSP.Contains(text));
@@ -63,7 +66,7 @@ public sealed class CatalogService(FashionStoreDbContext db) : ICatalogService
     }
 
     public Task<List<CategoryResponse>> GetCategoriesAsync(CancellationToken cancellationToken) =>
-        db.Categories.Where(c => c.TrangThai).OrderBy(c => c.TenLoai).ThenBy(c => c.MaLoai)
+        db.Categories.Where(c => c.TrangThai && c.TenLoai.Trim() != "123").OrderBy(c => c.TenLoai).ThenBy(c => c.MaLoai)
             .Select(c => new CategoryResponse(c.MaLoai, c.TenLoai)).ToListAsync(cancellationToken);
 
     internal IQueryable<SanPham> CreateDetailQuery(string id) => VisibleProducts().Include(p => p.Loai)

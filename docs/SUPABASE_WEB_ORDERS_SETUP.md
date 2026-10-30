@@ -1,5 +1,7 @@
 # Đơn COD từ website sang WinForms
 
+Cập nhật: đã bổ sung chuyển khoản chờ đối soát và chuyển sang đơn giao hàng đã trả tiền sau xác nhận. Xem [hướng dẫn hai phương thức](SUPABASE_PAYMENT_HANDOFF.md). Nhân viên thực tế là `NV-001`; các nội dung bên dưới mô tả đợt COD trước khi bổ sung chuyển khoản.
+
 Ngày 26/10/2026. Người dùng chọn nhân viên phụ trách `NV01`.
 
 ## Phần đã triển khai
@@ -16,7 +18,7 @@ Website đọc trạng thái hiện tại từ hóa đơn chung khi tải trang.
 
 Giữ tương thích bản mã WinForms đã nhận: COD chưa trừ kho hoặc cộng điểm khi đặt; Windows xử lý khi giao thành công. Chưa có cơ chế giữ chỗ tồn kho, vì vậy đặt COD chưa đảm bảo còn hàng đến lúc xử lý giao. Website kiểm tra tồn tại lúc tạo, Windows phải kiểm tra lại khi hoàn tất.
 
-Không tự hủy/xóa hóa đơn từ website, chưa mở chuyển khoản, ưu đãi, yêu cầu đổi trả hoặc bình luận trong bước này. Các chức năng đó cần đợt triển khai tiếp theo.
+Khách tự hủy đơn chưa thanh toán, chưa bàn giao vận chuyển sau khi chạy `Supabase-Customer-Order-Cancellation.sql`; xem [hướng dẫn hủy đơn](SUPABASE_CUSTOMER_ORDER_CANCELLATION.md). Không xóa hóa đơn hoặc tự hoàn tiền. Chuyển khoản được triển khai riêng trong `SUPABASE_PAYMENT_HANDOFF.md`; các trang tài khoản, ưu đãi, đánh giá và tiếp nhận đổi trả được triển khai thêm theo `SUPABASE_CUSTOMER_FEATURES_SETUP.md`. Áp dụng đúng migration tương ứng trước khi sử dụng.
 
 Báo cáo nhóm đang mô tả trừ kho ở “Sẵn sàng giao”, khác với WinForms. Lựa chọn tương thích hiện tại cần được phản ánh lại vào đặc tả hoặc thay đổi đồng bộ cả hai backend; không chỉ sửa website.
 

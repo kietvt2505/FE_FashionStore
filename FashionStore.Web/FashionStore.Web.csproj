@@ -150,6 +150,10 @@
     <Content Include="Content\Site.css" />
     <Content Include="Content\moc-nhien.css" />
     <Content Include="Content\images\product-placeholder.svg" />
+    <Content Include="Content\images\payments\tpbank-transfer-qr.png" />
+    <Content Include="Content\images\payments\mb-transfer-qr.png" />
+    <Content Include="Content\images\home-men.png" />
+    <Content Include="Content\images\home-kids.png" />
     <Content Include="Scripts\moc-nhien.js" />
     <Content Include="Scripts\product-picker.js" />
     <Content Include="Scripts\account-locations.js" />
@@ -181,6 +185,7 @@
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Shared\_CatalogNavigation.cshtml" />
     <Content Include="Views\Home\About.cshtml" />
     <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Product\Index.cshtml" />
@@ -257,6 +262,10 @@
     <Compile Include="Services\CustomerApiClient.cs" />
     <Compile Include="Services\VietnamLocationsClient.cs" />
     <Compile Include="Helpers\CustomerAuthentication.cs" />
+    <Compile Include="Helpers\GuestCartStore.cs" />
+    <Content Include="Scripts\storefront.js" />
+    <Content Include="Scripts\order-cancellation.js" />
+    <Content Include="Views\Orders\_CancellationDialog.cshtml" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\CartController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
@@ -291,7 +300,15 @@
   </Target>
   <ItemGroup>
     <Content Include="Content\customer.css" />
+    <Content Include="Content\navy-theme.css" />
+    <Content Include="Content\customer-account.css" />
+    <Content Include="Views\Customer\Security.cshtml" />
+    <Content Include="Content\home.css" />
+    <Content Include="Scripts\home.js" />
+    <Content Include="Content\storefront-polish.css" />
+    <Content Include="Scripts\storefront-motion.js" />
     <Compile Include="Controllers\CustomerController.cs" />
+    <Compile Include="Controllers\PaymentsController.cs" />
     <Compile Include="Helpers\CustomerViewHelper.cs" />
     <Content Include="Views\Home\Policy.cshtml" />
     <Content Include="Views\Shared\_FeaturePaging.cshtml" />

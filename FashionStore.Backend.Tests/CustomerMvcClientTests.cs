@@ -9,6 +9,24 @@ namespace FashionStore.Backend.Tests;
 
 public sealed class CustomerMvcClientTests
 {
+    [Fact] public async Task CancellationSendsOnlyReasonAndRefundAccountToOwnedEndpoint()
+    {
+        var handler=new CaptureHandler();using var http=new HttpClient(handler);
+        var api=new CustomerApiClient(http,"http://backend.test/");
+        await api.CancelAsync("owner","HD29102026-0001",new CancelOrderViewModel {Reason="Đặt nhầm sản phẩm",AccountHolder="SYNTHETIC CUSTOMER",AccountNumber="1234567890",BankName="Test bank",RequiresRefund=false});
+        var request=Assert.Single(handler.Requests);
+        Assert.Equal("owner",request.Token);Assert.Equal("POST",request.Method);Assert.EndsWith("/api/orders/HD29102026-0001/cancel",request.Path);
+        Assert.Equal(new[]{"AccountHolder","AccountNumber","BankName","Reason"},request.Body!.Properties().Select(p=>p.Name).OrderBy(n=>n));
+    }
+    [Fact] public async Task CheckoutSendsVoucherButNeverClientCalculatedMemberAmounts()
+    {
+        var handler=new CaptureHandler();using var http=new HttpClient(handler);
+        var api=new CustomerApiClient(http,"http://backend.test/");
+        await api.PlaceOrderAsync("owner",new CheckoutViewModel{Recipient="Customer",Phone="0900000001",Address="Delivery address",PaymentMethod="COD",RequestId=Guid.NewGuid(),Voucher="FORGED",MemberRate=100,MemberPoints=999999,QuotedTotal=1});
+        var body=Assert.Single(handler.Requests).Body!;
+        Assert.Equal(new[]{"Address","Note","PaymentMethod","Phone","Recipient","RequestId","Voucher"},body.Properties().Select(p=>p.Name).OrderBy(n=>n));
+        Assert.Equal("FORGED",(string?)body["Voucher"]);
+    }
     private sealed class CaptureHandler : HttpMessageHandler
     {
         public readonly List<(string? Token,string Method,string Path,JObject? Body)> Requests=[];

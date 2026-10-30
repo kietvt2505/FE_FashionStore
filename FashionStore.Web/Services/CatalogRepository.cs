@@ -39,10 +39,11 @@ namespace FashionStore.Web.Services
         public async Task<IList<CategoryOption>> GetCategoriesAsync()
         {
             var categories = await GetAsync<List<CategoryDto>>("api/categories", false).ConfigureAwait(false);
-            return categories.Select(c => new CategoryOption { MaLoai = c.Id, TenLoai = c.Name }).ToList();
+            return categories.Where(c => (c.Name ?? "").Trim() != "123")
+                .Select(c => new CategoryOption { MaLoai = c.Id, TenLoai = c.Name }).ToList();
         }
 
-        public async Task<CatalogListViewModel> SearchAsync(string query, string audience, string categoryId, string sort, int page, int pageSize, decimal? minPrice = null, decimal? maxPrice = null, string size = null, string color = null, bool inStock = false)
+        public async Task<CatalogListViewModel> SearchAsync(string query, string audience, string categoryId, string sort, int page, int pageSize, decimal? minPrice = null, decimal? maxPrice = null, string size = null, string color = null, bool inStock = false, string kind = null, bool saleOnly = false)
         {
             var parts = new List<string>
             {
@@ -58,11 +59,15 @@ namespace FashionStore.Web.Services
             if(!String.IsNullOrWhiteSpace(size)) parts.Add("size=" + Uri.EscapeDataString(size.Trim()));
             if(!String.IsNullOrWhiteSpace(color)) parts.Add("color=" + Uri.EscapeDataString(color.Trim()));
             if(inStock) parts.Add("inStock=true");
+            if (!String.IsNullOrWhiteSpace(kind)) parts.Add("kind=" + Uri.EscapeDataString(kind));
+            if (saleOnly) parts.Add("saleOnly=true");
             var result = await GetAsync<ProductListDto>("api/products?" + String.Join("&", parts), false).ConfigureAwait(false);
             if (result.Items == null || result.Total < 0 || result.Page != page || result.PageSize != pageSize)
                 throw new CatalogApiException(502, "Product API returned an invalid paging contract.");
             return new CatalogListViewModel
             {
+                Kind=kind, SaleOnly=saleOnly, CatalogNotice=result.Notice,
+                Sizes=result.Sizes??new List<string>(),Colors=result.Colors??new List<string>(),
                 MinPrice=minPrice, MaxPrice=maxPrice, Size=size, Color=color, InStock=inStock,
                 Query = (query ?? "").Trim(), Audience = audience ?? "", CategoryId = categoryId ?? "",
                 Sort = String.IsNullOrWhiteSpace(sort) ? "new" : sort,
@@ -84,9 +89,9 @@ namespace FashionStore.Web.Services
                 Variants = dto.Variants.Select(v => new ProductVariant
                 {
                     MaSKU = v.Sku, KichCo = v.Size, MauSac = v.Color,
-                    DonGia = v.Price, SoLuongTonKho = v.Stock
+                    DonGia = v.Price, GiaGoc=v.OriginalPrice, SoLuongTonKho = v.Stock
                 }).ToList(),
-                Images = dto.Images.Select(i => new ProductImage { MaSKU = i.Sku, DuongDan = i.Url }).ToList()
+                Images = dto.Images.Select(i => new ProductImage { MaSKU = i.Sku, DuongDan = i.Url,MauSac=i.Color,Alt=i.Alt }).ToList()
             };
         }
 
@@ -98,7 +103,8 @@ namespace FashionStore.Web.Services
             {
                 MaSP = product.Id, TenSanPham = product.Name, MaLoai = product.Category.Id,
                 TenLoai = product.Category.Name, DoiTuong = product.Audience, MoTa = product.Description,
-                DonGia = product.Price, TonKho = product.Stock, HinhAnh = product.ImageUrl
+                Kind=product.Kind,
+                DonGia = product.Price, GiaGoc = product.OriginalPrice, TonKho = product.Stock, HinhAnh = product.ImageUrl
             };
         }
 
@@ -125,6 +131,9 @@ namespace FashionStore.Web.Services
 
         private class ProductListDto
         {
+            public string Notice { get; set; }
+            public List<string> Sizes {get;set;}
+            public List<string> Colors {get;set;}
             public bool SupportsAudience { get; set; } = true;
             public bool SupportsNewest { get; set; } = true;
             public List<ProductDto> Items { get; set; }
@@ -144,7 +153,9 @@ namespace FashionStore.Web.Services
             public string Description { get; set; }
             public CategoryDto Category { get; set; }
             public string Audience { get; set; }
+            public string Kind {get;set;}
             public decimal Price { get; set; }
+            public decimal? OriginalPrice { get; set; }
             public long Stock { get; set; }
             public string ImageUrl { get; set; }
         }
@@ -159,12 +170,15 @@ namespace FashionStore.Web.Services
             public string Size { get; set; }
             public string Color { get; set; }
             public decimal Price { get; set; }
+            public decimal? OriginalPrice {get;set;}
             public int Stock { get; set; }
         }
         private class ImageDto
         {
             public string Sku { get; set; }
             public string Url { get; set; }
+            public string Color {get;set;}
+            public string Alt {get;set;}
         }
     }
 

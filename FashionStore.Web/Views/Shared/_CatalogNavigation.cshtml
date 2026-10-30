@@ -1,0 +1,51 @@
+@model System.Collections.Generic.IList<FashionStore.Web.Models.CategoryOption>
+@using FashionStore.Web.Helpers
+@{
+    var selectedAudience = Request.QueryString["audience"];
+    var sale = String.Equals(Request.QueryString["saleOnly"], "true", StringComparison.OrdinalIgnoreCase);
+}
+<nav id="main-nav" class="main-nav" aria-label="Điều hướng chính">
+    <a href="@Url.Action("Index", "Home")">Trang chủ</a>
+    @foreach (var audience in new[] { "NAM", "NU" })
+    {
+        var label = CatalogViewHelper.AudienceLabel(audience);
+        var menuId = "catalog-menu-" + audience;
+        <div class="catalog-nav-item @(selectedAudience == audience && !sale ? "is-current" : "")" data-catalog-menu>
+            <div class="catalog-nav-trigger">
+                <a class="catalog-nav-link" href="@Url.Action("Index", "Product", new { audience })">@label</a>
+                <button class="catalog-nav-toggle" type="button" aria-label="Danh mục @label" aria-expanded="false" aria-controls="@menuId"><svg viewBox="0 0 12 8" aria-hidden="true"><path d="m1 1 5 5 5-5" /></svg></button>
+            </div>
+            <div id="@menuId" class="catalog-mega-menu" hidden>
+                <div class="catalog-mega-heading"><strong>Thời trang @label.ToLower()</strong><a href="@Url.Action("Index", "Product", new { audience })">Xem tất cả @label.ToLower() <span aria-hidden="true">↗</span></a></div>
+                <div class="catalog-mega-columns">
+                    @foreach (var menuSection in CatalogViewHelper.MenuSections(audience, Model))
+                    {
+                        <section class="catalog-mega-column" aria-label="@menuSection.Title">
+                            <h2>@if (!String.IsNullOrEmpty(menuSection.Kind)) { <a href="@Url.Action("Index","Product",new{audience,kind=menuSection.Kind})">@menuSection.Title</a> } else { @menuSection.Title }</h2>
+                            @foreach (var item in menuSection.Items)
+                            {
+                                <a href="@Url.Action("Index", "Product", new { audience, category = item.Category, kind = item.Kind })">@item.Label</a>
+                            }
+                        </section>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    <div class="catalog-nav-item @(String.IsNullOrEmpty(selectedAudience) && CatalogViewHelper.IsAccessoryKind(Request.QueryString["kind"]) && !sale ? "is-current" : "")" data-catalog-menu>
+        <div class="catalog-nav-trigger">
+            <a class="catalog-nav-link" href="@Url.Action("Index","Product",new{kind="phu-kien"})">Phụ kiện</a>
+            <button class="catalog-nav-toggle" type="button" aria-label="Danh mục Phụ kiện" aria-expanded="false" aria-controls="catalog-menu-accessories"><svg viewBox="0 0 12 8" aria-hidden="true"><path d="m1 1 5 5 5-5" /></svg></button>
+        </div>
+        <div id="catalog-menu-accessories" class="catalog-mega-menu" hidden>
+            <div class="catalog-mega-heading"><strong>Phụ kiện</strong><a href="@Url.Action("Index","Product",new{kind="phu-kien"})">Xem tất cả phụ kiện <span aria-hidden="true">↗</span></a></div>
+            <div class="catalog-accessory-links">
+                @foreach(var item in System.Linq.Enumerable.Where(System.Linq.Enumerable.First(CatalogViewHelper.MenuSections("NU",Model),s=>s.Kind=="phu-kien").Items,i=>!String.IsNullOrEmpty(i.Kind))) {
+                    <a href="@Url.Action("Index","Product",new{kind=item.Kind})">@item.Label</a>
+                }
+            </div>
+        </div>
+    </div>
+    <a class="catalog-sale-link @(sale ? "is-current" : "")" href="@Url.Action("Index", "Product", new { saleOnly = true, sort = "price_asc" })">Khuyến mãi</a>
+    <a class="nav-promotion" href="@Url.Action("Index", "Home")#membership">Thành viên</a>
+</nav>

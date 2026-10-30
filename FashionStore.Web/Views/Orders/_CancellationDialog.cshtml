@@ -1,0 +1,25 @@
+@model FashionStore.Web.Models.CancelOrderViewModel
+<dialog id="order-cancellation-dialog" class="order-cancellation-dialog" aria-labelledby="cancel-dialog-title" data-open-on-load="@(Model.Open?"true":"false")">
+    <div class="order-cancellation-dialog-heading"><div><p class="eyebrow">YODY / @Model.Id</p><h2 id="cancel-dialog-title">@(Model.RefundAccountOnly?"Thông tin nhận hoàn tiền":"Xác nhận hủy đơn hàng")</h2></div><button type="button" class="order-dialog-close" data-order-dialog-close aria-label="Đóng">×</button></div>
+    @using(Html.BeginForm(Model.RefundAccountOnly?"RefundAccount":"Cancel","Orders",FormMethod.Post,new{@class="order-cancellation-form"})) {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m=>m.Id)
+        @Html.ValidationSummary(false,"",new{@class="customer-errors",role="alert"})
+        if(!Model.RefundAccountOnly) {
+            <div class="yody-field"><label for="Reason">Lý do hủy đơn @(Model.RequiresReason?"*":"(không bắt buộc)")</label>
+                @Html.TextAreaFor(m=>m.Reason,new{rows="3",maxlength="500",placeholder="Vui lòng cho cửa hàng biết lý do bạn muốn hủy đơn",@class="filter-input",data_reason_required=Model.RequiresReason?"true":"false"})
+            </div>
+        }
+        if(Model.RequiresRefund) {
+            <div class="order-refund-notice" role="status"><strong>Thông tin nhận hoàn tiền</strong><p>Nhập đúng tài khoản bạn muốn nhận tiền. Cửa hàng sẽ kiểm tra yêu cầu và xác nhận sau khi hoàn tiền.</p></div>
+            <div class="yody-field"><label for="AccountHolder">Tên chủ tài khoản *</label>@Html.TextBoxFor(m=>m.AccountHolder,new{@class="filter-input",maxlength="150",required="required",autocomplete="off",placeholder="Tên đầy đủ trên tài khoản ngân hàng"})</div>
+            <div class="order-refund-bank-grid">
+                <div class="yody-field"><label for="AccountNumber">Số tài khoản *</label>@Html.TextBoxFor(m=>m.AccountNumber,new{@class="filter-input",maxlength="34",pattern="[0-9]{6,34}",inputmode="numeric",required="required",autocomplete="off",placeholder="Số tài khoản ngân hàng"})</div>
+                <div class="yody-field"><label for="BankName">Ngân hàng *</label>@Html.TextBoxFor(m=>m.BankName,new{@class="filter-input",maxlength="100",required="required",autocomplete="off",placeholder="Ví dụ: MB, Vietcombank"})</div>
+            </div>
+            <p class="order-refund-privacy">Chỉ cung cấp thông tin nhận tiền. Cửa hàng không yêu cầu mật khẩu, mã OTP, số thẻ hay mã bảo mật thẻ.</p>
+        }
+        else { <p class="yody-muted">Đơn chưa được ghi nhận thanh toán nên chưa phát sinh yêu cầu hoàn tiền.</p> }
+        <div class="order-dialog-actions"><button type="button" class="mn-btn mn-btn-outline" data-order-dialog-close>@(Model.RefundAccountOnly?"ĐỂ SAU":"GIỮ ĐƠN HÀNG")</button><button class="mn-btn mn-btn-primary" type="submit">@(Model.RefundAccountOnly?"GỬI THÔNG TIN":"XÁC NHẬN HỦY ĐƠN")</button></div>
+    }
+</dialog>

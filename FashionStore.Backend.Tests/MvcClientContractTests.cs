@@ -74,7 +74,7 @@ public sealed class MvcClientContractTests
     [Fact]
     public async Task CategoriesUseDedicatedEndpoint()
     {
-        var handler = new ResponseHandler(HttpStatusCode.OK, "[{\"id\":\"C1\",\"name\":\"Áo\"}]");
+        var handler = new ResponseHandler(HttpStatusCode.OK, "[{\"id\":\"C1\",\"name\":\"Áo\"},{\"id\":\"TEST\",\"name\":\" 123 \"}]");
         var repository = new CatalogRepository(new HttpClient(handler), "http://localhost:5000");
         Assert.Equal("C1", Assert.Single(await repository.GetCategoriesAsync()).MaLoai);
         Assert.Equal("/api/categories", Assert.Single(handler.Requests).AbsolutePath);

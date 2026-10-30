@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS webstore.order_snapshot (
     total numeric(18,2) NOT NULL CHECK(total>0)
 );
 CREATE INDEX IF NOT EXISTS ix_web_order_customer ON webstore.order_snapshot(makh,ngaylap DESC);
+-- Preserve COD compatibility on new installs; existing installs also receive this column in Supabase-Web-Payments.sql.
+ALTER TABLE webstore.order_snapshot ADD COLUMN IF NOT EXISTS paymentmethod varchar(50) NOT NULL DEFAULT 'COD';
 CREATE TABLE IF NOT EXISTS webstore.order_line_snapshot (
     sohd varchar(30) NOT NULL REFERENCES webstore.order_snapshot(sohd) ON DELETE RESTRICT,
     masku varchar(40) NOT NULL, name varchar(200) NOT NULL,

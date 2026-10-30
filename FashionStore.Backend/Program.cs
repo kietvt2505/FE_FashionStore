@@ -66,8 +66,13 @@ builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<SupabaseOrderService>();
+builder.Services.AddSingleton<PaymentGatewaySettings>();
+builder.Services.AddHttpClient<PaymentGatewayClient>(client=>client.Timeout=TimeSpan.FromSeconds(20));
+builder.Services.AddScoped<OnlinePaymentService>();
 builder.Services.AddScoped<CustomerFeaturesService>();
+builder.Services.AddScoped<SupabaseCustomerFeaturesService>();
 builder.Services.AddScoped<PasswordRecoveryService>();
+builder.Services.AddScoped<SupabasePasswordRecoveryService>();
 builder.Services.Configure<AdminRoleOptions>(builder.Configuration.GetSection("Admin"));
 builder.Services.AddSingleton<IPasswordHasher<NhanVien>, PasswordHasher<NhanVien>>();
 builder.Services.AddSingleton<AdminSessions>();
@@ -104,9 +109,11 @@ app.Use(async (context, next) =>
     var controller = context.GetEndpoint()?.Metadata.GetMetadata<Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor>();
     var mode = context.RequestServices.GetRequiredService<DatabaseMode>();
     var customerController = controller?.ControllerTypeInfo.AsType() == typeof(FashionStore.Backend.Controllers.AccountController) ||
-        controller?.ControllerTypeInfo.AsType() == typeof(FashionStore.Backend.Controllers.CartController);
+        controller?.ControllerTypeInfo.AsType() == typeof(FashionStore.Backend.Controllers.CartController) ||
+        controller?.ControllerTypeInfo.AsType() == typeof(FashionStore.Backend.Controllers.CustomerFeaturesController) ||
+        controller?.ControllerTypeInfo.AsType() == typeof(FashionStore.Backend.Controllers.RecoveryController);
     if (mode.IsSupabase && controller != null && !(mode.CustomerFeaturesEnabled && customerController) &&
-        !(mode.OrdersEnabled && controller.ControllerTypeInfo.AsType() == typeof(FashionStore.Backend.Controllers.OrdersController)) &&
+        !(mode.OrdersEnabled && (controller.ControllerTypeInfo.AsType() == typeof(FashionStore.Backend.Controllers.OrdersController) || controller.ControllerTypeInfo.AsType() == typeof(FashionStore.Backend.Controllers.PaymentsController))) &&
         controller.ControllerTypeInfo.AsType() != typeof(FashionStore.Backend.Controllers.ProductsController) &&
         controller.ControllerTypeInfo.AsType() != typeof(FashionStore.Backend.Controllers.CategoriesController))
     {

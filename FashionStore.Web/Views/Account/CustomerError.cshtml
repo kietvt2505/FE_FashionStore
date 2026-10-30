@@ -1,7 +1,11 @@
-@{ ViewBag.Title = "Tài khoản"; }
+@{
+    ViewBag.Title = "Tài khoản";
+    var retryUrl = Request.HttpMethod == "GET" && Url.IsLocalUrl(Request.RawUrl) ? Request.RawUrl : Url.Action("Profile", "Account");
+}
 <section class="yody-state-page" role="alert">
     <p class="eyebrow">YODY / TÀI KHOẢN</p>
     <h1>Chưa thể tải tài khoản</h1>
     <p>@ViewBag.CustomerError</p>
-    <a class="mn-btn mn-btn-primary" href="@Url.Action("Profile", "Account")">THỬ LẠI</a>
+    <a class="mn-btn mn-btn-primary" href="@retryUrl">THỬ LẠI</a>
+    <p><a class="yody-text-link" href="@Url.Action("Index", "Customer")">Về tổng quan tài khoản</a></p>
 </section>

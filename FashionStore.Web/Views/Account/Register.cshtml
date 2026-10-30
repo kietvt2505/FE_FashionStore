@@ -15,7 +15,7 @@
         </div>
         <div class="account-field">
             @Html.LabelFor(m => m.Phone, "Số điện thoại *")
-            @Html.TextBoxFor(m => m.Phone, new { @class = "filter-input", type = "tel", inputmode = "tel", autocomplete = "tel", maxlength = "16", pattern = @"\+?[0-9]{9,15}", required = "required", placeholder = "Ví dụ: 0912345678" })
+            @Html.TextBoxFor(m => m.Phone, new { @class = "filter-input", type = "tel", inputmode = "tel", autocomplete = "tel", maxlength = "16", pattern = @"\+?[0-9]{9,15}", required = "required", placeholder = "Ví dụ: 0904567890" })
             @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "field-validation-error" })
         </div>
         <div class="account-field">
@@ -25,7 +25,7 @@
         </div>
         <div class="account-field">
             @Html.LabelFor(m => m.StreetAddress, "Số nhà, tên đường *")
-            @Html.TextBoxFor(m => m.StreetAddress, new { @class = "filter-input", autocomplete = "address-line1", minlength = "5", maxlength = "180", required = "required", placeholder = "Ví dụ: 123 Nguyễn Trãi" })
+            @Html.TextBoxFor(m => m.StreetAddress, new { @class = "filter-input", autocomplete = "address-line1", minlength = "5", maxlength = "180", required = "required", placeholder = "Ví dụ: 140 Nguyễn Trãi" })
             @Html.ValidationMessageFor(m => m.StreetAddress, "", new { @class = "field-validation-error" })
         </div>
         <div class="account-address-grid" data-provinces-url="@Url.Action("Provinces", "Account")" data-wards-url="@Url.Action("Wards", "Account")" data-province-selected="@Model.ProvinceCode" data-ward-selected="@Model.WardCode">

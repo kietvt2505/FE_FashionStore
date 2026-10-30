@@ -64,7 +64,9 @@ public sealed class SupabaseCustomerMappingTests
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/account/me")).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/cart")).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsync("/api/account/register", new StringContent("{}", System.Text.Encoding.UTF8, "application/json"))).StatusCode);
-        // Existing endpoints outside Account/Cart remain disabled even with customer mode on.
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, (await client.GetAsync("/api/customer/promotions")).StatusCode);
+        // Customer features are routed through authentication; privileged admin routes remain blocked.
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/customer/addresses")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/customer/wishlist")).StatusCode);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, (await client.GetAsync("/api/admin/orders")).StatusCode);
     }
 }

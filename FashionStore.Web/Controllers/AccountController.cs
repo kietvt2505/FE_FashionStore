@@ -35,6 +35,7 @@ namespace FashionStore.Web.Controllers
                 // Dùng họ tên từ hồ sơ đã xác thực để hiển thị trên header, không dùng tên đăng nhập.
                 var profile = await api.ProfileAsync(login.AccessToken);
                 CustomerAuthentication.SignIn(HttpContext, profile.FullName, login);
+                if(GuestCartStore.Items(Session).Count>0)TempData["PromptGuestMerge"]=true;
                 // Prevent a browser from retaining both kinds of active cookies.
                 AdminSessionCookie.SignOut(HttpContext);
                 if (Url.IsLocalUrl(model.ReturnUrl) &&

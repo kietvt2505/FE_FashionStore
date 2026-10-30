@@ -10,8 +10,12 @@
     <title>@siteTitle</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
-    <link rel="stylesheet" href="@Url.Content("~/Content/moc-nhien.css")" />
+    <link rel="stylesheet" href="@Url.Content("~/Content/moc-nhien.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/moc-nhien.css")).Ticks" />
     <link rel="stylesheet" href="@Url.Content("~/Content/customer.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/customer.css")).Ticks" />
+    @RenderSection("styles", required: false)
+    <link rel="stylesheet" href="@Url.Content("~/Content/navy-theme.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/navy-theme.css")).Ticks" />
+    <link rel="stylesheet" href="@Url.Content("~/Content/customer-account.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/customer-account.css")).Ticks" />
+    <link rel="stylesheet" href="@Url.Content("~/Content/storefront-polish.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/storefront-polish.css")).Ticks" />
 </head>
 <body class="customer-site">
     <a class="skip-link" href="#main-content">Chuyển đến nội dung chính</a>
@@ -28,21 +32,14 @@
                 <span>YODY</span>
             </a>
 
-            <nav id="main-nav" class="main-nav" aria-label="Điều hướng chính">
-                <a href="@Url.Action("Index", "Home")">Trang chủ</a>
-                <a href="@Url.Action("Index", "Product", new { audience = "NAM" })">Nam</a>
-                <a href="@Url.Action("Index", "Product", new { audience = "NU" })">Nữ</a>
-                <a href="@Url.Action("Index", "Product", new { audience = "TRE_EM" })">Trẻ em</a>
-                <a href="@Url.Action("Index", "Product")">Sản phẩm</a>
-                <a class="nav-promotion" href="@Url.Action("Index", "Home")#membership">Thành viên</a>
-            </nav>
+            @Html.Action("Navigation", "Product")
 
             <div class="header-actions">
                 <button class="icon-button" type="button" id="search-toggle" aria-label="Tìm kiếm sản phẩm" aria-expanded="false" aria-controls="search-panel" title="Tìm kiếm">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg>
                 </button>
                 <a class="icon-button icon-cart" href="@Url.Action("Index", "Cart")" aria-label="Giỏ hàng" title="Giỏ hàng">
-                    @if(User.Identity.IsAuthenticated){<span id="cart-count" class="cart-count" data-url="@Url.Action("Count","Cart")" hidden></span>}
+                    <span id="cart-count" class="cart-count" data-url="@Url.Action("Count","Cart")" hidden></span>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8.5h14l-1 12H6l-1-12Z" /><path d="M9 9V6a3 3 0 0 1 6 0v3" /></svg>
                 </a>
                 <button class="icon-button" type="button" id="account-toggle" aria-label="Mở tài khoản" aria-expanded="false" aria-controls="account-panel" title="Tài khoản">
@@ -99,29 +96,28 @@
                 <h2>Khám phá</h2>
                 <a href="@Url.Action("Index", "Product", new { audience = "NAM" })">Thời trang Nam</a>
                 <a href="@Url.Action("Index", "Product", new { audience = "NU" })">Thời trang Nữ</a>
-                <a href="@Url.Action("Index", "Product", new { audience = "TRE_EM" })">Thời trang Trẻ em</a>
+                <a href="@Url.Action("Index", "Product", new { kind = "phu-kien" })">Phụ kiện</a>
                 <a href="@Url.Action("Index", "Product")">Tất cả sản phẩm</a>
+                <a href="@Url.Action("Index","Product",new{saleOnly=true,sort="price_asc"})">Khuyến mãi</a>
+                <a href="@Url.Action("About","Home")">Về YODY</a>
             </div>
             <div>
                 <h2>Hỗ trợ mua sắm</h2>
-                <a href="@Url.Action("About", "Home")">Về YODY</a>
-                <a href="@Url.Action("Contact", "Home")">Liên hệ</a>
-                <a href="@Url.Action("Index", "Cart")">Giỏ hàng</a>
-                <a href="@Url.Action("Index", "Orders")">Lịch sử đơn hàng</a>
                 <a href="@Url.Action("Policy","Home",new{id="shopping"})">Hướng dẫn mua hàng</a>
                 <a href="@Url.Action("Policy","Home",new{id="shipping"})">Giao hàng</a>
                 <a href="@Url.Action("Policy","Home",new{id="payment"})">Thanh toán</a>
                 <a href="@Url.Action("Policy","Home",new{id="returns"})">Đổi trả</a>
-                <a href="@Url.Action("Policy","Home",new{id="privacy"})">Bảo mật</a>
-                <a href="@Url.Action("Policy","Home",new{id="terms"})">Điều khoản</a>
                 <a href="@Url.Action("Policy","Home",new{id="faq"})">Câu hỏi thường gặp</a>
+                <a href="@Url.Action("Contact", "Home")">Liên hệ</a>
             </div>
             <div>
                 <h2>Tài khoản</h2>
-                <a href="@Url.Action("Login", "Account")">Đăng nhập khách hàng hoặc quản trị viên</a>
+                <a href="@Url.Action("Login", "Account")">Đăng nhập</a>
                 <a href="@Url.Action("Register", "Account")">Đăng ký thành viên</a>
                 <a href="@Url.Action("Index", "Customer")">Hồ sơ của tôi</a>
-                <p>Khám phá ưu đãi và quyền lợi tích điểm dành cho thành viên.</p>
+                <a href="@Url.Action("Index","Orders")">Lịch sử đơn hàng</a>
+                <a href="@Url.Action("Policy","Home",new{id="privacy"})">Chính sách bảo mật</a>
+                <a href="@Url.Action("Policy","Home",new{id="terms"})">Điều khoản sử dụng</a>
             </div>
         </div>
         <div class="mn-footer-bottom-wrap">
@@ -133,9 +129,19 @@
     </footer>
 
     <div class="mn-toast" role="status" aria-live="polite" id="demo-toast" hidden></div>
+    @{var promptGuestMerge=TempData["PromptGuestMerge"]!=null;}
+    @if(User.Identity.IsAuthenticated && (promptGuestMerge || ViewBag.HasPendingGuestCart==true) && FashionStore.Web.Helpers.GuestCartStore.Items(Session).Count>0){
+        var mergeError=TempData.Peek("GuestMergeError") as string;
+        <dialog id="guest-merge-dialog" class="guest-merge-dialog" data-auto-open="@(promptGuestMerge?"true":"false")" aria-labelledby="guest-merge-title"><h2 id="guest-merge-title">Giữ những món bạn vừa chọn?</h2><p>Bạn đã thêm sản phẩm trước khi đăng nhập. Bạn có muốn gộp các sản phẩm này vào giỏ hàng tài khoản không? Giá và tồn kho sẽ được kiểm tra lại.</p>
+            @if(!String.IsNullOrEmpty(mergeError)){<p class="guest-merge-error" role="alert">@mergeError</p>}
+            @using(Html.BeginForm("Merge","Cart",FormMethod.Post)){@Html.AntiForgeryToken()<div class="guest-merge-actions"><button class="mn-btn mn-btn-primary" name="accept" value="true">@(String.IsNullOrEmpty(mergeError)?"Có, thêm vào giỏ":"Thử gộp lại")</button><button class="mn-btn mn-btn-outline" name="accept" value="false">Không thêm</button><button class="guest-merge-later" type="button" data-close-guest-merge>Để sau, giữ giỏ tạm</button></div>}
+        </dialog>
+    }
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     <script src="@Url.Content("~/Scripts/moc-nhien.js")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Scripts/moc-nhien.js")).Ticks"></script>
+    <script src="@Url.Content("~/Scripts/storefront.js")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Scripts/storefront.js")).Ticks"></script>
+    <script src="@Url.Content("~/Scripts/storefront-motion.js")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Scripts/storefront-motion.js")).Ticks"></script>
     @RenderSection("scripts", required: false)
 </body>
 </html>

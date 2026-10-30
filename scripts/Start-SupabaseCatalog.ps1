@@ -1,9 +1,11 @@
-param([int]$Port = 5000, [switch]$EnableCustomerFeatures, [switch]$EnableOrders, [string]$OrderEmployeeId = "NV01")
+param([int]$Port = 5000, [switch]$EnableCustomerFeatures, [switch]$EnableOrders, [string]$OrderEmployeeId = "NV-001", [switch]$EnableBankTransfer)
 $ErrorActionPreference = 'Stop'
+if ($EnableBankTransfer -and -not $EnableOrders) { throw '-EnableBankTransfer requires -EnableOrders.' }
 $projectPath = Join-Path $PSScriptRoot '..\FashionStore.Backend\FashionStore.Backend.csproj'
 $previousProvider = $env:Database__Provider
 $previousConnection = $env:ConnectionStrings__Supabase
 $previousEnvironment = $env:ASPNETCORE_ENVIRONMENT
+$previousBankTransfer = $env:Orders__EnableBankTransfer
 $previousOrders = $env:Database__EnableSupabaseOrders
 $previousEmployee = $env:Orders__EmployeeId
 $previousCustomerFeatures = $env:Database__EnableSupabaseCustomerFeatures
@@ -28,13 +30,18 @@ try {
     $env:Database__EnableSupabaseCustomerFeatures = ($EnableCustomerFeatures.IsPresent -or $EnableOrders.IsPresent).ToString()
     $env:Database__EnableSupabaseOrders = $EnableOrders.IsPresent.ToString()
     $env:Orders__EmployeeId = $OrderEmployeeId
+    $env:Orders__EnableBankTransfer = $EnableBankTransfer.IsPresent.ToString()
     Write-Host "Starting Supabase backend at http://127.0.0.1:$Port"
     if ($EnableCustomerFeatures -or $EnableOrders) {
         Write-Host 'Customer accounts and carts enabled. Apply database/Supabase-Customer-Cart.sql first.'
     } else { Write-Host 'Read-only catalog mode. Customer accounts and carts are disabled.' }
     if ($EnableOrders) { Write-Host "COD orders enabled for employee $OrderEmployeeId. Apply database/Supabase-Web-Orders.sql first." }
     else { Write-Host 'Checkout is disabled.' }
-    Write-Host 'Recovery and admin endpoints are not yet migrated.'
+    if ($EnableBankTransfer) { Write-Host 'Bank transfers enabled. Apply database/Supabase-Web-Payments.sql first; payments require staff verification.' }
+    if ($EnableOrders) { Write-Host 'Automatic member discounts: apply database/Supabase-Membership-Pricing.sql. Website promotion codes are disabled.' }
+    if ($EnableOrders) { Write-Host 'Short order numbers: apply database/Supabase-Short-Order-Numbers.sql for WEB-000001 style codes.' }
+    if ($EnableCustomerFeatures -or $EnableOrders) { Write-Host 'Account pages: apply database/Supabase-Customer-Features.sql after the web orders migration. Email recovery also requires SMTP and an HTTPS reset URL.' }
+    Write-Host 'Admin endpoints are not yet migrated.'
     dotnet run --project $projectPath --no-launch-profile --urls "http://127.0.0.1:$Port"
     if ($LASTEXITCODE -ne 0) { throw 'Backend failed. Check the build/startup output above.' }
 }
@@ -45,5 +52,6 @@ finally {
     $env:Database__EnableSupabaseCustomerFeatures = $previousCustomerFeatures
     $env:Database__EnableSupabaseOrders = $previousOrders
     $env:Orders__EmployeeId = $previousEmployee
+    $env:Orders__EnableBankTransfer = $previousBankTransfer
     $connection = $null
 }

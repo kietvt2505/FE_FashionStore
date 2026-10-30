@@ -1,4 +1,4 @@
 @{ var pageTitle = (ViewBag.Title ?? "Quản trị") + " | MỘC NHIÊN Quản trị"; }
 <!doctype html>
-<html lang="vi"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="robots" content="noindex,nofollow" /><title>@pageTitle</title><link rel="stylesheet" href="@Url.Content("~/Content/admin.css")" /></head>
+<html lang="vi"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="robots" content="noindex,nofollow" /><title>@pageTitle</title><link rel="stylesheet" href="@Url.Content("~/Content/admin.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/admin.css")).Ticks" /><link rel="stylesheet" href="@Url.Content("~/Content/navy-theme.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/navy-theme.css")).Ticks" /></head>
 <body class="admin-body">@RenderBody()</body></html>

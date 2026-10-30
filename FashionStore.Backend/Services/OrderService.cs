@@ -54,15 +54,19 @@ public sealed class OrderService(FashionStoreDbContext db, SupabaseOrderService?
         await using var cmd=Sql(conn,null,@"SELECT COALESCE(SUM(b.DonGia*ct.SoLuong),0) FROM dbo.GioHang g JOIN dbo.ChiTietGioHang ct ON ct.MaGioHang=g.MaGioHang JOIN dbo.BienTheSanPham b ON b.MaSKU=ct.MaSKU WHERE g.MaKH=@kh",("@kh",kh));
         var subtotal=Convert.ToDecimal(await cmd.ExecuteScalarAsync(ct));
         var discount=await VoucherDiscount(conn,null,voucher,subtotal,ct);
-        return new CheckoutQuote(subtotal,discount,subtotal-discount);
+        return new CheckoutQuote(subtotal,discount,subtotal-discount){Voucher=string.IsNullOrWhiteSpace(voucher)?null:voucher.Trim(),VoucherDiscount=discount};
     }
-    public async Task CancelCustomerAsync(string kh,string id,CancellationToken ct)
+    public async Task CancelCustomerAsync(string kh,string id,CancellationToken ct,CancelOrderRequest? input=null)
     {
-        if (db.Database.IsNpgsql()) throw new CustomerRequestException(409, "Vui lòng liên hệ cửa hàng để hủy đơn giao hàng.");
+        if (db.Database.IsNpgsql()) {await postgres!.CancelAsync(kh,id,ct,input);return;}
         await using var conn=Connection();await conn.OpenAsync(ct);
         await using var tx=(SqlTransaction)await conn.BeginTransactionAsync(IsolationLevel.Serializable,ct);
-        await using(var check=Sql(conn,tx,"SELECT COUNT(*) FROM dbo.HoaDon WITH(UPDLOCK,HOLDLOCK) WHERE SoHD=@id AND MaKH=@kh AND LoaiHoaDon='ONLINE'",("@id",id),("@kh",kh)))
-            if(Convert.ToInt32(await check.ExecuteScalarAsync(ct))!=1)throw new CustomerRequestException(404,"Không tìm thấy đơn hàng.");
+        await using(var check=Sql(conn,tx,"SELECT TrangThaiHoaDon,TrangThaiGiaoHang,TrangThaiThanhToan FROM dbo.HoaDon WITH(UPDLOCK,HOLDLOCK) WHERE SoHD=@id AND MaKH=@kh AND LoaiHoaDon='ONLINE'",("@id",id),("@kh",kh)))
+        await using(var reader=await check.ExecuteReaderAsync(ct)) {
+            if(!await reader.ReadAsync(ct))throw new CustomerRequestException(404,"Không tìm thấy đơn hàng.");
+            if(!OrderCancellationPolicy.AllowsLegacyOrder(reader.GetString(0),reader.GetString(1),reader.GetString(2)))
+                throw new CustomerRequestException(409,OrderCancellationPolicy.RejectionMessage);
+        }
         // Ownership lock remains held while the existing procedure checks payment/shipping and restores stock.
         await using var cmd=new SqlCommand("dbo.usp_HuyDonOnline",conn,tx){CommandType=CommandType.StoredProcedure};
         cmd.Parameters.Add("@SoHD",SqlDbType.VarChar,30).Value=id;
@@ -71,6 +75,12 @@ public sealed class OrderService(FashionStoreDbContext db, SupabaseOrderService?
         cmd.Parameters.Add("@KetQua",SqlDbType.NVarChar,30).Direction=ParameterDirection.Output;
         try {await cmd.ExecuteNonQueryAsync(ct);await tx.CommitAsync(ct);}
         catch(SqlException e) when(e.Number>=54000 && e.Number<55000) {throw new CustomerRequestException(409,"Không thể hủy đơn ở trạng thái hiện tại. Đơn đã thanh toán hoặc đang giao cần cửa hàng hỗ trợ.");}
+    }
+
+    public async Task SaveRefundAccountAsync(string kh,string id,CancelOrderRequest input,CancellationToken ct)
+    {
+        if(!db.Database.IsNpgsql())throw new CustomerRequestException(503,"Yêu cầu hoàn tiền trực tuyến chưa được bật.");
+        await postgres!.SaveRefundAccountAsync(kh,id,input,ct);
     }
 
     public async Task<PlaceOrderResponse> PlaceAsync(string customerId, CheckoutRequest request, CancellationToken ct)
@@ -217,12 +227,16 @@ WHERE SoHD=@id AND LoaiHoaDon='ONLINE' AND (@kh IS NULL OR MaKH=@kh)";
         }
         var lines = new List<OrderLine>();
         await using (var cmd = Sql(conn, null, @"SELECT MaSKU,TenSanPhamLucMua,COALESCE(KichCoLucMua,N''),
-COALESCE(MauSacLucMua,N''),SoLuong,DonGia,ThanhTien FROM dbo.ChiTietHoaDon WHERE SoHD=@id ORDER BY MaSKU", ("@id", id)))
+COALESCE(c.MauSacLucMua,N''),c.SoLuong,c.DonGia,c.ThanhTien,
+(SELECT TOP(1) i.DuongDan FROM dbo.HinhAnhSanPham i WHERE i.MaSKU=c.MaSKU ORDER BY i.AnhChinh DESC,i.ThuTu,i.MaHinh),
+(SELECT b.MaSP FROM dbo.BienTheSanPham b WHERE b.MaSKU=c.MaSKU)
+FROM dbo.ChiTietHoaDon c WHERE c.SoHD=@id ORDER BY c.MaSKU", ("@id", id)))
         await using (var r = await cmd.ExecuteReaderAsync(ct))
             while (await r.ReadAsync(ct))
                 lines.Add(new OrderLine(r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3),
-                    r.GetInt32(4), r.GetDecimal(5), r.GetDecimal(6)));
-        return order with { Items = lines };
+                    r.GetInt32(4), r.GetDecimal(5), r.GetDecimal(6), r.IsDBNull(7) ? null : r.GetString(7)) { ProductId = r.IsDBNull(8) ? null : r.GetString(8) });
+        return order with { Items = lines, VoucherDiscount=order.Discount, CanCancel=customerId!=null &&
+            OrderCancellationPolicy.AllowsLegacyOrder(order.Status,order.ShippingStatus,order.PaymentStatus) };
     }
 
     public async Task<OrderActionResponse> ChangeStatusAsync(string id, string employeeId, bool cancel, CancellationToken ct)

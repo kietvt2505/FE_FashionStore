@@ -5,17 +5,16 @@
     ViewBag.Title = Model.Product == null ? "Chi tiết sản phẩm" : Model.Product.TenSanPham;
     ViewBag.IsCatalogPage = true;
     var displayImage = Model.Product == null ? "~/Content/images/product-placeholder.svg" : CatalogViewHelper.ImagePath(Model.Product.HinhAnh);
-    var primaryImage = Model.Images.FirstOrDefault(x => String.IsNullOrEmpty(x.MaSKU));
+    var primaryImage = Model.Images.FirstOrDefault(x => String.IsNullOrEmpty(x.MaSKU)&&String.IsNullOrEmpty(x.MauSac));
     if (primaryImage != null) { displayImage = CatalogViewHelper.ImagePath(primaryImage.DuongDan); }
     var sizeOrder = new[] { "XS", "S", "M", "L", "XL", "XXL", "XXXL" };
     var sizes = Model.Variants.Select(v => v.KichCo).Distinct().OrderBy(s => Array.IndexOf(sizeOrder, s) < 0 ? 99 : Array.IndexOf(sizeOrder, s)).ThenBy(s => s).ToList();
     var colors = Model.Variants.Select(v => v.MauSac).Distinct().ToList();
-    var gallery = Model.Images.Select(p => new { Picture = p, Color = Model.Variants.Where(v => v.MaSKU == p.MaSKU).Select(v => v.MauSac).FirstOrDefault() })
-        .GroupBy(p => p.Color ?? p.Picture.DuongDan).Select(g => g.First()).ToList();
+    var gallery = Model.Images.Select(p => new { Picture = p, Color = p.MauSac??Model.Variants.Where(v => v.MaSKU == p.MaSKU).Select(v => v.MauSac).FirstOrDefault() })
+        .GroupBy(p => (p.Color??"")+"|"+p.Picture.DuongDan).Select(g => g.First()).ToList();
 }
 <main class="mn-container product-page yody-product-page">
-    <nav class="breadcrumbs" aria-label="Đường dẫn"><a href="@Url.Action("Index", "Home")">Trang chủ</a><span aria-hidden="true">/</span><a href="@Url.Action("Index", "Product")">Sản phẩm</a><span aria-hidden="true">/</span><span aria-current="page">@(Model.Product == null ? "Chi tiết" : Model.Product.TenSanPham)</span></nav>
-    @if (!String.IsNullOrEmpty(Model.CatalogError))
+@if (!String.IsNullOrEmpty(Model.CatalogError))
     {
         <div class="catalog-alert" role="alert">@Model.CatalogError</div>
     }
@@ -23,13 +22,13 @@
     {
         <div class="yody-product-layout">
             <div class="yody-product-gallery">
-                <div class="yody-product-main-image"><img id="detail-main-image" src="@Url.Content(displayImage)" alt="@Model.Product.TenSanPham" /></div>
+                <div class="yody-product-main-image product-zoom" tabindex="0" aria-label="Ảnh sản phẩm, di chuột hoặc chạm để phóng to"><img id="detail-main-image" src="@Url.Content(displayImage)" alt="@Model.Product.TenSanPham" /><span class="zoom-hint">Di chuột để phóng to</span></div>
                 @if (gallery.Count > 1)
                 {
                     <div class="yody-product-thumbnails" role="group" aria-label="Chọn hình ảnh sản phẩm">
                         @foreach (var entry in gallery)
                         {
-                            <button type="button" class="detail-thumb" data-gallery-color="@entry.Color" data-gallery-image="@Url.Content(CatalogViewHelper.ImagePath(entry.Picture.DuongDan))" aria-label="Xem màu @(entry.Color ?? "sản phẩm")" aria-pressed="false" title="@entry.Color">
+                            <button type="button" class="detail-thumb" data-gallery-color="@entry.Color" data-gallery-image="@Url.Content(CatalogViewHelper.ImagePath(entry.Picture.DuongDan))" aria-label="@(entry.Picture.Alt??("Xem ảnh "+entry.Color))" aria-pressed="false" title="@(entry.Picture.Alt??entry.Color)">
                                 <img loading="lazy" src="@Url.Content(CatalogViewHelper.ImagePath(entry.Picture.DuongDan))" alt="@Model.Product.TenSanPham - @entry.Color" />
                             </button>
                         }
@@ -41,6 +40,7 @@
                 <h1 id="detail-product-name">@Model.Product.TenSanPham</h1>
                 <p class="yody-product-code">Mã sản phẩm: @Model.Product.MaSP</p>
                 <div class="yody-product-price" id="detail-price">@CatalogViewHelper.Vnd(Model.Product.DonGia)</div>
+                <p class="detail-original-price" id="detail-original-price" hidden="@(Model.Product.GiaGoc.HasValue?null:"hidden")"><del>@(Model.Product.GiaGoc.HasValue?CatalogViewHelper.Vnd(Model.Product.GiaGoc.Value):"")</del> <span>Giá khuyến mãi</span></p>
                 <p class="stock-note @(Model.Product.ConHang ? "in-stock" : "out-of-stock")" id="detail-stock" role="status" aria-live="polite">@(Model.Product.ConHang ? "● Còn hàng" : "● Tạm hết hàng")</p>
                 <div class="yody-product-divider"></div>
                 @if (TempData["CartError"] != null)
@@ -51,6 +51,7 @@
                 {
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="productId" value="@Model.Product.MaSP" />
+                    <input type="hidden" name="returnUrl" value="@ViewBag.ShoppingReturnUrl" />
                     if (Model.Variants.Count > 0)
                     {
                         <div id="sku-fallback" hidden>
@@ -58,7 +59,7 @@
                             <option value="">Chọn kích cỡ và màu sắc</option>
                             @foreach (var v in Model.Variants)
                             {
-                                <option value="@v.MaSKU" data-size="@v.KichCo" data-color="@v.MauSac" data-display-price="@CatalogViewHelper.Vnd(v.DonGia)" data-stock="@v.SoLuongTonKho" @(v.SoLuongTonKho <= 0 ? "disabled" : "")>@v.KichCo · @v.MauSac</option>
+                                <option value="@v.MaSKU" data-size="@v.KichCo" data-color="@v.MauSac" data-price="@v.DonGia.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-display-price="@CatalogViewHelper.Vnd(v.DonGia)" data-original-price="@(v.GiaGoc.HasValue?CatalogViewHelper.Vnd(v.GiaGoc.Value):"")" data-stock="@v.SoLuongTonKho" @(v.SoLuongTonKho <= 0 ? "disabled" : "")>@v.KichCo · @v.MauSac</option>
                             }
                         </select>
                         </div>
@@ -72,7 +73,7 @@
                             </div><p id="selected-color-label" aria-live="polite">Chưa chọn màu</p></fieldset>
                             <fieldset class="product-choice"><legend>Kích cỡ</legend><div class="size-options">
                             @foreach (var size in sizes) {
-                                <button type="button" class="size-option" data-size-choice="@size" aria-pressed="false">@size</button>
+                                <button type="button" class="size-option" data-size-choice="@size" aria-pressed="false"><span>@size</span><small class="size-unavailable" hidden>Hết size</small></button>
                             }
                             </div></fieldset>
                         </div>
@@ -90,7 +91,7 @@
                 <div class="yody-product-divider"></div>
                 <div class="yody-product-services"><a href="@Url.Action("Policy", "Home", new { id = "shipping" })">Giao hàng &amp; vận chuyển <span aria-hidden="true">↗</span></a><a href="@Url.Action("Policy", "Home", new { id = "returns" })">Chính sách đổi trả <span aria-hidden="true">↗</span></a></div>
                 <div class="yody-product-divider"></div>
-                <div class="yody-product-description"><h2>Thông tin sản phẩm</h2><p>@(String.IsNullOrWhiteSpace(Model.Product.MoTa) ? "Thông tin mô tả đang được cập nhật." : Model.Product.MoTa)</p></div>
+                <div class="yody-product-description"><h2>Thông tin sản phẩm</h2>@if(!String.IsNullOrWhiteSpace(Model.Product.MoTa)){<p class="product-description-text">@Model.Product.MoTa</p>}<dl class="product-specs"><dt>Danh mục</dt><dd>@Model.Product.TenLoai</dd><dt>Kiểu sản phẩm</dt><dd>@CatalogViewHelper.KindLabel(Model.Product.Kind)</dd><dt>Màu hiện có</dt><dd>@String.Join(", ",colors)</dd><dt>Kích cỡ</dt><dd>@String.Join(", ",sizes)</dd></dl></div>
                 <div class="yody-product-secondary-actions">
                     <a class="mn-btn mn-btn-outline" href="@Url.Action("Reviews", "Customer", new { id = Model.Product.MaSP })">Xem và viết đánh giá</a>
                     @using (Html.BeginForm("SaveWishlist", "Customer", FormMethod.Post))
@@ -102,11 +103,13 @@
                 </div>
             </section>
         </div>
-        <section class="yody-product-help" aria-labelledby="yody-size-help"><div><p class="eyebrow">LƯU Ý KHI CHỌN MUA</p><h2 id="yody-size-help">Lựa chọn vừa vặn hơn</h2></div><div><p>Hãy chọn đúng cặp kích cỡ và màu sắc có sẵn trong phần phân loại. Bảng số đo riêng từng sản phẩm chưa có dữ liệu để tư vấn tự động; vui lòng kiểm tra nhãn hướng dẫn chăm sóc sản phẩm.</p><a class="mn-text-link" href="@Url.Action("Index", "Product")">Tiếp tục khám phá <span aria-hidden="true">↗</span></a></div></section>
+        <section class="product-size-guide"><h2>Bảng size tham khảo</h2><p>Số đo cơ thể tham khảo, đơn vị cm. Form dáng từng sản phẩm có thể khác; hãy đối chiếu số đo thực tế trước khi chọn.</p><div class="size-guide-grid"><div><h3>Áo</h3><table><thead><tr><th>Size</th><th>Vòng ngực</th><th>Chiều cao</th></tr></thead><tbody><tr><td>S</td><td>86–92</td><td>155–165</td></tr><tr><td>M</td><td>92–98</td><td>160–170</td></tr><tr><td>L</td><td>98–104</td><td>165–175</td></tr><tr><td>XL</td><td>104–110</td><td>170–180</td></tr></tbody></table></div><div><h3>Quần</h3><table><thead><tr><th>Size</th><th>Vòng eo</th><th>Vòng hông</th></tr></thead><tbody><tr><td>28</td><td>70–74</td><td>88–92</td></tr><tr><td>30</td><td>75–79</td><td>93–97</td></tr><tr><td>32</td><td>80–84</td><td>98–102</td></tr><tr><td>34</td><td>85–89</td><td>103–107</td></tr></tbody></table></div></div></section>
+        if(colors.Count>1){<section class="product-more-colors"><h2>Khám phá thêm màu sắc</h2><div class="more-color-options">@foreach(var color in colors){var photo=gallery.FirstOrDefault(i=>i.Color==color);<button type="button" data-suggest-color="@color"><img loading="lazy" src="@Url.Content(photo==null?displayImage:CatalogViewHelper.ImagePath(photo.Picture.DuongDan))" alt="@Model.Product.TenSanPham - @color"/><span>@color</span></button>}</div></section>}
         if (Model.Related.Count > 0)
         {
             <section class="yody-related-products" aria-labelledby="yody-related-heading"><div class="yody-section-heading"><div><p class="eyebrow">DÀNH CHO BẠN</p><h2 id="yody-related-heading">Sản phẩm cùng danh mục</h2></div><a class="mn-text-link" href="@Url.Action("Index", "Product", new { category = Model.Product.MaLoai })">Xem thêm <span aria-hidden="true">↗</span></a></div><div class="product-grid yody-related-grid">@foreach (var p in Model.Related) { @Html.Partial("_ProductCard", p) }</div></section>
         }
+        if(Model.Accessories.Count>0){<section class="yody-related-products"><div class="yody-section-heading"><div><p class="eyebrow">HOÀN THIỆN PHONG CÁCH</p><h2>Phụ kiện phối cùng</h2></div><a href="@Url.Action("Index","Product",new{kind="phu-kien"})">Xem phụ kiện →</a></div><div class="product-grid yody-related-grid">@foreach(var item in Model.Accessories){@Html.Partial("_ProductCard",item)}</div></section>}
     }
 </main>
 @section scripts {

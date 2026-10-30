@@ -5,7 +5,7 @@
 <a class="admin-wordmark" href="@Url.Action("Index","Admin")">MỘC <strong>NHIÊN</strong><small>CỔNG QUẢN TRỊ</small></a>
 <div class="admin-menu-caption">QUẢN LÝ CỬA HÀNG</div><nav class="admin-nav"><a href="@Url.Action("Index","Admin")">▦ &nbsp; Tổng quan</a><a class="active" href="@Url.Action("Orders","Admin")">▤ &nbsp; Đơn hàng</a></nav>
 <a class="admin-back-link" href="@Url.Action("Index","Home")">← Quay lại cửa hàng</a></aside>
-<main class="admin-main" id="main-content"><header class="admin-topbar"><div><span class="admin-eyebrow"><a href="@Url.Action("Orders","Admin")">ĐƠN TRỰC TUYẾN</a> / CHI TIẾT</span><h1>@Model.OrderId</h1><p>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p></div></header>
+<main class="admin-main" id="main-content"><header class="admin-topbar"><div><span class="admin-eyebrow"><a href="@Url.Action("Orders","Admin")">ĐƠN TRỰC TUYẾN</a> / CHI TIẾT</span><h1>@Model.OrderId</h1><p>@FashionStore.Web.Helpers.CustomerViewHelper.VietnamDate(Model.CreatedAt)</p></div></header>
 @if(TempData["OrderNotice"] != null){<p class="admin-result-ok" role="status">@TempData["OrderNotice"]</p>}
 @if(TempData["OrderError"] != null){<p class="admin-result-error" role="alert">@TempData["OrderError"]</p>}
 <section class="admin-panel"><header><h2>Thông tin đơn hàng</h2><span>Trạng thái hiện tại</span></header>

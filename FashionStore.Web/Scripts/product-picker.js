@@ -15,6 +15,7 @@
     var label = document.getElementById("selected-sku-label");
     var colorLabel = document.getElementById("selected-color-label");
     var initialPrice = price.textContent;
+    var original=document.getElementById('detail-original-price'),initialOriginal=original?original.querySelector('del').textContent:'';
     var size = "", color = "";
     function available(v) { return Number(v.dataset.stock) > 0; }
     function matches(v) { return v.dataset.size === size && v.dataset.color === color && available(v); }
@@ -28,6 +29,9 @@
         sizes.forEach(function (button) {
             button.disabled = !variants.some(function (v) { return available(v) && v.dataset.size === button.dataset.sizeChoice && (!color || v.dataset.color === color); });
             button.setAttribute("aria-pressed", String(button.dataset.sizeChoice === size));
+            var note=button.querySelector('.size-unavailable');if(note)note.hidden=!button.disabled;
+            button.title=button.dataset.sizeChoice+(button.disabled?' — hết size'+(color?' màu '+color:''):'');
+            button.setAttribute('aria-label',button.title);
         });
         var variant = variants.find(matches);
         select.value = variant ? variant.value : "";
@@ -37,10 +41,14 @@
         quantity.value = String(Math.max(1, Math.min(Number(quantity.value) || 1, Number(quantity.max))));
         colorLabel.textContent = color || "Chưa chọn màu";
         label.textContent = variant ? size + " · " + color : color ? "Vui lòng chọn kích cỡ" : "Vui lòng chọn màu sắc và kích cỡ";
-        price.textContent = variant ? variant.dataset.displayPrice : initialPrice;
-        stock.textContent = variant ? "● Còn " + variant.dataset.stock + " sản phẩm" : "Chọn phân loại để xem tồn kho";
+        var priced=variant||variants.filter(function(v){return available(v)&&v.dataset.color===color;}).sort(function(a,b){return Number(a.dataset.price)-Number(b.dataset.price);})[0];
+        price.textContent = priced ? (variant?'':'Từ ')+priced.dataset.displayPrice : initialPrice;
+        if(original){var base=priced?priced.dataset.originalPrice:initialOriginal;original.hidden=!base;original.querySelector('del').textContent=base||'';}
+        var soldOut=!variants.some(available);
+        stock.textContent = variant ? "● Còn " + variant.dataset.stock + " sản phẩm" : soldOut?"● Sản phẩm đã hết hàng":"Chọn phân loại để xem tồn kho";
         stock.classList.toggle("in-stock", !!variant);
-        stock.classList.remove("out-of-stock");
+        stock.classList.toggle("out-of-stock",soldOut);
+        document.querySelectorAll('[data-suggest-color]').forEach(function(button){button.hidden=button.dataset.suggestColor===color;});
     }
     sizes.forEach(function (button) {
         button.addEventListener("click", function () {

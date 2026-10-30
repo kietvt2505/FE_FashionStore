@@ -60,14 +60,18 @@ namespace FashionStore.Web.Models
     }
     public class CustomerCart
     {
+        public bool IsGuest {get;set;}
         public List<CustomerCartLine> Items { get; set; } = new List<CustomerCartLine>();
         public long TotalQuantity { get; set; }
         public decimal Subtotal { get; set; }
         public bool CanCheckout { get; set; }
+        public bool SupportsBankTransfer { get; set; } = true;
+        public bool SupportsVouchers { get; set; }
         public bool CodOnly { get; set; }
         public bool CheckoutEnabled { get; set; } = true;
         public string Error { get; set; }
     }
+    [Serializable] public sealed class GuestCartEntry {public string Sku{get;set;}public string ProductId{get;set;}public int Quantity{get;set;}}
     public class CustomerCartLine
     {
         public string Sku { get; set; }

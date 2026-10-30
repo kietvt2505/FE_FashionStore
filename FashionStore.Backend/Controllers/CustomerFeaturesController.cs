@@ -20,5 +20,6 @@ public sealed class CustomerFeaturesController(CustomerFeaturesService service):
     [HttpDelete("wishlist/{id}")] public async Task<IActionResult> RemoveWishlist([StringLength(20,MinimumLength=1)]string id,CancellationToken ct){await service.SaveWishlist(Id,id,true,ct);return NoContent();}
     [HttpGet("addresses")] public Task<List<Dictionary<string,object?>>> Addresses(CancellationToken ct)=>service.Addresses(Id,ct);
     [HttpPost("addresses")] public async Task<IActionResult> Address(AddressInput input,CancellationToken ct){await service.SaveAddress(Id,input,ct);return NoContent();}
+    [HttpPut("addresses/{id:long}")] public async Task<IActionResult> UpdateAddress(long id,AddressInput input,CancellationToken ct){await service.UpdateAddress(Id,id,input,ct);return NoContent();}
     [HttpDelete("addresses/{id:long}")] public async Task<IActionResult> RemoveAddress(long id,CancellationToken ct){await service.RemoveAddress(Id,id,ct);return NoContent();}
 }

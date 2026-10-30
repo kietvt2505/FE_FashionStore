@@ -1,0 +1,150 @@
+/* Customer storefront finish. Loaded last; business states and admin styles stay independent. */
+.customer-site {
+    --theme-soft:#F1F5FA;
+    --theme-border:#D5DDE6;
+    --theme-secondary:#40516A;
+    --yody-radius-control:10px;
+    --yody-border:var(--theme-border);
+    --yody-secondary:var(--theme-secondary);
+    --polish-cream:#F7F3EB;
+    --polish-copper:#9A542F;
+    --polish-peach:#F6E9DC;
+    --polish-sage:#E8F1EB;
+    --polish-shadow:0 8px 26px rgba(20,45,78,.06);
+    background:#FCFBF8;
+}
+.customer-site .site-header {background:#FFF;border-bottom-color:#E4E8ED;}
+.customer-site :is(.mn-btn,.hp-button,.filter-input,.form-control,.yody-field textarea) {border-radius:10px;}
+.customer-site :is(.mn-btn,.hp-button) {
+    transition:background-color .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease,transform .2s ease;
+}
+.customer-site :is(.mn-btn,.hp-button):active:not(:disabled) {transform:translateY(0) scale(.98);}
+.customer-site :is(.filter-input,.form-control) {transition:border-color .2s ease,box-shadow .2s ease;}
+.customer-site :is(.filter-input,.form-control):focus {border-color:var(--theme-navy);box-shadow:0 0 0 3px rgba(20,45,78,.12);}
+.customer-site :is(.yody-surface-card,.yody-cart-summary,.yody-checkout-summary,.yody-checkout-form,
+    .yody-cart-empty,.yody-auth-card,.catalog-empty,.yody-filter-details) {
+    border-radius:16px;border-color:var(--theme-border);background:#FFF;box-shadow:var(--polish-shadow);
+}
+.customer-site .yody-checkout-form {overflow:hidden;}
+.customer-site :is(.yody-cart-summary,.yody-checkout-summary) {border-top:3px solid var(--polish-copper);}
+.customer-site .yody-filter-details > summary {border-radius:15px 15px 0 0;background:#EDF2F8;}
+.customer-site .yody-filter-details:not([open]) > summary {border-radius:15px;}
+.customer-site .yody-catalog-form {border-radius:0 0 16px 16px;}
+.customer-site .yody-catalog-header {padding:26px 28px;margin-top:18px;border:1px solid #E4E8ED;border-radius:20px;background:linear-gradient(115deg,var(--polish-cream),#EDF3F9);}
+.customer-site .yody-catalog-header h1 {font-size:clamp(30px,3.8vw,46px);line-height:1.2;}
+.customer-site :is(.yody-product-main-image,.yody-product-thumbnails .detail-thumb,.yody-cart-thumb) {border-radius:12px;}
+.customer-site :is(.size-option,.color-option),.customer-site .image-variant-picker :is(.size-option,.color-option) {border-radius:8px;}
+.customer-site .guest-merge-dialog {border-radius:20px;border-color:var(--theme-border);color:var(--theme-ink);}
+.customer-site :is(.catalog-mega-menu,.yody-account-panel,.search-panel) {border-color:var(--theme-border);box-shadow:0 16px 40px rgba(20,45,78,.13);}
+.customer-site .catalog-mega-menu {border-radius:0 0 18px 18px;}
+.customer-site :is(.yody-account-panel,.search-panel) {border-radius:14px;}
+.customer-site .catalog-mega-column h2 {color:var(--polish-copper);}
+.customer-site .catalog-mega-column a {border-radius:6px;transition:color .18s ease,background-color .18s ease;}
+.customer-site .catalog-mega-column a:hover {background:#F1F5FA;color:var(--theme-navy);}
+.customer-site .catalog-mega-menu:not([hidden]),.customer-site .yody-account-panel:not([hidden]) {animation:polish-menu-in .18s ease-out both;}
+
+/* Product cards share the same shape and baseline on listing and home pages. */
+.customer-site .product-card,.customer-site .yody-home-refresh .product-card {
+    display:flex;flex-direction:column;min-width:0;padding:0;border:1px solid #E2E7ED;border-radius:16px;
+    background:#FFF;box-shadow:0 3px 12px rgba(20,45,78,.035);overflow:hidden;
+    transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;
+}
+.customer-site .product-image,.customer-site .yody-home-refresh .product-image {flex:none;border:0;border-radius:15px 15px 0 0;background:#F0F3F6;}
+.customer-site .product-image img {transition:transform .35s ease,opacity .2s ease;}
+.customer-site .product-detail,.customer-site .yody-home-refresh .product-detail {padding:16px 16px 0;flex:1;}
+.customer-site .product-card h3,.customer-site .yody-home-refresh .product-card h3 {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:3em;font-size:14px;font-weight:600;line-height:1.5;margin:0 0 10px;}
+.customer-site .wishlist-form,.customer-site .yody-home-refresh .wishlist-form {padding:6px 16px 12px;margin:0;}
+.customer-site .yody-home-refresh .wishlist-form button {min-height:44px;}
+.customer-site .product-tag,.customer-site .yody-home-refresh .product-tag {border-radius:6px;border:0;padding:5px 8px;background:rgba(255,255,255,.96);color:var(--theme-navy);box-shadow:0 2px 7px rgba(20,45,78,.06);}
+.customer-site .product-discount-tag {border-radius:6px;background:var(--polish-copper);color:#FFF;}
+.customer-site .product-sale-badge,.customer-site .yody-home-refresh .product-sale-badge {border-radius:5px;padding:3px 6px;background:var(--polish-peach);color:#874320;}
+.customer-site .product-detail .sale-price,.customer-site .yody-home-refresh .product-detail .sale-price {color:#874320;}
+.customer-site .product-view,.customer-site .yody-home-refresh .product-view {border-radius:8px;left:9px;right:9px;bottom:9px;background:rgba(255,255,255,.96);}
+.customer-site .mn-footer-cta {border-radius:10px;}
+.customer-site .site-footer {border-top:4px solid #BA8A60;}
+
+/* Warm editorial surfaces make the first screen visibly distinct from the catalogue. */
+.customer-site .yody-home-refresh {padding-top:22px;background:#FCFBF8;}
+.customer-site .yody-home-refresh .hp-hero {
+    width:calc(100% - 48px);max-width:1480px;margin:0 auto;border:1px solid #E8E0D5;border-radius:24px;
+    background:linear-gradient(110deg,#F7F3EB,#EDE2D1);box-shadow:var(--polish-shadow);
+}
+.customer-site .yody-home-refresh .hp-hero-inner {min-height:520px;}
+.customer-site .yody-home-refresh .hp-hero-copy {width:52%;padding:50px 0;}
+.customer-site .yody-home-refresh .hp-hero-copy .hp-kicker {display:inline-block;padding:7px 12px;border-radius:7px;background:#EADCCD;color:#754325;font-size:11px;letter-spacing:.12em;}
+.customer-site .yody-home-refresh .hp-hero h1 {font-size:clamp(38px,4.5vw,62px);line-height:1.15;letter-spacing:-.045em;}
+.customer-site .yody-home-refresh .hp-hero-accent {color:var(--polish-copper);}
+.customer-site .yody-home-refresh .hp-hero-copy>p:not(.hp-kicker) {color:#35465D;font-size:15px;line-height:1.9;}
+.customer-site .yody-home-refresh .hp-hero-photo {inset:0 0 0 49%;}
+.customer-site .yody-home-refresh .hp-hero-photo img {object-position:center top;}
+.customer-site .yody-home-refresh .hp-hero-photo::after {background:linear-gradient(90deg,#F3ECDC 0%,rgba(243,236,220,.72) 12%,transparent 40%);}
+.customer-site .yody-home-refresh .hp-hero-actions {display:flex;flex-wrap:wrap;align-items:center;gap:12px 22px;}
+.customer-site .yody-home-refresh .hp-button {min-height:48px;border-radius:10px;box-shadow:0 6px 16px rgba(20,45,78,.13);}
+.customer-site .yody-home-refresh .hp-hero-actions .hp-link {font-size:13px;}
+.customer-site .yody-home-refresh .hp-section {padding-block:64px;}
+.customer-site .yody-home-refresh .hp-kicker {color:#754325;font-weight:600;}
+.customer-site .yody-home-refresh .hp-section-heading h2 {line-height:1.35;}
+.customer-site .yody-home-refresh .hp-rail-controls button {width:36px;height:36px;border-radius:50%;}
+.customer-site .yody-home-refresh .hp-empty {border-radius:16px;border-color:var(--theme-border);}
+.customer-site .yody-home-refresh .hp-product-rail {padding:5px 1px 20px;}
+.customer-site .yody-home-refresh .hp-collection {border-radius:20px;border:1px solid #E4E8E5;box-shadow:var(--polish-shadow);}
+.customer-site .yody-home-refresh :is(.hp-collection img,.hp-denim-photo img,.hp-inspiration-image img) {filter:none;}
+.customer-site .yody-home-refresh .hp-collection::after {background:linear-gradient(90deg,transparent 3%,rgba(247,243,235,.7) 30%,#F7F3EB 64%);}
+.customer-site .yody-home-refresh .hp-collection-shoes::after {background:linear-gradient(90deg,transparent,rgba(234,241,248,.85) 39%,#EAF1F8 67%);}
+.customer-site .yody-home-refresh .hp-collection-accessories::after {background:linear-gradient(90deg,transparent,rgba(232,241,235,.8) 35%,#E8F1EB 64%);}
+.customer-site .yody-home-refresh .hp-collection-copy .hp-kicker {color:#754325;}
+.customer-site .yody-home-refresh .hp-offers-band {background:linear-gradient(115deg,#F5E6D7,#F9F3EA 65%,#F2EAE2);border-block:1px solid #E8D9C9;}
+.customer-site .yody-home-refresh .hp-offers-band .hp-kicker {color:#754325;}
+.customer-site .yody-home-refresh .hp-denim {border-radius:20px;border:1px solid #DCE4EE;background:linear-gradient(115deg,#E3EAF3,#F1F5FA);box-shadow:var(--polish-shadow);}
+.customer-site .yody-home-refresh .hp-quote {position:relative;border:1px solid #DAE4DD;border-radius:22px;background:linear-gradient(115deg,#E8F1EB,#F7F3EB);margin-top:64px;padding:42px;gap:46px;}
+.customer-site .yody-home-refresh .hp-quote h2 {font-size:clamp(24px,2.5vw,32px);line-height:1.35;}
+.customer-site .yody-home-refresh .hp-membership-copy>p:not(.hp-kicker) {font-size:18px;color:#35465D;}
+.customer-site .yody-home-refresh .hp-membership-visual {padding:0;}
+.customer-site .yody-home-refresh .hp-inspiration-image {border-radius:16px;}
+.customer-site .yody-home-refresh .hp-inspiration-caption>span:first-child {color:var(--polish-copper);font-size:30px;}
+.customer-site .yody-home-refresh .hp-inspiration-caption h3 {font-size:14px;}
+.customer-site .yody-home-refresh .hp-inspiration-caption .hp-kicker {font-size:11px;color:#40516A;}
+
+@keyframes polish-menu-in {from {opacity:.35;transform:translateY(-6px);} to {opacity:1;transform:translateY(0);}}
+@media (hover:hover) and (pointer:fine) {
+    .customer-site :is(.mn-btn,.hp-button):hover:not(:disabled) {transform:translateY(-2px);box-shadow:0 7px 18px rgba(20,45,78,.15);}
+    .customer-site .product-card:hover,.customer-site .yody-home-refresh .product-card:hover {transform:translateY(-4px);border-color:#BBC9DA;box-shadow:0 12px 28px rgba(20,45,78,.12);}
+    .customer-site .product-card:hover .product-image img,.customer-site .yody-home-refresh .product-card:hover .product-image img {transform:scale(1.035);opacity:1;}
+}
+@media (max-width:1023px) {
+    .customer-site .yody-home-refresh .hp-hero {width:calc(100% - 32px);}
+    .customer-site .yody-home-refresh .hp-hero-inner {min-height:470px;}
+    .customer-site .yody-home-refresh .hp-hero h1 {font-size:clamp(36px,5vw,52px);}
+    .customer-site .yody-home-refresh .hp-quote {padding:30px;gap:28px;}
+}
+@media (max-width:767px) {
+    .customer-site .yody-catalog-header {padding:22px 18px;}
+    .customer-site .yody-catalog-header h1 {font-size:30px;}
+    .customer-site .yody-home-refresh {padding-top:12px;}
+    .customer-site .yody-home-refresh .hp-hero {width:calc(100% - 24px);border-radius:20px;}
+    .customer-site .yody-home-refresh .hp-hero-inner {min-height:0;}
+    .customer-site .yody-home-refresh .hp-hero-copy {width:100%;padding:28px 0 26px;}
+    .customer-site .yody-home-refresh .hp-hero-copy .hp-kicker {font-size:9px;padding:6px 8px;letter-spacing:.08em;}
+    .customer-site .yody-home-refresh .hp-hero h1 {font-size:clamp(34px,8vw,50px);}
+    .customer-site .yody-home-refresh .hp-hero-copy>p:not(.hp-kicker) {font-size:13px;line-height:1.8;}
+    .customer-site .yody-home-refresh .hp-hero-photo {position:relative;inset:auto;float:none;width:100%;height:300px;}
+    .customer-site .yody-home-refresh .hp-hero-photo img {object-position:center top;}
+    .customer-site .yody-home-refresh .hp-hero-photo::after {background:linear-gradient(180deg,#F3ECDC,rgba(243,236,220,.1) 20%,transparent 40%);}
+    .customer-site .yody-home-refresh .hp-section {padding-block:42px;}
+    .customer-site .yody-home-refresh .hp-section-heading h2 {font-size:23px;}
+    .customer-site .product-detail,.customer-site .yody-home-refresh .product-detail {padding:12px 12px 0;}
+    .customer-site .product-card h3,.customer-site .yody-home-refresh .product-card h3 {font-size:13px;}
+    .customer-site .wishlist-form,.customer-site .yody-home-refresh .wishlist-form {padding:4px 12px 8px;}
+    .customer-site .yody-home-refresh .hp-quote {margin-top:42px;padding:26px 20px;gap:24px;}
+    .customer-site .yody-home-refresh .hp-membership-copy>p:not(.hp-kicker) {font-size:15px;}
+    .customer-site .yody-home-refresh .hp-quote h2 {font-size:25px;}
+    .customer-site .catalog-mega-menu {border-radius:12px;}
+}
+@media (prefers-reduced-motion:reduce) {
+    .customer-site *, .customer-site *::before, .customer-site *::after {animation:none!important;transition:none!important;scroll-behavior:auto!important;}
+    .customer-site :is(.mn-btn,.hp-button,.product-card):is(:hover,:active) {transform:none!important;}
+    .customer-site .product-card:hover .product-image img {transform:none!important;}
+}
+@media print {
+    .customer-site *, .customer-site *::before, .customer-site *::after {animation:none!important;transition:none!important;box-shadow:none!important;}
+}

@@ -1,0 +1,241 @@
+/* Shared navy/white palette. Loaded after page styles; preserves layout and commerce behavior. */
+.customer-site, .admin-body {
+    --theme-navy:#142D4E;
+    --theme-navy-hover:#0C203A;
+    --theme-ink:#102238;
+    --theme-secondary:#344256;
+    --theme-white:#FFFFFF;
+    --theme-soft:#F2F5FA;
+    --theme-selected:#E2EBF6;
+    --theme-border:#9AACC3;
+    --theme-control-border:#5D7189;
+    --theme-on-dark:#E8EFF8;
+    --theme-error:#971C32;
+    --theme-error-bg:#FFF1F3;
+    --theme-success:#205B3A;
+    --theme-success-bg:#E9F5EE;
+}
+.customer-site {
+    --yody-primary:var(--theme-ink);
+    --yody-background:var(--theme-white);
+    --yody-card:var(--theme-white);
+    --yody-accent:var(--theme-navy);
+    --yody-secondary:var(--theme-secondary);
+    --yody-border:var(--theme-border);
+    --yody-control-border:var(--theme-control-border);
+    --yody-on-accent:var(--theme-white);
+    --yody-focus:#1D4E89;
+    --yody-shadow:0 12px 32px rgba(20,45,78,.14);
+    background:var(--theme-white);
+    color:var(--theme-ink);
+    font-weight:500;
+}
+.customer-site .promo-bar, .customer-site .yody-footer {
+    background:var(--theme-navy);
+    color:var(--theme-white);
+}
+.customer-site .footer-grid p, .customer-site .footer-bottom {
+    color:var(--theme-on-dark);
+    font-weight:500;
+}
+.customer-site .mn-footer-lead, .customer-site .mn-footer-bottom-wrap {
+    border-color:#7990AE;
+}
+.customer-site .footer-grid a, .customer-site .footer-grid h2,
+.customer-site .footer-logo, .customer-site .mn-footer-cta {
+    color:var(--theme-white);
+}
+.customer-site .filter-input, .customer-site .yody-field input,
+.customer-site .yody-field select, .customer-site .yody-field textarea {
+    border-color:var(--theme-control-border);
+    color:var(--theme-ink);
+    font-weight:500;
+}
+.customer-site input::placeholder, .customer-site textarea::placeholder {
+    color:var(--theme-secondary);
+    opacity:1;
+}
+.customer-site input[type=checkbox], .customer-site input[type=radio] {
+    accent-color:var(--theme-navy);
+}
+.customer-site .mn-btn-primary:hover {background:var(--theme-navy-hover);border-color:var(--theme-navy-hover);}
+.customer-site .mn-btn:disabled, .customer-site .detail-cart:disabled {
+    background:var(--theme-selected);
+    border-color:var(--theme-control-border);
+    color:var(--theme-secondary);
+    opacity:1;
+}
+.customer-site .catalog-mega-menu, .customer-site .yody-account-panel {
+    box-shadow:0 12px 28px rgba(20,45,78,.16),0 3px 8px rgba(20,45,78,.06);
+}
+.customer-site .hero-copy, .customer-site .mn-hero-copy,
+.customer-site .mn-home-product-band, .customer-site .mn-story,
+.customer-site .yody-hero, .customer-site .yody-products-band,
+.customer-site .yody-editorial, .customer-site .account-stats>article,
+.customer-site .account-stats>a, .customer-site .customer-promo-band,
+.customer-site .filter-help, .customer-site .yody-product-purchase .stock-note {
+    background:var(--theme-soft);
+}
+.customer-site .filter-head a, .customer-site .detail-sku,
+.customer-site .variant-heading, .customer-site .detail-note,
+.customer-site .detail-description, .customer-site .detail-policy,
+.customer-site .mn-hero-number, .customer-site .mn-hero-description,
+.customer-site .mn-hero-bottom, .customer-site .detail-original-price,
+.customer-site .product-price-row del, .customer-site .product-specs dt,
+.customer-site .product-size-guide>p, .customer-site .bank-qr figcaption,
+.customer-site .bank-transfer-pending {
+    color:var(--theme-secondary);
+    font-weight:500;
+}
+.customer-site .product-price-row strong, .customer-site .detail-original-price span,
+.customer-site .bank-transfer-amount, .customer-site .image-variant-picker #selected-color-label {
+    color:var(--theme-navy);
+    font-weight:700;
+}
+.customer-site .more-color-options button {color:var(--theme-ink);}
+.customer-site .product-discount-tag {background:var(--theme-navy);color:var(--theme-white);}
+.customer-site .size-guide-grid th, .customer-site .size-guide-grid td,
+.customer-site .more-color-options button, .customer-site .guest-cart-pending {
+    border-color:var(--theme-border);
+}
+.customer-site .size-guide-grid th {background:var(--theme-soft);color:var(--theme-ink);font-weight:600;}
+.customer-site .image-variant-picker .size-option, .customer-site .size-option {
+    background:var(--theme-soft);
+    color:var(--theme-ink);
+    border-color:var(--theme-control-border);
+}
+.customer-site .image-variant-picker .size-option:hover:not(:disabled),
+.customer-site .size-option:hover:not(:disabled) {
+    background:var(--theme-selected);color:var(--theme-navy);border-color:var(--theme-navy);
+}
+.customer-site .image-variant-picker .size-option[aria-pressed=true],
+.customer-site .size-option[aria-pressed=true] {
+    background:var(--theme-navy);color:var(--theme-white);border-color:var(--theme-navy);
+}
+.customer-site .image-variant-picker .size-option:disabled, .customer-site .size-option:disabled {
+    background:var(--theme-soft);color:var(--theme-secondary);border:1px dashed var(--theme-control-border);opacity:1;
+}
+.customer-site .size-unavailable {font-size:11px;}
+.customer-site .image-variant-picker .color-option:hover:not(:disabled)::after,
+.customer-site .image-variant-picker .color-option[aria-pressed=true]::after {background:var(--theme-navy);}
+.customer-site .filter-color input:checked+span {outline-color:var(--theme-navy);}
+.customer-site .filter-color input:focus-visible+span {outline-color:var(--yody-focus);}
+.customer-site .filter-color>span {border-color:var(--theme-control-border);}
+.customer-site .filter-color small {font-size:12px;color:var(--theme-secondary);font-weight:500;}
+.customer-site .stock-note.in-stock {color:var(--theme-success);font-weight:600;}
+.customer-site .stock-note.out-of-stock {color:var(--theme-error);font-weight:600;}
+.customer-site .customer-errors, .customer-site .catalog-alert,
+.customer-site .field-validation-error, .customer-site [data-valmsg-for].customer-errors,
+.customer-site .yody-account-form .field-validation-error,
+.customer-site .quantity-error, .customer-site .guest-merge-error {
+    color:var(--theme-error);border-color:var(--theme-error);
+}
+.customer-site .cart-quantity[aria-invalid=true] {border-color:var(--theme-error);}
+.customer-site .guest-merge-error {background:var(--theme-error-bg);}
+.customer-site .cart-quantity::selection {background:var(--theme-navy);color:var(--theme-white);}
+.customer-site .guest-merge-dialog {
+    background:var(--theme-white);color:var(--theme-ink);border-color:var(--theme-border);
+    box-shadow:0 18px 65px rgba(20,45,78,.24);
+}
+.customer-site .guest-merge-dialog>p:not(.guest-merge-error) {color:var(--theme-secondary);font-weight:500;}
+.customer-site .guest-merge-dialog::backdrop {background:rgba(10,25,44,.48);}
+.customer-site .yody-member-card, .customer-site .yody-membership,
+.customer-site .mn-membership {background:var(--theme-navy);color:var(--theme-white);}
+.customer-site .yody-member-card :is(h2,p,strong,.eyebrow,.yody-text-link),
+.customer-site .yody-membership-copy :is(h2,p,.eyebrow),
+.customer-site .member-metrics :is(strong,span), .customer-site .mn-membership :is(h2,em),
+.customer-site .mn-membership-small, .customer-site .mn-membership-monogram {
+    color:var(--theme-on-dark);
+}
+.customer-site .yody-membership-monogram, .customer-site .mn-membership-art {
+    background:linear-gradient(130deg,#142D4E,#244B76);border-color:#7990AE;
+}
+.customer-site .yody-membership-monogram :is(span,small) {color:var(--theme-white);}
+
+/* Homepage: explicit overrides for its editorial styles and small captions. */
+.customer-site .yody-home-refresh {--yody-accent:var(--theme-navy);background:var(--theme-white);color:var(--theme-ink);}
+.customer-site .yody-home-refresh :is(h1,h2,h3) {color:var(--theme-ink);}
+.customer-site .yody-home-refresh .hp-link, .customer-site .yody-home-refresh .product-view {color:var(--theme-navy);font-weight:600;}
+.customer-site .yody-home-refresh .hp-button {background:var(--theme-navy);border-color:var(--theme-navy);color:var(--theme-white);font-weight:600;}
+.customer-site .yody-home-refresh .hp-button:hover {background:var(--theme-navy-hover);border-color:var(--theme-navy-hover);}
+.customer-site .yody-home-refresh .hp-button-outline {background:transparent;color:var(--theme-navy);}
+.customer-site .yody-home-refresh .hp-button-outline:hover {background:var(--theme-navy);color:var(--theme-white);}
+.customer-site .yody-home-refresh .hp-hero, .customer-site .yody-home-refresh .hp-denim,
+.customer-site .yody-home-refresh .hp-empty, .customer-site .yody-home-refresh .hp-collection {background:var(--theme-soft);}
+.customer-site .yody-home-refresh .hp-hero-photo::after {background:linear-gradient(90deg,#F2F5FA 0%,rgba(242,245,250,.35) 15%,transparent 34%);}
+.customer-site .yody-home-refresh .hp-collection::after {background:linear-gradient(90deg,transparent 5%,rgba(242,245,250,.65) 30%,#F2F5FA 58%);}
+.customer-site .yody-home-refresh .hp-collection-shoes::after {background:linear-gradient(90deg,transparent,rgba(242,245,250,.8) 39%,#F2F5FA 67%);}
+.customer-site .yody-home-refresh .hp-collection-accessories::after {background:linear-gradient(90deg,transparent,rgba(242,245,250,.75) 35%,#F2F5FA 64%);}
+.customer-site .yody-home-refresh .hp-offers-band {background:linear-gradient(130deg,#F2F5FA,#FFFFFF);}
+.customer-site .yody-home-refresh .hp-kicker,
+.customer-site .yody-home-refresh .hp-hero-copy .hp-kicker,
+.customer-site .yody-home-refresh .hp-collection-copy .hp-kicker,
+.customer-site .yody-home-refresh .hp-inspiration-caption .hp-kicker {
+    color:var(--theme-secondary);font-size:12px;font-weight:600;
+}
+.customer-site .yody-home-refresh .hp-hero-copy>p:not(.hp-kicker),
+.customer-site .yody-home-refresh .hp-denim-copy>p:not(.hp-kicker),
+.customer-site .yody-home-refresh .hp-collection-copy>p:not(.hp-kicker),
+.customer-site .yody-home-refresh .hp-empty p, .customer-site .yody-home-refresh .hp-offer-empty p {
+    color:var(--theme-secondary);font-size:15px;font-weight:500;
+}
+.customer-site .yody-home-refresh .hp-membership-copy>p:not(.hp-kicker) {color:var(--theme-secondary);font-weight:500;}
+.customer-site .yody-home-refresh .product-category, .customer-site .yody-home-refresh .product-tag,
+.customer-site .yody-home-refresh .product-price-row del, .customer-site .yody-home-refresh .product-sale-badge,
+.customer-site .yody-home-refresh .wishlist-form button {
+    color:var(--theme-secondary);font-size:12px;font-weight:600;
+}
+.customer-site .yody-home-refresh .product-tag {background:var(--theme-white);}
+.customer-site .yody-home-refresh .product-detail strong {color:var(--theme-navy);font-size:16px;font-weight:700;}
+.customer-site .yody-home-refresh .product-sale-badge {color:var(--theme-navy);}
+.customer-site .yody-home-refresh .hp-inspiration-caption>span:first-child {color:var(--theme-secondary);}
+.customer-site .yody-home-refresh .hp-rail-controls button {background:var(--theme-white);color:var(--theme-navy);border-color:var(--theme-control-border);}
+.customer-site .yody-home-refresh .hp-rail-controls button:hover:not(:disabled) {background:var(--theme-navy);color:var(--theme-white);border-color:var(--theme-navy);}
+.customer-site .yody-home-refresh .hp-rail-controls button:disabled {opacity:1;background:var(--theme-soft);color:var(--theme-secondary);border-style:dashed;}
+.customer-site .yody-home-refresh .hp-membership-card {
+    color:var(--theme-on-dark);border-color:#7990AE;
+    background:radial-gradient(ellipse at 5% 0%,rgba(169,199,236,.18),transparent 60%),linear-gradient(125deg,#1E3E67,#10243F 58%,#1D3B60);
+}
+.customer-site .yody-home-refresh .hp-membership-card::after {border-color:rgba(216,232,252,.35);}
+.customer-site .yody-home-refresh .hp-member-watermark {color:rgba(216,232,252,.1);}
+.customer-site .yody-home-refresh .hp-member-logo, .customer-site .yody-home-refresh .hp-member-title,
+.customer-site .yody-home-refresh .hp-member-emblem {color:var(--theme-white);}
+.customer-site .yody-home-refresh .hp-member-label, .customer-site .yody-home-refresh .hp-member-caption {color:var(--theme-on-dark);font-size:11px;font-weight:500;}
+.customer-site .yody-home-refresh .hp-member-signature {color:var(--theme-on-dark);font-weight:500;}
+.customer-site .yody-home-refresh .hp-member-rule {background:var(--theme-on-dark);}
+
+/* Administrator screens use the same palette, retaining semantic success/error colors. */
+body.admin-body {background:var(--theme-soft);color:var(--theme-ink);font-weight:500;}
+.admin-body .admin-sidebar {background:var(--theme-navy);color:var(--theme-white);}
+.admin-body .admin-wordmark small, .admin-body .admin-menu-caption,
+.admin-body .admin-nav span, .admin-body .admin-back-link {color:var(--theme-on-dark);opacity:1;}
+.admin-body .admin-nav a.active {background:#315A89;color:var(--theme-white);}
+.admin-body .admin-eyebrow, .admin-body .admin-topbar p, .admin-body .admin-user small,
+.admin-body .admin-stat span, .admin-body .admin-stat small, .admin-body .admin-panel>header span,
+.admin-body .admin-table th, .admin-body .admin-empty, .admin-body .admin-system-detail,
+.admin-body .admin-note, .admin-body .admin-login-card p {color:var(--theme-secondary);font-weight:500;}
+.admin-body .admin-table th {background:var(--theme-soft);}
+.admin-body .admin-avatar {background:var(--theme-selected);color:var(--theme-navy);}
+.admin-body .admin-signout, .admin-body .admin-system-detail strong,
+.admin-body .admin-table a {color:var(--theme-navy);}
+.admin-body .admin-user, .admin-body .admin-stat, .admin-body .admin-panel,
+.admin-body .admin-login-card, .admin-body .admin-panel>header, .admin-body .admin-table td {border-color:var(--theme-border);}
+.admin-body .admin-status {background:var(--theme-selected);color:var(--theme-navy);}
+.admin-body .admin-login-wrap {background:radial-gradient(circle at 10% 20%,#E2EBF6,transparent 50%),#F2F5FA;}
+.admin-body .admin-field input {background:var(--theme-white);color:var(--theme-ink);border-color:var(--theme-control-border);}
+.admin-body .admin-field input:focus {border-color:var(--theme-navy);box-shadow:0 0 0 3px #D9E7F9;}
+.admin-body .admin-button, .admin-body .admin-action-primary {background:var(--theme-navy);color:var(--theme-white);}
+.admin-body .admin-button:hover, .admin-body .admin-action-primary:hover {background:var(--theme-navy-hover);}
+.admin-body .admin-hint {color:var(--theme-secondary)!important;font-weight:500;}
+.admin-body .admin-eyebrow, .admin-body .admin-menu-caption,
+.admin-body .admin-wordmark small, .admin-body .admin-nav small,
+.admin-body .admin-stat span, .admin-body .admin-user small,
+.admin-body .admin-table th {font-size:12px;}
+.admin-body .admin-hint {font-size:12px!important;}
+.admin-body .admin-system-ok, .admin-body .admin-result-ok {background:var(--theme-success-bg);color:var(--theme-success);}
+.admin-body .admin-errors, .admin-body .field-validation-error {color:var(--theme-error);}
+.admin-body .admin-result-error {background:var(--theme-error-bg);color:var(--theme-error);}
+.admin-body .admin-action-danger {background:var(--theme-error);color:var(--theme-white);}
+@media(max-width:767px) {
+    .customer-site .yody-home-refresh .hp-hero-photo::after {background:linear-gradient(0deg,transparent 80%,#F2F5FA);}
+}

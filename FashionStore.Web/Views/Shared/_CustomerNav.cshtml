@@ -1,15 +1,16 @@
 <div class="yody-account-navigation">
-<button type="button" class="yody-account-nav-toggle" aria-expanded="true" aria-controls="customer-nav-links" hidden>Danh mục tài khoản <span aria-hidden="true">⌄</span></button>
+<span class="customer-account-overline">YODY / TÀI KHOẢN CỦA BẠN</span>
+<button type="button" class="yody-account-nav-toggle" aria-expanded="false" aria-controls="customer-nav-links" aria-label="Mở menu tài khoản" hidden><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg><span>Tài khoản</span></button>
 <nav id="customer-nav-links" class="account-nav" aria-label="Tài khoản của tôi">
 <a href="@Url.Action("Index","Customer")">Tổng quan</a>
 <a href="@Url.Action("Profile","Account")">Hồ sơ</a>
 <a href="@Url.Action("Index","Orders")">Đơn hàng</a>
 <a href="@Url.Action("Addresses","Customer")">Địa chỉ</a>
-<a href="@Url.Action("Points","Customer")">Điểm & hạng</a>
-<a href="@Url.Action("Promotions","Customer")">Ưu đãi</a>
+<a href="@Url.Action("Promotions","Customer")">Điểm &amp; ưu đãi</a>
+<a href="@Url.Action("Points","Customer")">Lịch sử tích điểm</a>
 <a href="@Url.Action("Wishlist","Customer")">Yêu thích</a>
 <a href="@Url.Action("Returns","Customer")">Đổi trả</a>
-<a href="@Url.Action("Password","Account")">Đổi mật khẩu</a>
+<a href="@Url.Action("Security","Customer")" data-active-path="@Url.Action("Password","Account")">Bảo mật tài khoản</a>
 </nav>
 
 </div>

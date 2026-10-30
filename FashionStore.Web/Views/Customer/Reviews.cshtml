@@ -16,7 +16,7 @@
             {
                 <article class="yody-surface-card yody-review-card">
                     <p class="review-stars" aria-label="@p["SoSao"] trên 5 sao">@p["SoSao"] / 5 ★</p>
-                    <p class="yody-muted">@p["TenHienThi"] · @(((DateTime)p["NgayDanhGia"]).ToString("dd/MM/yyyy"))</p>
+                    <p class="yody-muted">@p["TenHienThi"] · @CustomerViewHelper.VietnamDate((DateTime)p["NgayDanhGia"],"dd/MM/yyyy")</p>
                     <p class="review-body">@p["NoiDung"]</p>
                 </article>
             }
@@ -32,7 +32,7 @@
                     {
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="productId" value="@ViewBag.ProductId" />
-                        <div class="yody-field"><label for="orderId">Mã đơn đã mua sản phẩm</label><input class="filter-input" id="orderId" name="orderId" required maxlength="30" /><small><a href="@Url.Action("Index", "Orders")">Xem mã đơn của tôi →</a></small></div>
+                        <div class="yody-field"><label for="orderId">Mã đơn đã mua sản phẩm</label><input class="filter-input" id="orderId" name="orderId" value="@ViewBag.ReviewOrderId" required maxlength="30" /><small><a href="@Url.Action("Index", "Orders")">Xem mã đơn của tôi →</a></small></div>
                         <div class="yody-field"><label for="stars">Đánh giá sao</label><select class="filter-input" id="stars" name="stars">
                             @for (var i = 5; i >= 1; i--)
                             {

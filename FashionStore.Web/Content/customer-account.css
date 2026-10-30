@@ -1,0 +1,155 @@
+/* Customer area: Navy / Cream / Copper. Other storefront and admin pages keep their palette. */
+.checkout-voucher-input {display:flex;align-items:stretch;gap:10px;}
+.checkout-voucher-input .filter-input {flex:1;min-width:0;}
+.customer-site .checkout-voucher-input .mn-btn {flex:none;min-width:104px;margin:0;padding:10px 15px;font-size:12px;}
+.checkout-voucher-applied {display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:12px;padding:12px 14px;background:#eef4f8;border-left:3px solid #173654;color:#173654;font-size:13px;line-height:1.65;}
+.checkout-voucher-applied button {flex:none;background:transparent;border:0;cursor:pointer;padding:4px;font-size:12px;}
+.yody-voucher-card .voucher-use-link {margin-top:14px;display:inline-flex;font-size:12px;}
+@media(max-width:420px) {.checkout-voucher-input {gap:7px;}.checkout-voucher-input .mn-btn {min-width:88px;padding:9px;}.checkout-voucher-applied {align-items:flex-start;}}
+.customer-site .yody-order-cancel h2,.customer-site .yody-order-refund h2 {font-size:17px;margin:0 0 12px;}
+.order-cancellation-dialog {width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 40px);margin:auto;padding:28px;border:1px solid #c8d1dd;border-radius:18px;background:#fff;color:#152d4e;box-shadow:0 24px 80px rgba(12,30,54,.24);}
+.order-cancellation-dialog::backdrop {background:rgba(8,23,43,.55);}
+.order-cancellation-dialog-heading {display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px;}
+.order-cancellation-dialog-heading .eyebrow {font-size:10px;margin:0 0 8px;}
+.order-cancellation-dialog h2 {font-size:21px;line-height:1.35;margin:0;}
+.order-dialog-close {border:0;background:#eef2f6;color:#152d4e;border-radius:50%;width:32px;height:32px;flex:0 0 32px;font-size:24px;line-height:1;cursor:pointer;}
+.order-cancellation-form .yody-field {margin:0 0 15px;}
+.order-cancellation-form .yody-field label {font-size:13px;display:block;margin-bottom:7px;}
+.order-cancellation-form .filter-input {width:100%;min-height:44px;padding:10px 12px;font-size:14px;box-sizing:border-box;}
+.customer-site .order-cancellation-form textarea.filter-input {min-height:78px;height:78px;resize:vertical;}
+.order-refund-bank-grid {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;}
+.order-refund-notice {background:#eef3f8;border-left:3px solid #152d4e;padding:12px 14px;margin:18px 0;font-size:13px;}
+.order-refund-notice p {margin:5px 0 0;line-height:1.65;}
+.order-refund-privacy {font-size:12px;line-height:1.65;color:#425774;}
+.order-dialog-actions {display:flex;gap:12px;margin-top:22px;}
+.order-dialog-actions .mn-btn {flex:1;min-height:46px;padding:12px 10px;font-size:12px;}
+.order-refund-status {background:#eef3f8;border-radius:8px;padding:10px 12px;font-size:13px;font-weight:600;}
+@media(max-width:520px) {.order-cancellation-dialog {padding:22px 18px;}.order-dialog-actions {flex-direction:column-reverse;position:sticky;bottom:-22px;background:#fff;padding:12px 0;}.order-refund-bank-grid {grid-template-columns:1fr;gap:0;}}
+.customer-site .yody-order-cancel p {font-size:13px;line-height:1.8;margin:0 0 14px;color:var(--account-copy);}
+.customer-site .yody-order-cancel .yody-cancel-form {margin:18px 0 0;}
+.customer-site .yody-order-cancel .mn-btn {width:100%;}
+.customer-site .order-cancel-confirm {margin-top:18px;}
+.customer-site .order-cancel-confirm summary {list-style:none;cursor:pointer;}
+.customer-site .order-cancel-confirm summary::-webkit-details-marker {display:none;}
+.customer-site .order-cancel-confirm .cancel-close-label {display:none;}
+.customer-site .order-cancel-confirm[open] .cancel-open-label {display:none;}
+.customer-site .order-cancel-confirm[open] .cancel-close-label {display:inline;}
+.customer-site .order-cancel-confirm-content {padding:16px 0 0;}
+.customer-site .yody-order-progress .order-progress-list {list-style:none;padding:0;margin:8px 0 0;}
+.customer-site .order-progress-step {position:relative;display:flex;align-items:center;gap:14px;min-height:82px;padding:15px 12px 15px 0;}
+.customer-site .order-progress-step:not(:last-child)::after {content:"";position:absolute;left:16px;top:54px;bottom:-28px;width:2px;background:#CBD3DD;}
+.customer-site .order-progress-marker {position:relative;z-index:1;display:grid;place-items:center;flex:none;width:34px;height:34px;border:1px solid #A8B5C5;border-radius:50%;background:#fff;color:#46576D;font-size:13px;font-weight:600;}
+.customer-site .order-progress-content {min-width:0;flex:1;}
+.customer-site .order-progress-content strong {display:block;color:#344256;font-size:14px;font-weight:500;line-height:1.6;overflow-wrap:anywhere;}
+.customer-site .order-progress-content time {display:block;margin-top:5px;color:#344256;font-size:12px;line-height:1.6;}
+.customer-site .order-progress-state {flex:none;color:#46576D;font-size:11px;font-weight:500;}
+.customer-site .order-progress-step.is-completed {opacity:.5;}
+.customer-site .order-progress-step.is-completed .order-progress-marker {border-color:#142D4E;background:#142D4E;color:#fff;}
+.customer-site .order-progress-step.is-completed::after {background:#142D4E;}
+.customer-site .order-progress-step.is-current .order-progress-content strong {color:#102238;font-weight:700;}
+.customer-site .order-progress-step.is-current .order-progress-marker {border-color:#142D4E;background:#142D4E;color:#fff;box-shadow:0 0 0 5px #E8EDF4;}
+.customer-site .order-progress-step.is-current .order-progress-state {padding:5px 9px;border-radius:5px;background:#142D4E;color:#fff;font-weight:600;}
+.customer-site .order-progress-step.is-upcoming .order-progress-content strong,
+.customer-site .order-progress-step.is-paused .order-progress-content strong {color:#5B6879;}
+.customer-site .order-progress-notice {padding:12px 14px;border-left:3px solid var(--account-copper);background:var(--account-copper-soft);font-size:13px;}
+@media(max-width:600px) {
+ .customer-site .order-progress-step {gap:11px;padding-right:0;flex-wrap:wrap;}
+ .customer-site .order-progress-content {flex-basis:calc(100% - 48px);}
+ .customer-site .order-progress-state {margin-left:45px;margin-top:-5px;}
+ .customer-site .order-progress-step:not(:last-child)::after {bottom:-28px;}
+}
+.customer-site .yody-account-shell {
+    --account-navy:#142D4E;
+    --account-ink:#102238;
+    --account-copy:#344256;
+    --account-cream:#F8F5EF;
+    --account-copper:#96522C;
+    --account-copper-soft:#F8E9DE;
+    --account-border:#C8C1B6;
+    --yody-background:var(--account-cream);
+    --yody-accent:var(--account-copper);
+    --yody-border:var(--account-border);
+    --yody-primary:var(--account-ink);
+    --yody-secondary:var(--account-copy);
+    max-width:1180px;
+    padding:24px 28px 32px;
+    border-radius:16px;
+    background:var(--account-cream);
+    color:var(--account-ink);
+}
+.customer-site .yody-account-navigation {position:relative;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:0 0 24px;min-width:0;}
+.customer-site .customer-account-overline {font-size:11px;font-weight:600;letter-spacing:.1em;line-height:1.7;color:var(--yody-secondary);}
+.customer-site .yody-account-nav-toggle {display:inline-flex;justify-content:center;gap:9px;width:auto;min-height:44px;margin-left:auto;padding:10px 14px;border:1px solid var(--yody-border);border-radius:8px;background:#fff;color:#142D4E;font-size:13px;font-weight:600;}
+.customer-site .yody-account-nav-toggle svg {flex:none;}
+.customer-site .yody-account-nav-toggle[aria-expanded=true] {border-color:#96522C;background:#F8E9DE;}
+.customer-site .yody-account-navigation .account-nav {width:100%;margin:0;padding:8px;gap:2px;border:1px solid var(--yody-border);border-radius:12px;background:#fff;}
+.customer-site .yody-account-navigation.is-enhanced .account-nav {position:absolute;z-index:50;top:calc(100% + 8px);right:0;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;width:min(264px,100%);max-height:min(520px,70vh);overflow-y:auto;box-shadow:0 14px 32px rgba(20,45,78,.15);}
+.customer-site .yody-account-navigation .account-nav[hidden],
+.customer-site .yody-account-nav-toggle[hidden] {display:none;}
+.customer-site .yody-account-navigation .account-nav a {display:flex;min-height:44px;margin:0;padding:11px 13px;border-radius:6px;font-size:13px;line-height:1.6;color:#142D4E;background:#fff;}
+.customer-site .yody-account-navigation .account-nav a:hover,
+.customer-site .yody-account-navigation .account-nav a[aria-current=page] {background:#F8E9DE;color:#703B1E;text-decoration:none;}
+.customer-site .yody-account-shell .yody-page-heading {margin:16px auto 28px;}
+.customer-site .yody-account-shell .yody-account-greeting {max-width:none;margin:12px 0 28px;padding-left:17px;border-left:3px solid var(--account-copper);text-align:left;}
+.customer-site .yody-account-shell .yody-account-greeting h1 {font-size:28px;margin:0 0 9px;}
+.customer-site .yody-account-shell .yody-account-greeting>p:not(.eyebrow) {font-size:14px;max-width:none;margin:0;text-align:left;}
+.customer-site .yody-account-shell .yody-surface-card,
+.customer-site .yody-account-shell .yody-voucher-card {border-radius:12px;}
+.customer-site .customer-account-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch;}
+.customer-site .customer-membership-card {position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:24px;min-width:0;min-height:236px;padding:24px;border:1px solid #536984;border-radius:16px;color:#fff;background:repeating-linear-gradient(115deg,transparent 0 3px,rgba(255,255,255,.025) 3px 4px),linear-gradient(130deg,#384E69,#142D4E 72%);box-shadow:0 14px 25px -10px rgba(20,45,78,.32);text-decoration:none;}
+.customer-site .customer-membership-card::after {content:"";position:absolute;inset:8px;border:1px solid rgba(255,255,255,.24);border-radius:10px;pointer-events:none;}
+.customer-site .customer-membership-card:hover {color:#fff;text-decoration:none;box-shadow:0 17px 30px -10px rgba(20,45,78,.4);}
+.customer-site .customer-member-watermark {position:absolute;z-index:-1;right:10px;bottom:-10px;font-size:170px;font-weight:600;line-height:1;color:rgba(255,255,255,.06);transform:rotate(-12deg);}
+.customer-site .customer-member-top,
+.customer-site .customer-member-bottom {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.customer-site .customer-member-logo {font-size:25px;font-weight:600;letter-spacing:.12em;line-height:1;}
+.customer-site .customer-member-rank {border:1px solid rgba(237,193,162,.5);border-radius:4px;padding:5px 8px;font-size:11px;font-weight:600;line-height:1.5;letter-spacing:.06em;text-transform:uppercase;color:#EDC1A2;}
+.customer-site .customer-member-identity {display:flex;flex-direction:column;gap:7px;min-width:0;overflow-wrap:anywhere;}
+.customer-site .customer-member-caption {font-size:11px;font-weight:500;letter-spacing:.09em;color:#E8EFF8;}
+.customer-site .customer-member-identity strong {font-size:23px;line-height:1.35;font-weight:500;color:#fff;}
+.customer-site .customer-member-identity>span:last-child {font-size:13px;line-height:1.6;color:#E8EFF8;}
+.customer-site .customer-member-bottom {font-size:12px;line-height:1.5;color:#E8EFF8;}
+.customer-site .customer-member-bottom>span:last-child {font-size:22px;}
+.customer-site .customer-overview-card {display:flex;flex-direction:column;gap:17px;min-width:0;padding:24px;border:1px solid var(--account-border);border-radius:16px;background:#fff;color:var(--account-ink);text-decoration:none;transition:border-color .15s,box-shadow .15s;}
+.customer-site .customer-overview-card:hover {border-color:var(--account-copper);color:var(--account-ink);text-decoration:none;box-shadow:0 8px 18px rgba(20,45,78,.07);}
+.customer-site .customer-overview-label {display:flex;align-items:center;gap:10px;font-size:11px;font-weight:600;letter-spacing:.08em;line-height:1.6;}
+.customer-site .customer-card-symbol {display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:9px;background:#F0E9DD;color:var(--account-navy);font-size:22px;line-height:1;}
+.customer-site .customer-overview-card p {margin:0;font-size:14px;line-height:1.75;overflow-wrap:anywhere;color:var(--account-copy);}
+.customer-site .customer-points-card {background:var(--account-copper-soft);border-color:var(--account-copper-soft);}
+.customer-site .customer-points-card .customer-card-symbol {background:#fff;color:var(--account-copper);}
+.customer-site .customer-points-value {display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+.customer-site .customer-points-value strong {font-size:38px;line-height:1.2;font-weight:600;}
+.customer-site .customer-points-value>span {font-size:13px;line-height:1.6;color:var(--account-copy);}
+.customer-site .customer-card-link {display:flex;align-items:center;gap:10px;margin-top:auto;padding-top:7px;font-size:13px;font-weight:600;line-height:1.6;color:var(--account-copper);}
+.customer-site .customer-account-grid .yody-shortcut {display:grid;grid-template-rows:18px auto 1fr 24px;min-height:200px;gap:10px;padding:24px;border-radius:16px;border-color:var(--account-border);background:#fff;}
+.customer-site .yody-account-shell .yody-shortcut-icon {color:var(--account-copper);font-size:12px;}
+.customer-site .yody-account-shell .yody-shortcut h2 {font-size:18px;line-height:1.5;margin:0;}
+.customer-site .yody-account-shell .yody-shortcut p {font-size:14px;line-height:1.7;}
+.customer-site .yody-account-shell .yody-shortcut:hover {border-color:var(--account-copper);box-shadow:0 8px 18px rgba(20,45,78,.07);transform:none;}
+.customer-site .customer-account-grid .yody-shortcut-arrow {justify-self:end;align-self:end;margin:0;line-height:1;}
+.customer-site .customer-benefits-summary {display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;padding:24px;margin:0 0 24px;border-radius:12px;background:var(--account-copper-soft);}
+.customer-site .customer-benefits-summary>div {display:flex;flex-direction:column;gap:7px;}
+.customer-site .customer-benefits-summary span {font-size:13px;color:var(--account-copy);}
+.customer-site .customer-benefits-summary strong {font-size:23px;line-height:1.4;font-weight:600;}
+.customer-site .customer-security-card {max-width:760px;margin-inline:auto;}
+.customer-site .customer-security-details {margin:0;}
+.customer-site .customer-security-details>div {display:grid;grid-template-columns:minmax(130px,.65fr) minmax(0,1fr);gap:15px;padding:17px 0;border-bottom:1px solid var(--account-border);font-size:14px;line-height:1.6;}
+.customer-site .customer-security-details dt {font-weight:500;color:var(--account-copy);}
+.customer-site .customer-security-details dd {margin:0;font-weight:600;overflow-wrap:anywhere;}
+@media(max-width:1023px) {
+    .customer-site .customer-account-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:767px) {
+    .customer-site .yody-account-shell {padding:18px 16px 24px;border-radius:12px;}
+    .customer-site .yody-account-shell .yody-account-greeting h1 {font-size:24px;}
+    .customer-site .customer-account-grid {grid-template-columns:1fr;gap:14px;}
+    .customer-site .customer-membership-card {min-height:230px;}
+    .customer-site .customer-overview-card {min-height:200px;}
+    .customer-site .customer-account-overline {max-width:180px;font-size:11px;}
+    .customer-site .yody-account-nav-toggle>span {display:none;}
+    .customer-site .yody-account-nav-toggle {width:44px;padding:10px;}
+    .customer-site .customer-security-details>div {grid-template-columns:1fr;gap:5px;}
+}
+@media(prefers-reduced-motion:reduce) {
+    .customer-site .customer-overview-card {transition:none;}
+}

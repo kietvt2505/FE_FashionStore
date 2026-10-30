@@ -3,6 +3,12 @@ using System.Text.Json.Serialization;
 
 namespace FashionStore.Backend.DTOs;
 
+public sealed class GuestCartMergeRequest
+{
+    public Guid RequestId {get;set;}
+    [Required,MinLength(1),MaxLength(50)] public List<CartItemRequest> Items {get;set;}=[];
+}
+
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class RegisterRequest
 {
@@ -53,6 +59,8 @@ public sealed record CartLineResponse(string Sku, string ProductId, string Produ
     int Quantity, decimal UnitPrice, decimal LineTotal, int Stock, bool Available, string? Issue, string? ImageUrl=null);
 public sealed record CartResponse(IReadOnlyList<CartLineResponse> Items, long TotalQuantity, decimal Subtotal, bool CanCheckout)
 {
+    public bool SupportsBankTransfer { get; init; } = true;
+    public bool SupportsVouchers { get; init; } = true;
     public bool CodOnly { get; init; }
     public bool CheckoutEnabled { get; init; } = true;
 }

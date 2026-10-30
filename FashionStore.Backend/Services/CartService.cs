@@ -10,6 +10,27 @@ namespace FashionStore.Backend.Services;
 public sealed class CartService(FashionStoreDbContext db, TimeProvider clock, DatabaseMode? mode = null)
 {
     public Task<CartResponse> GetAsync(string customerId, CancellationToken ct) => ReadAsync(customerId, ct);
+    public async Task<CartResponse> MergeAsync(string customerId,GuestCartMergeRequest request,CancellationToken ct)
+    {
+        if(request.RequestId==Guid.Empty || request.Items==null || request.Items.Count is <1 or >50 ||
+           request.Items.Any(i=>i==null || string.IsNullOrWhiteSpace(i.Sku) || i.Sku.Length>40 || i.Quantity<1))
+            throw new CustomerRequestException(400,"Giỏ hàng khách không hợp lệ.");
+        if(!db.Database.IsNpgsql() || mode==null)throw new CustomerRequestException(503,"Gộp giỏ hàng chưa được bật.");
+        await using var c=new Npgsql.NpgsqlConnection(mode.SupabaseConnection);await c.OpenAsync(ct);
+        await using var check=new Npgsql.NpgsqlCommand("""
+            SELECT to_regclass('webstore.guest_cart_merge') IS NOT NULL
+               AND to_regprocedure('webstore.merge_guest_cart(character varying,uuid,jsonb)') IS NOT NULL
+               AND to_regclass('webstore.cart') IS NOT NULL
+               AND to_regclass('webstore.cart_line') IS NOT NULL
+            """,c);
+        if(!Convert.ToBoolean(await check.ExecuteScalarAsync(ct)))throw new CustomerRequestException(503,"Chức năng gộp giỏ hàng chưa sẵn sàng. Sản phẩm bạn đã chọn vẫn được giữ lại; vui lòng thử lại sau.");
+        var json=System.Text.Json.JsonSerializer.Serialize(request.Items.Select(i=>new{sku=i.Sku,quantity=i.Quantity}));
+        await using var cmd=new Npgsql.NpgsqlCommand("SELECT webstore.merge_guest_cart(@kh,@request,@lines::jsonb)",c);
+        cmd.Parameters.AddWithValue("kh",customerId);cmd.Parameters.AddWithValue("request",request.RequestId);cmd.Parameters.AddWithValue("lines",json);
+        try{await cmd.ExecuteScalarAsync(ct);}catch(Npgsql.PostgresException e) when(e.SqlState=="P0001")
+        {throw new CustomerRequestException(409,"Chưa thể gộp giỏ vì sản phẩm hoặc tồn kho đã thay đổi. Vui lòng kiểm tra lại.");}
+        return await ReadAsync(customerId,ct);
+    }
 
     // PUT quantity is absolute, so retries do not add the same quantity twice.
     // POST add is additive and intentionally not idempotent.
@@ -86,9 +107,9 @@ public sealed class CartService(FashionStoreDbContext db, TimeProvider clock, Da
     }
     internal sealed record CartProjection(string MaSKU, int SoLuong, string MaSP, string TenSanPham,
         string KichCo, string MauSac, decimal DonGia, int SoLuongTonKho, bool Active, string? ImageUrl);
-    internal IQueryable<CartProjection> ReadQuery(string id) => db.Database.IsNpgsql()
+    internal IQueryable<CartProjection> ReadQuery(string id,bool nativePricing=false) => db.Database.IsNpgsql()
         ? db.CartLines.Where(l => l.Cart.MaKH == id)
-            .Join(db.Set<SupabaseProduct>(), l => l.MaSKU, p => p.masku, (l, p) => new { Line = l, Product = p })
+            .Join(nativePricing?db.Set<SupabaseProduct>().FromSqlRaw(SupabaseProductPricing.ProductSql):db.Set<SupabaseProduct>(), l => l.MaSKU, p => p.masku, (l, p) => new { Line = l, Product = p })
             .OrderBy(x => x.Line.MaSKU)
             .Select(x => new CartProjection(x.Line.MaSKU, x.Line.SoLuong, x.Product.masp, x.Product.tensanpham,
                 x.Product.kichco ?? "", x.Product.mausac ?? "", x.Product.dongia, x.Product.soluongtonkho,
@@ -102,11 +123,12 @@ public sealed class CartService(FashionStoreDbContext db, TimeProvider clock, Da
                 x.Product.Images.Where(i=>i.MaSKU==null||i.MaSKU==x.Line.MaSKU).OrderByDescending(i=>i.AnhChinh).ThenBy(i=>i.ThuTu).Select(i=>i.DuongDan).FirstOrDefault()));
     private async Task<CartResponse> ReadAsync(string id, CancellationToken ct)
     {
-        var rows = await ReadQuery(id).ToListAsync(ct);
+        var rows = await ReadQuery(id,await SupabaseProductPricing.Installed(db.Database,ct)).ToListAsync(ct);
         var items = rows.Select(l => new CartLineResponse(l.MaSKU, l.MaSP, l.TenSanPham, l.KichCo, l.MauSac,
             l.SoLuong, l.DonGia, l.SoLuong * l.DonGia, l.SoLuongTonKho, l.Active && l.SoLuong <= l.SoLuongTonKho,
             !l.Active ? "Sản phẩm đã ngừng kinh doanh." : l.SoLuong > l.SoLuongTonKho ? "Số lượng trong giỏ vượt tồn kho hiện tại." : null,l.ImageUrl)).ToArray();
+        var supportsVouchers = !db.Database.IsNpgsql() || await db.Database.SqlQueryRaw<bool>("SELECT to_regclass('webstore.checkout_voucher') IS NOT NULL AS \"Value\"").SingleAsync(ct);
         return new CartResponse(items, items.Sum(l => (long)l.Quantity), items.Sum(l => l.LineTotal), items.Length > 0 && items.All(l => l.Available))
-        { CheckoutEnabled = !db.Database.IsNpgsql() || (mode?.OrdersEnabled == true && !string.IsNullOrWhiteSpace(mode.WebOrderEmployeeId)), CodOnly = db.Database.IsNpgsql() };
+        { SupportsVouchers = supportsVouchers, CheckoutEnabled = !db.Database.IsNpgsql() || (mode?.OrdersEnabled == true && !string.IsNullOrWhiteSpace(mode.WebOrderEmployeeId)), CodOnly = db.Database.IsNpgsql(), SupportsBankTransfer = !db.Database.IsNpgsql() || mode?.BankTransferEnabled == true };
     }
 }

@@ -17,13 +17,31 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <Compile Include="../FashionStore.Web/Models/CustomerModels.cs" Link="MvcClient/CustomerModels.cs" />
     <Compile Include="../FashionStore.Web/Services/CustomerApiClient.cs" Link="MvcClient/CustomerApiClient.cs" />
+    <Compile Include="../FashionStore.Web/Helpers/CatalogViewHelper.cs" Link="MvcClient/CatalogViewHelper.cs" />
+    <Compile Include="../FashionStore.Web/Helpers/CustomerViewHelper.cs" Link="MvcClient/CustomerViewHelper.cs" />
     <Compile Include="../FashionStore.Web/Models/CatalogModels.cs" Link="MvcClient/CatalogModels.cs" />
     <Compile Include="../FashionStore.Web/Services/CatalogRepository.cs" Link="MvcClient/CatalogRepository.cs" />
 	<Compile Include="../FashionStore.Web/Models/OrderModels.cs" Link="MvcClient/OrderModels.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="../database/Supabase-Customer-Order-Cancellation.sql" Link="Supabase-Customer-Order-Cancellation.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Order-Cancellation-Policy.sql" Link="Supabase-Order-Cancellation-Policy.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Order-Cancellation-Refunds.sql" Link="Supabase-Order-Cancellation-Refunds.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Daily-Order-Numbers.sql" Link="Supabase-Daily-Order-Numbers.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-PayOS.sql" Link="Supabase-PayOS.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Product-Promotions.sql" Link="Supabase-Product-Promotions.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Online-Payments.sql" Link="Supabase-Online-Payments.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Storefront-Enhancements.sql" Link="Supabase-Storefront-Enhancements.sql" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../database/schema-reference/FashionStoreDB_Dev_schema_20261015_170000_433_bf029ba2.json" Link="SchemaReference.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Checkout-Promotions.sql" Link="Supabase-Checkout-Promotions.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Membership-Pricing.sql" Link="Supabase-Membership-Pricing.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Checkout-Voucher-Codes.sql" Link="Supabase-Checkout-Voucher-Codes.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Customer-Features.sql" Link="Supabase-Customer-Features.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Web-Payments.sql" Link="Supabase-Web-Payments.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Catalog-Merchandising.sql" Link="Supabase-Catalog-Merchandising.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Catalog-Assignments.sql" Link="Supabase-Catalog-Assignments.sql" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../database/Supabase-Web-Orders.sql" Link="Supabase-Web-Orders.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Short-Order-Numbers.sql" Link="Supabase-Short-Order-Numbers.sql" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../database/Supabase-Customer-Cart.sql" Link="Supabase-Customer-Cart.sql" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

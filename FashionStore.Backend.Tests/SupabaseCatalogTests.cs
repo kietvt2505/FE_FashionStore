@@ -25,14 +25,19 @@ public sealed class SupabaseCatalogTests
             .UseInMemoryDatabase(name, root).UseModel(db.Model).Options))
         {
             seed.AddRange(new SupabaseCategory { maloai = "AO", tenloai = "Áo", trangthai = true },
-                new SupabaseCategory { maloai = "HIDDEN", tenloai = "Ẩn", trangthai = false });
+                new SupabaseCategory { maloai = "HIDDEN", tenloai = "Ẩn", trangthai = false },
+                new SupabaseCategory { maloai = "TEST", tenloai = " 123 ", trangthai = true });
+            var testProduct=Row("TEST-PRODUCT","TEST-SKU","M","Đen",10,1);
+            testProduct.tensanpham=" 123 ";
+            seed.Add(testProduct);
             seed.AddRange(
                 Row("P1", "A", "M", "Đen", 100, 3),
                 Row("P1", "B", "L", "Đỏ", 200, 5),
                 Row("P1", "C", "M", "Đỏ", 1, 99, active: false),
                 Row("P2", "D", "S", "Đen", 150, 0),
                 Row("P3", "E", "S", "Trắng", 50, 1),
-                Row("P4", "F", "M", "Đen", 10, 1, category: "HIDDEN"));
+                Row("P4", "F", "M", "Đen", 10, 1, category: "HIDDEN"),
+                Row("P5", "G", "M", "Đen", 10, 1, category: "TEST"));
             await seed.SaveChangesAsync();
         }
         var service = new SupabaseCatalogService(db);
@@ -60,6 +65,10 @@ public sealed class SupabaseCatalogTests
         Assert.Equal(new[] { "A", "B" }, (await service.GetVariantsAsync("P1", default))!.Select(v => v.Sku));
         Assert.Null(await service.GetDetailAsync("P4", default));
         Assert.Null(await service.GetVariantsAsync("missing", default));
+        Assert.Null(await service.GetDetailAsync("TEST-PRODUCT",default));
+        Assert.Null(await service.GetVariantsAsync("P5",default));
+        Assert.Equal("AO",Assert.Single(await service.GetCategoriesAsync(default)).Id);
+        Assert.Empty((await service.SearchAsync(new ProductQuery{Q="123"},default)).Items);
     }
 
     private static SupabaseProduct Row(string id, string sku, string size, string color, decimal price,
@@ -116,10 +125,11 @@ public sealed class SupabaseCatalogTests
     }
 
     [Fact]
-    public void UnsupportedAudienceIsExplicitAndContextCannotWrite()
+    public void MissingMetadataCannotReturnUnclassifiedProductsAndContextCannotWrite()
     {
         using var db = Context();
-        Assert.Throws<CustomerRequestException>(() => new SupabaseCatalogService(db).Filter(new ProductQuery { Audience = "NAM" }));
+        var sql = new SupabaseCatalogService(db).Filter(new ProductQuery { Audience = "NAM" }, metadata:false).ToQueryString();
+        Assert.Contains("FALSE", sql, StringComparison.OrdinalIgnoreCase);
         Assert.Throws<InvalidOperationException>(() => db.SaveChanges());
     }
 
@@ -128,11 +138,12 @@ public sealed class SupabaseCatalogTests
     {
         var mode = new DatabaseMode(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["Database:Provider"] = "Supabase", ["YODYSTORE_CONNECTION_STRING"] = "partner",
+            ["Database:Provider"] = "Supabase", ["YODYSTORE_CONNECTION_STRING"] = "Host=localhost;Database=partner;Username=test;Timezone=Asia/Ho_Chi_Minh",
             ["ConnectionStrings:FashionStore"] = "legacy"
         }).Build());
         Assert.True(mode.IsSupabase);
-        Assert.Equal("partner", mode.SupabaseConnection);
+        var settings=new Npgsql.NpgsqlConnectionStringBuilder(mode.SupabaseConnection);
+        Assert.Equal("partner", settings.Database);Assert.Equal("UTC",settings.Timezone);
     }
 
     [Fact]

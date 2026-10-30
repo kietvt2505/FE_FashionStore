@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FashionStore.Backend.Services;
 
 // All SQL is fixed application text, values are parameters. No table/column comes from the caller.
-public sealed class CustomerFeaturesService(FashionStoreDbContext db)
+public sealed class CustomerFeaturesService(FashionStoreDbContext db, SupabaseCustomerFeaturesService? postgres = null)
 {
     internal SqlConnection Connection()
     {
@@ -30,15 +30,16 @@ public sealed class CustomerFeaturesService(FashionStoreDbContext db)
         while(await rd.ReadAsync(ct)) { var row=new Dictionary<string,object?>(); for(var i=0;i<rd.FieldCount;i++) row[rd.GetName(i)]=rd.IsDBNull(i)?null:rd.GetValue(i); rows.Add(row); }
         return rows;
     }
-    public Task<List<Dictionary<string,object?>>> Promotions(CancellationToken ct) => Query(@"SELECT MaKM,TenChuongTrinh,LoaiKM,GiaTriGiam,GiaTriDonHangToiThieu,NgayKetThuc,SoLuotToiDa,SoLuotDaDung FROM dbo.KhuyenMai WHERE TrangThai=1 AND SYSDATETIME() BETWEEN NgayBatDau AND NgayKetThuc AND (SoLuotToiDa IS NULL OR SoLuotDaDung<SoLuotToiDa) ORDER BY NgayKetThuc,MaKM",ct);
-    public Task<List<Dictionary<string,object?>>> Points(string kh,int page,CancellationToken ct) => Query(@"SELECT SoHD,LoaiGiaoDich,SoDiemThayDoi,ThoiDiem,GhiChu FROM dbo.LichSuDiem WHERE MaKH=@kh ORDER BY ThoiDiem DESC,MaGiaoDichDiem DESC OFFSET @skip ROWS FETCH NEXT 20 ROWS ONLY",ct,("@kh",kh),("@skip",(page-1)*20));
-    public Task<List<Dictionary<string,object?>>> History(string kh,string id,CancellationToken ct) => Query(@"SELECT l.LoaiTrangThai,l.TrangThaiMoi,l.ThoiDiem,l.GhiChu FROM dbo.LichSuTrangThaiDonHang l JOIN dbo.HoaDon h ON h.SoHD=l.SoHD WHERE h.MaKH=@kh AND h.SoHD=@id AND h.LoaiHoaDon='ONLINE' ORDER BY l.ThoiDiem,l.MaLichSu",ct,("@kh",kh),("@id",id));
-    public Task<List<Dictionary<string,object?>>> Reviews(string id,int page,CancellationToken ct) => Query(@"SELECT d.SoSao,d.NoiDung,d.NgayDanhGia,N'Khách hàng' AS TenHienThi FROM dbo.DanhGiaSanPham d JOIN dbo.SanPham p ON p.MaSP=d.MaSP WHERE d.MaSP=@id AND d.TrangThai='HIEN_THI' AND p.TrangThai=1 ORDER BY d.NgayDanhGia DESC,d.MaDanhGia DESC OFFSET @skip ROWS FETCH NEXT 10 ROWS ONLY",ct,("@id",id),("@skip",(page-1)*10));
-    public Task<List<Dictionary<string,object?>>> Returns(string kh,int page,CancellationToken ct) => Query(@"SELECT p.SoPhieuDT,p.SoHD,p.NgayLap,p.HinhThucXuLy,p.TrangThai,p.LyDo,p.LyDoTuChoi FROM dbo.PhieuDoiTra p JOIN dbo.HoaDon h ON h.SoHD=p.SoHD WHERE h.MaKH=@kh ORDER BY p.NgayLap DESC,p.SoPhieuDT DESC OFFSET @skip ROWS FETCH NEXT 20 ROWS ONLY",ct,("@kh",kh),("@skip",(page-1)*20));
-    public Task<List<Dictionary<string,object?>>> Wishlist(string kh,CancellationToken ct) => Query(@"SELECT p.MaSP,p.TenSanPham,p.TrangThai FROM dbo.WebWishlist w JOIN dbo.SanPham p ON p.MaSP=w.MaSP WHERE w.MaKH=@kh ORDER BY w.CreatedAt DESC,p.MaSP",ct,("@kh",kh));
-    public Task<List<Dictionary<string,object?>>> Addresses(string kh,CancellationToken ct) => Query("SELECT Id,Recipient,Phone,Address FROM dbo.WebAddress WHERE MaKH=@kh ORDER BY Id DESC",ct,("@kh",kh));
+    public Task<List<Dictionary<string,object?>>> Promotions(CancellationToken ct) => db.Database.IsNpgsql() ? postgres!.Promotions(ct) : Query(@"SELECT MaKM,TenChuongTrinh,LoaiKM,GiaTriGiam,GiaTriDonHangToiThieu,NgayKetThuc,SoLuotToiDa,SoLuotDaDung FROM dbo.KhuyenMai WHERE TrangThai=1 AND SYSDATETIME() BETWEEN NgayBatDau AND NgayKetThuc AND (SoLuotToiDa IS NULL OR SoLuotDaDung<SoLuotToiDa) ORDER BY NgayKetThuc,MaKM",ct);
+    public Task<List<Dictionary<string,object?>>> Points(string kh,int page,CancellationToken ct) => db.Database.IsNpgsql() ? postgres!.Points(kh,page,ct) : Query(@"SELECT SoHD,LoaiGiaoDich,SoDiemThayDoi,ThoiDiem,GhiChu FROM dbo.LichSuDiem WHERE MaKH=@kh ORDER BY ThoiDiem DESC,MaGiaoDichDiem DESC OFFSET @skip ROWS FETCH NEXT 20 ROWS ONLY",ct,("@kh",kh),("@skip",(page-1)*20));
+    public Task<List<Dictionary<string,object?>>> History(string kh,string id,CancellationToken ct) => db.Database.IsNpgsql() ? postgres!.History(kh,id,ct) : Query(@"SELECT l.LoaiTrangThai,l.TrangThaiMoi,l.ThoiDiem,l.GhiChu FROM dbo.LichSuTrangThaiDonHang l JOIN dbo.HoaDon h ON h.SoHD=l.SoHD WHERE h.MaKH=@kh AND h.SoHD=@id AND h.LoaiHoaDon='ONLINE' ORDER BY l.ThoiDiem,l.MaLichSu",ct,("@kh",kh),("@id",id));
+    public Task<List<Dictionary<string,object?>>> Reviews(string id,int page,CancellationToken ct) => db.Database.IsNpgsql() ? postgres!.Reviews(id,page,ct) : Query(@"SELECT d.SoSao,d.NoiDung,d.NgayDanhGia,N'Khách hàng' AS TenHienThi FROM dbo.DanhGiaSanPham d JOIN dbo.SanPham p ON p.MaSP=d.MaSP WHERE d.MaSP=@id AND d.TrangThai='HIEN_THI' AND p.TrangThai=1 ORDER BY d.NgayDanhGia DESC,d.MaDanhGia DESC OFFSET @skip ROWS FETCH NEXT 10 ROWS ONLY",ct,("@id",id),("@skip",(page-1)*10));
+    public Task<List<Dictionary<string,object?>>> Returns(string kh,int page,CancellationToken ct) => db.Database.IsNpgsql() ? postgres!.Returns(kh,page,ct) : Query(@"SELECT p.SoPhieuDT,p.SoHD,p.NgayLap,p.HinhThucXuLy,p.TrangThai,p.LyDo,p.LyDoTuChoi FROM dbo.PhieuDoiTra p JOIN dbo.HoaDon h ON h.SoHD=p.SoHD WHERE h.MaKH=@kh ORDER BY p.NgayLap DESC,p.SoPhieuDT DESC OFFSET @skip ROWS FETCH NEXT 20 ROWS ONLY",ct,("@kh",kh),("@skip",(page-1)*20));
+    public Task<List<Dictionary<string,object?>>> Wishlist(string kh,CancellationToken ct) => db.Database.IsNpgsql() ? postgres!.Wishlist(kh,ct) : Query(@"SELECT p.MaSP,p.TenSanPham,p.TrangThai FROM dbo.WebWishlist w JOIN dbo.SanPham p ON p.MaSP=w.MaSP WHERE w.MaKH=@kh ORDER BY w.CreatedAt DESC,p.MaSP",ct,("@kh",kh));
+    public Task<List<Dictionary<string,object?>>> Addresses(string kh,CancellationToken ct) => db.Database.IsNpgsql() ? postgres!.Addresses(kh,ct) : Query("SELECT Id,Recipient,Phone,Address FROM dbo.WebAddress WHERE MaKH=@kh ORDER BY Id DESC",ct,("@kh",kh));
     public async Task SaveWishlist(string kh,string id,bool remove,CancellationToken ct)
     {
+        if (db.Database.IsNpgsql()) { await postgres!.SaveWishlist(kh,id,remove,ct); return; }
         await using var c=Connection();await c.OpenAsync(ct);
         await using var tx=(SqlTransaction)await c.BeginTransactionAsync(IsolationLevel.Serializable,ct);
         await using var cmd=Command(c,tx,remove?"DELETE dbo.WebWishlist WHERE MaKH=@kh AND MaSP=@id":@"IF NOT EXISTS(SELECT 1 FROM dbo.SanPham WHERE MaSP=@id AND TrangThai=1) THROW 55201,N'Sản phẩm không khả dụng.',1;
@@ -47,6 +48,7 @@ IF NOT EXISTS(SELECT 1 FROM dbo.WebWishlist WITH(UPDLOCK,HOLDLOCK) WHERE MaKH=@k
     }
     public async Task SaveAddress(string kh, AddressInput input,CancellationToken ct)
     {
+        if (db.Database.IsNpgsql()) { await postgres!.SaveAddress(kh,input,ct); return; }
         await using var c=Connection();await c.OpenAsync(ct);
         await using var tx=(SqlTransaction)await c.BeginTransactionAsync(IsolationLevel.Serializable,ct);
         await using var cmd=Command(c,tx,@"IF (SELECT COUNT(*) FROM dbo.WebAddress WITH(UPDLOCK,HOLDLOCK) WHERE MaKH=@kh)>=20 THROW 55202,N'Tối đa 20 địa chỉ.',1;
@@ -55,10 +57,20 @@ INSERT dbo.WebAddress(MaKH,Recipient,Phone,Address) VALUES(@kh,@name,@phone,@add
     }
     public async Task RemoveAddress(string kh,long id,CancellationToken ct)
     {
+        if (db.Database.IsNpgsql()) { await postgres!.RemoveAddress(kh,id,ct); return; }
         await using var c=Connection();await c.OpenAsync(ct);await using var cmd=Command(c,null,"DELETE dbo.WebAddress WHERE MaKH=@kh AND Id=@id",("@kh",kh),("@id",id));await cmd.ExecuteNonQueryAsync(ct);
+    }
+    public async Task UpdateAddress(string kh,long id,AddressInput input,CancellationToken ct)
+    {
+        if(db.Database.IsNpgsql()) { await postgres!.UpdateAddress(kh,id,input,ct); return; }
+        await using var c=Connection(); await c.OpenAsync(ct);
+        await using var cmd=Command(c,null,"UPDATE dbo.WebAddress SET Recipient=@name,Phone=@phone,Address=@address WHERE MaKH=@kh AND Id=@id",
+            ("@name",input.Recipient.Trim()),("@phone",input.Phone.Trim()),("@address",input.Address.Trim()),("@kh",kh),("@id",id));
+        if(await cmd.ExecuteNonQueryAsync(ct)!=1) throw new CustomerRequestException(404,"Không tìm thấy địa chỉ của bạn.");
     }
     public async Task Review(string kh,ReviewInput input,CancellationToken ct)
     {
+        if (db.Database.IsNpgsql()) { await postgres!.Review(kh,input,ct); return; }
         await using var c=Connection(); await c.OpenAsync(ct);
         await using var tx=(SqlTransaction)await c.BeginTransactionAsync(IsolationLevel.Serializable,ct);
         await using var cmd=Command(c,tx,@"
@@ -69,6 +81,7 @@ INSERT dbo.DanhGiaSanPham(MaKH,MaSP,SoHD,SoSao,NoiDung) VALUES(@kh,@sp,@hd,@star
     }
     public async Task CreateReturn(string kh,ReturnInput input,CancellationToken ct)
     {
+        if (db.Database.IsNpgsql()) { await postgres!.CreateReturn(kh,input,ct); return; }
         if(input.RequestId==Guid.Empty)throw new CustomerRequestException(400,"Vui lòng tải lại biểu mẫu đổi trả.");
         await using var c=Connection();await c.OpenAsync(ct);
         await using var tx=(SqlTransaction)await c.BeginTransactionAsync(IsolationLevel.Serializable,ct);

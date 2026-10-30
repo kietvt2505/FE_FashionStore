@@ -9,11 +9,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Data.SqlClient;
 namespace FashionStore.Backend.Services;
-public sealed class PasswordRecoveryService(CustomerFeaturesService data,IConfiguration config,IPasswordHasher<TaiKhoanKhachHang> hasher,ILogger<PasswordRecoveryService> logger)
+public sealed class PasswordRecoveryService(CustomerFeaturesService data,IConfiguration config,IPasswordHasher<TaiKhoanKhachHang> hasher,ILogger<PasswordRecoveryService> logger, FashionStore.Backend.Data.DatabaseMode mode, SupabasePasswordRecoveryService postgres)
 {
     private static string Hash(string value)=>Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
     public async Task Request(string email,CancellationToken ct)
     {
+        if(mode.IsSupabase) { await postgres.Request(email,ct); return; }
         var host=config["Recovery:SmtpHost"];var from=config["Recovery:From"];var resetUrl=config["Recovery:ResetUrl"];
         if(string.IsNullOrWhiteSpace(host)||string.IsNullOrWhiteSpace(from)||!Uri.TryCreate(resetUrl,UriKind.Absolute,out var uri)||uri.Scheme!="https")
             throw new CustomerRequestException(503,"Khôi phục mật khẩu chưa được bật. Cửa hàng cần cấu hình email và địa chỉ HTTPS nhận liên kết.");
@@ -33,6 +34,7 @@ public sealed class PasswordRecoveryService(CustomerFeaturesService data,IConfig
     }
     public async Task Reset(string token,string password,CancellationToken ct)
     {
+        if(mode.IsSupabase) { await postgres.Reset(token,password,ct); return; }
         if(token.Length!=43)throw new CustomerRequestException(400,"Liên kết không hợp lệ hoặc đã hết hạn.");
         await using var c=data.Connection();await c.OpenAsync(ct);
         await using var tx=(SqlTransaction)await c.BeginTransactionAsync(IsolationLevel.Serializable,ct);

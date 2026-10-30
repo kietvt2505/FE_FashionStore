@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Phân loại sản phẩm YODY</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f6f5f3;color:#242424;font:14px/1.6 system-ui,sans-serif}
+main{max-width:1250px;margin:auto;padding:36px 24px 60px}header{margin-bottom:24px}.eyebrow{font-size:11px;letter-spacing:.16em;color:#753b49}h1{font-size:28px;margin:6px 0 12px}p{margin:8px 0;color:#666}
+.intro,.toolbar,.table-wrap{background:white;border:1px solid #e2dedb;border-radius:8px}.intro{padding:20px 24px;margin-bottom:20px}.intro ol{padding-left:20px;margin:8px 0}.intro strong{color:#242424}.muted{font-size:12px;color:#777}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 20px;margin-bottom:16px}.toolbar label{display:block;font-size:12px;font-weight:600}input,select,textarea,button{font:inherit}input,select{border:1px solid #cbc6c3;border-radius:4px;background:white;padding:10px;max-width:100%;color:#242424}input{min-width:260px}button{border:0;border-radius:4px;background:#713a49;color:white;padding:12px 18px;cursor:pointer;font-weight:600}button:disabled{background:#c4bebf;cursor:not-allowed}button:hover:enabled{background:#542b36}
+.stats{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;margin:0 0 14px}.stats strong{color:#713a49}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;text-align:left}th{font-size:12px;background:#faf9f7;color:#777;font-weight:600}th,td{padding:14px 16px;border-bottom:1px solid #eee9e5;vertical-align:middle}tr:last-child td{border-bottom:0}.product{display:flex;align-items:center;gap:12px;min-width:210px}.product img{width:48px;height:62px;object-fit:cover;border:1px solid #eee}.product strong,.product small{display:block}.product small{font-size:11px;color:#777}select{min-width:150px;width:100%}.category{font-size:12px;color:#777;max-width:130px}.badge{font-size:11px;white-space:nowrap;color:#777}.badge.changed{color:#713a49}.badge.incomplete{color:#935d1e}#message{padding:12px 0;color:#713a49}details{margin-top:20px}summary{cursor:pointer;font-weight:600}textarea{width:100%;height:220px;padding:16px;border:1px solid #ded8d4;background:#fff;margin-top:12px;font:12px/1.6 monospace}a{color:#713a49}#empty{padding:24px;text-align:center}footer{margin-top:24px;font-size:12px;color:#777}
+@media(max-width:700px){main{padding:24px 16px}h1{font-size:24px}.toolbar{align-items:stretch}.toolbar>div,.toolbar button{width:100%}input{width:100%;min-width:0}th,td{padding:12px}}
+</style>
+</head>
+<body>
+<main>
+<header><span class="eyebrow">YODY / CÔNG CỤ CỦA NHÓM</span><h1>Phân loại sản phẩm</h1><p>Chọn đúng đối tượng và loại sản phẩm để kết nối các bộ sưu tập trên website.</p><p id="source" class="muted"></p></header>
+<section class="intro" aria-label="Hướng dẫn">
+<ol><li>Chọn <strong>đối tượng</strong> và <strong>loại</strong> cho từng sản phẩm. Tên giống nhau nhưng mã khác nhau vẫn là các sản phẩm riêng.</li><li>Bấm <strong>Tải SQL đã chọn</strong>. File chỉ chứa những sản phẩm bạn vừa sửa và đã chọn đủ hai trường.</li><li>Mở file SQL, sao chép toàn bộ vào <strong>Supabase → SQL Editor → Run</strong>, rồi tải lại trang sản phẩm.</li></ol>
+<p class="muted">Unisex xuất hiện ở cả Nam và Nữ. Công cụ không tự gán đối tượng, không tự ghi database, không đổi giá hoặc tồn kho. Cần chạy Supabase-Catalog-Merchandising.sql trước lần phân loại đầu tiên. Nếu chưa xác định được loại chi tiết, chọn “Loại chung / chưa xác định”: sản phẩm chỉ xuất hiện ở trang đối tượng và danh mục hiện có, chưa vào các bộ lọc loại chi tiết.</p>
+</section>
+<div class="toolbar"><div><label for="search">Tìm theo mã hoặc tên sản phẩm</label><input id="search" type="search" placeholder="Ví dụ: SP-001, áo thun..." autocomplete="off"></div><button id="download" type="button" disabled>Tải SQL đã chọn</button></div>
+<div class="stats" aria-live="polite"><span>Tổng: <strong id="total">0</strong></span><span>Đã có đối tượng: <strong id="assigned">0</strong></span><span>Sẵn sàng xuất: <strong id="ready">0</strong></span></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">Sản phẩm</th><th scope="col">Danh mục hiện tại</th><th scope="col">Đối tượng</th><th scope="col">Loại sản phẩm</th><th scope="col">Trạng thái</th></tr></thead><tbody id="rows"></tbody></table><p id="empty" hidden>Không tìm thấy sản phẩm phù hợp.</p></div>
+<p id="message" role="status"></p>
+<details><summary>Xem trước SQL sẽ tải</summary><textarea id="sql" readonly aria-label="SQL phân loại sản phẩm" spellcheck="false"></textarea></details>
+<footer>Đây là bản danh sách tại thời điểm xuất. Khi thêm sản phẩm trên WinForms, chạy lại lệnh xuất để lấy danh sách mới. Chỉ ảnh sản phẩm cần kết nối mạng; thao tác chọn và tạo SQL chạy trên máy của bạn.</footer>
+</main>
+<script id="catalog-data" type="application/json">__CATALOG_JSON__</script>
+<script>
+(function(){
+ 'use strict';
+ var audiences=[['','Chưa chọn'],['NAM','Nam'],['NU','Nữ'],['UNISEX','Unisex (Nam và Nữ)']];
+ var kinds=[['','Chưa chọn'],['ao-thun','Áo thun'],['ao-polo','Áo polo'],['ao-so-mi','Áo sơ mi'],['ao-khoac','Áo khoác'],['ao-hoodie','Áo hoodie'],['ao-vest','Áo vest'],['ao-khac','Áo khác'],['quan-ngan','Quần ngắn'],['quan-dai','Quần dài'],['quan-jogger','Quần jogger'],['vay-ngan','Váy ngắn'],['vay-dai','Váy dài'],['dam-ngan','Đầm ngắn'],['dam-dai','Đầm dài'],['giay','Giày'],['dep','Dép'],['kinh-mat','Kính mát'],['mu','Mũ'],['vo','Vớ'],['day-nit','Dây nịt'],['balo','Balo'],['tui-xach','Túi xách'],['__general__','Loại chung / chưa xác định']];
+ var data;
+ try{data=JSON.parse(document.getElementById('catalog-data').textContent);if(!Array.isArray(data.products))throw new Error();}
+ catch(e){document.getElementById('message').textContent='Dữ liệu chưa hợp lệ. Hãy mở file HTML do scripts/Export-CatalogClassification.ps1 tạo ra.';return;}
+ var rows=[];
+ var tbody=document.getElementById('rows');
+ function literal(value){return "'"+String(value).replace(/'/g,"''")+"'";}
+ function normalize(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();}
+ function changed(row){return row.audience.value!==row.originalAudience||row.kind.value!==row.originalKind;}
+ function complete(row){return !!(row.audience.value&&row.kind.value);}
+ function sqlFor(selected){
+  if(!selected.length)return '';
+  var values=selected.map(function(row){return '    ('+literal(row.product.id)+', '+literal(row.audience.value)+', '+(row.kind.value==='__general__'?'NULL':literal(row.kind.value))+')';}).join(',\n');
+  return "-- Phân loại do nhóm lựa chọn. Không thay đổi giá hoặc tồn kho.\nBEGIN;\nSET LOCAL lock_timeout='5s';\nSET LOCAL statement_timeout='60s';\n"+
+   "DO $$ BEGIN IF to_regclass('webstore.catalog_product') IS NULL THEN RAISE EXCEPTION 'Run Supabase-Catalog-Merchandising.sql first'; END IF; END $$;\n"+
+   "INSERT INTO webstore.catalog_product(masp,audience,kind)\nSELECT v.masp,v.audience,v.kind FROM (VALUES\n"+values+
+   "\n) AS v(masp,audience,kind)\nWHERE EXISTS(SELECT 1 FROM public.sanpham p WHERE p.masp=v.masp)\n"+
+   "ON CONFLICT(masp) DO UPDATE SET audience=EXCLUDED.audience,kind=EXCLUDED.kind\nRETURNING masp,audience,kind;\nCOMMIT;\n\n"+
+   "SELECT m.audience,m.kind,count(*) AS products FROM webstore.catalog_product m\nWHERE EXISTS(SELECT 1 FROM public.sanpham p JOIN public.loaisanpham c USING(maloai) WHERE p.masp=m.masp AND p.trangthai AND c.trangthai)\nGROUP BY m.audience,m.kind ORDER BY m.audience,m.kind;\n";
+ }
+ function update(){
+  var selected=rows.filter(function(row){return changed(row)&&complete(row);});
+  var incomplete=rows.filter(function(row){return changed(row)&&!complete(row);}).length;
+  document.getElementById('ready').textContent=String(selected.length);
+  document.getElementById('download').disabled=selected.length===0;
+  document.getElementById('sql').value=sqlFor(selected);
+  document.getElementById('message').textContent=incomplete?'Có '+incomplete+' sản phẩm đang sửa chưa chọn đủ đối tượng và loại; các dòng này chưa được xuất.':'';
+  rows.forEach(function(row){var dirty=changed(row);row.status.textContent=dirty?(complete(row)?'Sẵn sàng xuất':'Chọn đủ hai trường'):(row.originalAudience?'Đã có phân loại':'Chưa phân loại');row.status.className='badge'+(dirty?(complete(row)?' changed':' incomplete'):'');});
+ }
+ function makeSelect(options,value,label){var select=document.createElement('select');select.setAttribute('aria-label',label);options.forEach(function(item){var o=document.createElement('option');o.value=item[0];o.textContent=item[1];select.appendChild(o);});select.value=value||'';if(select.selectedIndex<0)select.value='';select.addEventListener('change',update);return select;}
+ data.products.forEach(function(product){
+  if(!product.id)return;
+  var tr=document.createElement('tr');
+  var cell=document.createElement('td'),wrap=document.createElement('div');wrap.className='product';
+  if(product.image){try{var url=new URL(product.image,data.source+'/');if(url.protocol==='https:'||url.protocol==='http:'){var image=document.createElement('img');image.src=url.href;image.alt='';image.loading='lazy';image.addEventListener('error',function(){image.hidden=true;});wrap.appendChild(image);}}catch(e){}}
+  var identity=document.createElement('div'),name=document.createElement('strong'),code=document.createElement('small');name.textContent=product.name;code.textContent=product.id;identity.appendChild(name);identity.appendChild(code);wrap.appendChild(identity);cell.appendChild(wrap);tr.appendChild(cell);
+  var category=document.createElement('td');category.className='category';category.textContent=product.category;tr.appendChild(category);
+  var audience=makeSelect(audiences,product.audience,'Đối tượng của '+product.id);
+  var kind=makeSelect(kinds,product.kind,'Loại sản phẩm của '+product.id);
+  [audience,kind].forEach(function(select){var td=document.createElement('td');td.appendChild(select);tr.appendChild(td);});
+  var statusCell=document.createElement('td'),status=document.createElement('span');statusCell.appendChild(status);tr.appendChild(statusCell);
+  rows.push({product:product,tr:tr,audience:audience,kind:kind,status:status,originalAudience:audience.value,originalKind:kind.value});tbody.appendChild(tr);
+ });
+ document.getElementById('source').textContent='Nguồn: '+data.source+' · '+rows.length+' sản phẩm (đã gộp các size và màu cùng mã).';
+ document.getElementById('total').textContent=String(rows.length);document.getElementById('assigned').textContent=String(rows.filter(function(row){return !!row.originalAudience;}).length);
+ document.getElementById('search').addEventListener('input',function(){var term=normalize(this.value);var visible=0;rows.forEach(function(row){row.tr.hidden=!normalize(row.product.id+' '+row.product.name).includes(term);if(!row.tr.hidden)visible++;});document.getElementById('empty').hidden=visible>0;});
+ document.getElementById('download').addEventListener('click',function(){var sql=document.getElementById('sql').value;if(!sql)return;var url=URL.createObjectURL(new Blob([sql],{type:'text/plain;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='Supabase-Catalog-Assignments.sql';link.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);document.getElementById('message').textContent='Đã tạo file SQL. Hãy chạy file trong Supabase SQL Editor để cập nhật website.';});
+ update();
+}());
+</script>
+</body>
+</html>

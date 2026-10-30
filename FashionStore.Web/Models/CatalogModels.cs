@@ -11,8 +11,10 @@ namespace FashionStore.Web.Models
         public string MaLoai { get; set; }
         public string TenLoai { get; set; }
         public string DoiTuong { get; set; }
+        public string Kind {get;set;}
         public string MoTa { get; set; }
         public decimal DonGia { get; set; }
+        public decimal? GiaGoc { get; set; }
         public long TonKho { get; set; }
         public string HinhAnh { get; set; }
         public bool ConHang { get { return TonKho > 0; } }
@@ -30,6 +32,7 @@ namespace FashionStore.Web.Models
         public string KichCo { get; set; }
         public string MauSac { get; set; }
         public decimal DonGia { get; set; }
+        public decimal? GiaGoc {get;set;}
         public int SoLuongTonKho { get; set; }
     }
 
@@ -37,17 +40,24 @@ namespace FashionStore.Web.Models
     {
         public string MaSKU { get; set; }
         public string DuongDan { get; set; }
+        public string MauSac {get;set;}
+        public string Alt {get;set;}
     }
 
     public class HomeViewModel
     {
-        public HomeViewModel() { FeaturedProducts = new List<ProductSummary>(); }
+        public HomeViewModel() { FeaturedProducts = new List<ProductSummary>(); SaleProducts = new List<ProductSummary>(); }
         public IList<ProductSummary> FeaturedProducts { get; set; }
+        public IList<ProductSummary> SaleProducts { get; set; }
+        public string SaleError { get; set; }
         public string CatalogError { get; set; }
     }
 
     public class CatalogListViewModel
     {
+        public string Kind { get; set; }
+        public bool SaleOnly { get; set; }
+        public string CatalogNotice { get; set; }
         public bool SupportsAudience { get; set; } = true;
         public bool SupportsNewest { get; set; } = true;
         public CatalogListViewModel()
@@ -57,6 +67,8 @@ namespace FashionStore.Web.Models
         }
         public IList<ProductSummary> Products { get; set; }
         public IList<CategoryOption> Categories { get; set; }
+        public IList<string> Sizes {get;set;}=new List<string>();
+        public IList<string> Colors {get;set;}=new List<string>();
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }
         public string Size { get; set; }
@@ -81,6 +93,7 @@ namespace FashionStore.Web.Models
             Images = new List<ProductImage>();
         }
         public IList<ProductSummary> Related { get; set; } = new List<ProductSummary>();
+        public IList<ProductSummary> Accessories {get;set;}=new List<ProductSummary>();
         public ProductSummary Product { get; set; }
         public IList<ProductVariant> Variants { get; set; }
         public IList<ProductImage> Images { get; set; }

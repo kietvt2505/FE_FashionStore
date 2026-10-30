@@ -7,6 +7,7 @@ public sealed class SupabaseCatalogDbContext(DbContextOptions<SupabaseCatalogDbC
 {
     public DbSet<SupabaseProduct> Products => Set<SupabaseProduct>();
     public DbSet<SupabaseCategory> Categories => Set<SupabaseCategory>();
+    public DbSet<CatalogMerchandising> Merchandising => Set<CatalogMerchandising>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
@@ -18,12 +19,23 @@ public sealed class SupabaseCatalogDbContext(DbContextOptions<SupabaseCatalogDbC
         var c = model.Entity<SupabaseCategory>();
         c.ToTable("loaisanpham", "public");
         c.HasKey(x => x.maloai);
+        var m = model.Entity<CatalogMerchandising>();
+        m.ToTable("catalog_product", "webstore"); m.HasKey(x => x.masp);
+        m.Property(x => x.regular_price).HasPrecision(18, 2);
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess) =>
         throw new InvalidOperationException("Supabase catalog is read-only during migration.");
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default) =>
         throw new InvalidOperationException("Supabase catalog is read-only during migration.");
+}
+
+public sealed class CatalogMerchandising
+{
+    public string masp { get; set; } = "";
+    public string? audience { get; set; }
+    public string? kind { get; set; }
+    public decimal? regular_price { get; set; }
 }
 
 public sealed class SupabaseProduct

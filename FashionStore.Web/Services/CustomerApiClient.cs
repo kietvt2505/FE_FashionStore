@@ -35,22 +35,38 @@ namespace FashionStore.Web.Services
             new { model.CurrentPassword, model.NewPassword });
         public Task<object> LogoutAsync(string token) => SendAsync<object>(HttpMethod.Post, "api/account/logout", token);
         public Task<CustomerCart> CartAsync(string token) => SendAsync<CustomerCart>(HttpMethod.Get, "api/cart", token);
+        public Task<CustomerCart> MergeGuestAsync(string token,Guid requestId,System.Collections.Generic.IEnumerable<GuestCartEntry> items)=>
+            SendAsync<CustomerCart>(HttpMethod.Post,"api/cart/merge",token,new{RequestId=requestId,Items=System.Linq.Enumerable.Select(items,i=>new{Sku=i.Sku,Quantity=i.Quantity})});
         public Task<CustomerCart> AddAsync(string token, string sku, int quantity) => SendAsync<CustomerCart>(HttpMethod.Post, "api/cart/items", token, new { Sku=sku, Quantity=quantity });
         public Task<CustomerCart> SetAsync(string token, string sku, int quantity) => SendAsync<CustomerCart>(HttpMethod.Put, "api/cart/items/"+Uri.EscapeDataString(sku), token, new { Quantity=quantity });
         public Task<CustomerCart> DeleteAsync(string token, string sku) => SendAsync<CustomerCart>(HttpMethod.Delete, "api/cart/items/"+Uri.EscapeDataString(sku), token);
         public Task<CustomerCart> ClearAsync(string token) => SendAsync<CustomerCart>(HttpMethod.Delete, "api/cart", token);
         public Task<PlacedOrder> PlaceOrderAsync(string token, CheckoutViewModel model) =>
             SendAsync<PlacedOrder>(HttpMethod.Post, "api/orders", token,
-                new { model.Recipient, model.Phone, model.Address, model.PaymentMethod, model.Note, model.RequestId, model.Voucher });
+                new { model.Recipient, model.Phone, model.Address, model.PaymentMethod, model.Note, model.RequestId,Voucher=Optional(model.Voucher) });
+        public Task<System.Collections.Generic.List<OnlinePaymentOptionModel>> PaymentOptionsAsync(string token)=>SendAsync<System.Collections.Generic.List<OnlinePaymentOptionModel>>(HttpMethod.Get,"api/payments/options",token);
+        public Task<JObject> RecheckPaymentAsync(string token,string orderId)=>SendAsync<JObject>(HttpMethod.Post,"api/payments/"+Uri.EscapeDataString(orderId)+"/recheck",token);
+        public async Task<PaymentLinkModel> StartPaymentAsync(string token,string orderId,string clientIp=null)
+        {
+            var link=await SendAsync<PaymentLinkModel>(HttpMethod.Post,"api/payments/"+Uri.EscapeDataString(orderId)+"/start",token,new{ClientIp=clientIp});
+            Uri uri;
+            if(link.OrderId!=orderId || !Uri.TryCreate(link.Url,UriKind.Absolute,out uri) || uri.Scheme!="https" || uri.UserInfo!="" ||
+                !(uri.Host=="pay.payos.vn" || uri.Host=="sandbox.vnpayment.vn" || uri.Host=="pay.vnpay.vn" || uri.Host.EndsWith(".zalopay.vn",StringComparison.OrdinalIgnoreCase)))
+                throw new CustomerApiException(502,"Địa chỉ thanh toán không hợp lệ.");
+            return link;
+        }
         public Task<System.Collections.Generic.List<OrderSummaryModel>> OrdersAsync(string token,string q=null,string status=null,int page=1) =>
             SendAsync<System.Collections.Generic.List<OrderSummaryModel>>(HttpMethod.Get, "api/orders?q="+Uri.EscapeDataString(q??"")+"&status="+Uri.EscapeDataString(status??"")+"&page="+page, token);
         public Task<OrderDetailsModel> OrderAsync(string token, string id) =>
             SendAsync<OrderDetailsModel>(HttpMethod.Get, "api/orders/"+Uri.EscapeDataString(id), token);
 
         public Task<JArray> FeatureListAsync(string token,string path) => SendAsync<JArray>(HttpMethod.Get,"api/customer/"+path,token);
-        public Task<JObject> QuoteAsync(string token,string voucher) => SendAsync<JObject>(HttpMethod.Get,"api/orders/quote?voucher="+Uri.EscapeDataString(voucher??""),token);
+        public Task<JObject> QuoteAsync(string token,string voucher=null) => SendAsync<JObject>(HttpMethod.Get,"api/orders/quote"+(String.IsNullOrWhiteSpace(voucher)?"":"?voucher="+Uri.EscapeDataString(voucher)),token);
         public Task<object> FeatureAsync(string token,string path,object body=null,string method="POST")=>SendAsync<object>(new HttpMethod(method),"api/customer/"+path,token,body);
-        public Task<object> CancelAsync(string token,string id)=>SendAsync<object>(HttpMethod.Post,"api/orders/"+Uri.EscapeDataString(id)+"/cancel",token);
+        public Task<object> CancelAsync(string token,string id,CancelOrderViewModel model=null)=>SendAsync<object>(HttpMethod.Post,"api/orders/"+Uri.EscapeDataString(id)+"/cancel",token,
+            model==null?null:new{model.Reason,model.AccountHolder,model.AccountNumber,model.BankName});
+        public Task<object> RefundAccountAsync(string token,string id,CancelOrderViewModel model)=>SendAsync<object>(HttpMethod.Post,"api/orders/"+Uri.EscapeDataString(id)+"/refund-account",token,
+            new{model.AccountHolder,model.AccountNumber,model.BankName});
         public Task<object> RecoveryAsync(string email)=>SendAsync<object>(HttpMethod.Post,"api/account/recovery",null,new{Email=email});
         public Task<object> ResetAsync(string token,string password)=>SendAsync<object>(HttpMethod.Post,"api/account/recovery/reset",null,new{Token=token,Password=password});
         private async Task<T> SendAsync<T>(HttpMethod method, string path, string token, object body=null) where T:class

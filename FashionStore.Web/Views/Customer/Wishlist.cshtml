@@ -15,6 +15,7 @@
             @foreach (var p in Model)
             {
                 <article class="yody-surface-card yody-wishlist-item">
+                    @if (!String.IsNullOrWhiteSpace((string)p["ImageUrl"])) { <img class="yody-wishlist-image" src="@Url.Content(CatalogViewHelper.ImagePath((string)p["ImageUrl"]))" alt="@p["TenSanPham"]" loading="lazy" width="72" height="90" /> }
                     <p class="eyebrow">ĐÃ LƯU</p>
                     <h2>@p["TenSanPham"]</h2>
                     @if ((bool)p["TrangThai"])

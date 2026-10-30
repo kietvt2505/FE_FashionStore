@@ -5,6 +5,7 @@ using FashionStore.Backend.DTOs;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Xunit;
 
@@ -28,6 +29,7 @@ public sealed class SupabaseCustomerIntegrationTests
         var settings = new NpgsqlConnectionStringBuilder(connection);
         Assert.Contains(settings.Host, new[] { "127.0.0.1", "localhost", "::1" });
         Assert.Equal("fashionstore_test", settings.Database);
+        settings.Timezone="UTC";connection=settings.ConnectionString; // Match Supabase's timestamp contract.
         await using var sql = new NpgsqlConnection(connection);
         await sql.OpenAsync();
         async Task Execute(string command) { await using var cmd = new NpgsqlCommand(command, sql); await cmd.ExecuteNonQueryAsync(); }
@@ -54,10 +56,13 @@ public sealed class SupabaseCustomerIntegrationTests
         await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment("Development");
+            builder.ConfigureServices(services=>services.AddHttpClient<FashionStore.Backend.Services.PaymentGatewayClient>()
+                .ConfigurePrimaryHttpMessageHandler(()=>new GatewayStubHandler()));
             builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Database:Provider"] = "Supabase", ["Database:EnableSupabaseCustomerFeatures"] = "true",
-                ["Database:EnableSupabaseOrders"] = "true", ["Orders:EmployeeId"] = "NV01",
+                ["Orders:EnableBankTransfer"] = "true", ["Database:EnableSupabaseOrders"] = "true", ["Orders:EmployeeId"] = "NV01",
+                ["Payments:PayOS:Enabled"] = "false",
                 ["ConnectionStrings:Supabase"] = connection
             }));
         });
@@ -134,15 +139,38 @@ public sealed class SupabaseCustomerIntegrationTests
                 makh varchar(20) REFERENCES public.khachhang,tennguoinhan varchar(150),diachigiao varchar(400),
                 donvivanchuyen varchar(150),trangthaigiaohang varchar(50),trangthaithanhtoan varchar(30),
                 phiship numeric(18,2),tiencod numeric(18,2),manv varchar(20) REFERENCES public.nhanvien,
-                nguondon varchar(20),ghichugiaohang varchar(500));
+                nguondon varchar(20),ghichugiaohang varchar(500),ngaygiaothanhcong timestamp,makm varchar(20));
             CREATE TABLE public.chitiethoadon(sohd varchar(30) REFERENCES public.hoadon,masku varchar(20) REFERENCES public.sanpham,
                 soluong integer NOT NULL,dongia numeric(18,2) NOT NULL,thanhtien numeric(18,2) NOT NULL,PRIMARY KEY(sohd,masku));
             """);
         var orderMigration = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Supabase-Web-Orders.sql"));
         await Execute(orderMigration); await Execute(orderMigration);
+        await Execute("ALTER TABLE public.sanpham ADD COLUMN soluong integer NOT NULL DEFAULT 100");
+        var paymentMigration = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Supabase-Web-Payments.sql"));
+        await Execute(paymentMigration); await Execute(paymentMigration);
         var checkout = new CheckoutRequest("Alice Test", "0900000001", "123 Test street", "COD", "Test only", Guid.NewGuid());
-        Assert.Equal(HttpStatusCode.BadRequest, (await alice.PostAsJsonAsync("/api/orders", checkout with { PaymentMethod = "CHUYEN_KHOAN" })).StatusCode);
-        Assert.Equal(HttpStatusCode.Conflict, (await alice.PostAsJsonAsync("/api/orders", checkout with { Voucher = "TEST" })).StatusCode);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable,(await alice.PostAsJsonAsync("/api/orders",checkout)).StatusCode);
+        string owner;
+        await using(var lookup=new NpgsqlCommand("SELECT makh FROM public.khachhang WHERE sodienthoai='0900000001'",sql))owner=(string)(await lookup.ExecuteScalarAsync())!;
+        var oldRequest=checkout with {RequestId=Guid.NewGuid()};
+        var oldId="WEB"+Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(owner+":"+oldRequest.RequestId.ToString("D"))))[..27];
+        await using(var seed=new NpgsqlCommand("""
+            INSERT INTO webstore.order_snapshot(sohd,makh,ngaylap,recipient,phone,address,total,paymentmethod)
+            VALUES(@id,@kh,CURRENT_TIMESTAMP,'Legacy','0900000001','Synthetic address',500,'COD'),
+              ('WEB-000007',@kh,CURRENT_TIMESTAMP,'Reserved','0900000001','Synthetic address',500,'COD')
+            """,sql)) {
+            seed.Parameters.AddWithValue("id",oldId);seed.Parameters.AddWithValue("kh",owner);await seed.ExecuteNonQueryAsync();
+        }
+        // The retained old order is found even before the new migration; no duplicate is created.
+        Assert.Equal(oldId,(await (await alice.PostAsJsonAsync("/api/orders",oldRequest)).Content.ReadFromJsonAsync<PlaceOrderResponse>())!.OrderId);
+        var numbersMigration=await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,"Supabase-Short-Order-Numbers.sql"));
+        await Execute(numbersMigration);await Execute(numbersMigration);
+        Assert.Equal(oldId,(await (await alice.PostAsJsonAsync("/api/orders",oldRequest)).Content.ReadFromJsonAsync<PlaceOrderResponse>())!.OrderId);
+        await using(var remove=new NpgsqlCommand("DELETE FROM webstore.order_snapshot WHERE sohd=@id OR sohd='WEB-000007'",sql)) {
+            remove.Parameters.AddWithValue("id",oldId);await remove.ExecuteNonQueryAsync();
+        }
+        Assert.Equal(HttpStatusCode.BadRequest, (await alice.PostAsJsonAsync("/api/orders", checkout with { PaymentMethod = "INVALID" })).StatusCode);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, (await alice.PostAsJsonAsync("/api/orders", checkout with { Voucher = "TEST" })).StatusCode);
         await Execute("UPDATE public.nhanvien SET trangthai=false");
         Assert.Equal(HttpStatusCode.ServiceUnavailable, (await alice.PostAsJsonAsync("/api/orders", checkout)).StatusCode);
         await Execute("UPDATE public.nhanvien SET trangthai=true; UPDATE public.sanpham SET soluongtonkho=1 WHERE masku='SKU-L'");
@@ -154,9 +182,22 @@ public sealed class SupabaseCustomerIntegrationTests
         var placedResponse = await alice.PostAsJsonAsync("/api/orders", checkout);
         Assert.Equal(HttpStatusCode.OK, placedResponse.StatusCode);
         var placed = (await placedResponse.Content.ReadFromJsonAsync<PlaceOrderResponse>())!;
+        Assert.Matches("^WEB-[0-9]{6,}$",placed.OrderId);Assert.NotEqual("WEB-000007",placed.OrderId);
         Assert.Equal(500, placed.Total);
+        var justPlaced=(await alice.GetFromJsonAsync<OrderDetails>("/api/orders/"+placed.OrderId))!;
+        Assert.Equal(DateTimeKind.Utc,justPlaced.CreatedAt.Kind);
+        Assert.True(Math.Abs((DateTime.UtcNow-justPlaced.CreatedAt).TotalSeconds)<60);
+        await using(var clock=new NpgsqlCommand("UPDATE webstore.order_snapshot SET ngaylap=TIMESTAMP '2026-10-27 06:24:00' WHERE sohd=@id",sql)){
+            clock.Parameters.AddWithValue("id",placed.OrderId);await clock.ExecuteNonQueryAsync();
+        }
+        var timestamped=(await alice.GetFromJsonAsync<OrderDetails>("/api/orders/"+placed.OrderId))!;
+        Assert.Equal(DateTimeKind.Utc,timestamped.CreatedAt.Kind);
+        Assert.Equal("27/10/2026 13:24",FashionStore.Web.Helpers.CustomerViewHelper.VietnamDate(timestamped.CreatedAt));
+        var rawJson=await alice.GetStringAsync("/api/orders/"+placed.OrderId);
+        Assert.EndsWith("Z",System.Text.Json.JsonDocument.Parse(rawJson).RootElement.GetProperty("createdAt").GetString());
         Assert.Empty((await alice.GetFromJsonAsync<CartResponse>("/api/cart"))!.Items);
         Assert.Single((await alice.GetFromJsonAsync<List<OrderSummary>>("/api/orders"))!);
+        Assert.Equal("27/10/2026 13:24",FashionStore.Web.Helpers.CustomerViewHelper.VietnamDate((await alice.GetFromJsonAsync<List<OrderSummary>>("/api/orders"))![0].CreatedAt));
         Assert.Empty((await bob.GetFromJsonAsync<List<OrderSummary>>("/api/orders"))!);
         Assert.Equal(HttpStatusCode.NotFound, (await bob.GetAsync("/api/orders/" + placed.OrderId)).StatusCode);
         await using (var cmd = new NpgsqlCommand("SELECT count(*) FROM public.hoadon WHERE nguondon='WEB' AND manv='NV01' AND trangthaithanhtoan='CHUA_THANH_TOAN'", sql))
@@ -167,14 +208,37 @@ public sealed class SupabaseCustomerIntegrationTests
         var order = (await alice.GetFromJsonAsync<OrderDetails>("/api/orders/" + placed.OrderId))!;
         Assert.Equal("HOAN_TAT", order.Status); Assert.Equal("DA_THANH_TOAN", order.PaymentStatus);
         Assert.Equal("Áo test", Assert.Single(order.Items).Name); Assert.Equal(250, order.Items[0].UnitPrice);
+        Assert.Equal("P1", order.Items[0].ProductId);
+        Assert.Equal("/red.png", order.Items[0].ImageUrl); // Same product has a black SKU: never use its image.
+        await Execute("UPDATE public.sanpham SET mausac='Xanh' WHERE masku='SKU-L'");
+        Assert.Null((await alice.GetFromJsonAsync<OrderDetails>("/api/orders/" + placed.OrderId))!.Items[0].ImageUrl);
+        await Execute("UPDATE public.sanpham SET mausac='Đỏ',hinhanh=NULL WHERE masku='SKU-L'");
+        Assert.Null((await alice.GetFromJsonAsync<OrderDetails>("/api/orders/" + placed.OrderId))!.Items[0].ImageUrl);
+        await Execute("UPDATE public.sanpham SET hinhanh='/red.png' WHERE masku='SKU-L'");
         Assert.False(order.SupportsHistory); Assert.False(order.SupportsReturns);
-        Assert.Equal(HttpStatusCode.Conflict, (await alice.PostAsync("/api/orders/" + placed.OrderId + "/cancel", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, (await alice.PostAsync("/api/orders/" + placed.OrderId + "/cancel", null)).StatusCode);
         // Windows currently deletes pending COD invoices. A retained snapshot must not become a successful new retry.
         await Execute("DELETE FROM public.chitiethoadon; DELETE FROM public.hoadon");
         order = (await alice.GetFromJsonAsync<OrderDetails>("/api/orders/" + placed.OrderId))!;
         Assert.Equal("CAN_HO_TRO", order.Status);
         var retryRemoved = (await (await alice.PostAsJsonAsync("/api/orders", checkout)).Content.ReadFromJsonAsync<PlaceOrderResponse>())!;
         Assert.Equal("CAN_HO_TRO", retryRemoved.Status);
+        await SupabasePaymentScenarios.VerifyAsync(alice, bob, sql);
+        await CatalogMerchandisingScenarios.VerifyAsync(alice, sql);
+        await SupabaseCustomerFeatureScenarios.VerifyAsync(alice, bob, sql);
+        await SupabaseCheckoutPricingScenarios.VerifyAsync(alice, sql);
+        await ShortOrderNumberScenarios.VerifyAsync(alice,bob,sql);
+        await DailyOrderNumberScenarios.VerifyAsync(alice,bob,sql);
+        await StorefrontEnhancementScenarios.VerifyAsync(alice,bob,sql);
+        await NativePromotionScenarios.VerifyAsync(alice,sql);
+        await CheckoutVoucherScenarios.VerifyAsync(alice,sql);
+        using(var paymentAlice=factory.CreateClient(new WebApplicationFactoryClientOptions{AllowAutoRedirect=false})) {
+            paymentAlice.DefaultRequestHeaders.Authorization=alice.DefaultRequestHeaders.Authorization;
+            await OnlinePaymentScenarios.VerifyAsync(paymentAlice,bob,sql,factory.Services.GetRequiredService<IConfiguration>());
+        }
+        await OrderCancellationScenarios.VerifyAsync(alice,bob,sql);
+        await PayosScenarios.VerifyAsync(alice,bob,sql,factory.Services.GetRequiredService<IConfiguration>());
+        await OrderRefundScenarios.VerifyAsync(alice,bob,sql);
         Assert.Equal(HttpStatusCode.NoContent, (await alice.PostAsJsonAsync("/api/account/password", new ChangePasswordRequest
             { CurrentPassword = password, NewPassword = password + "new" })).StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await alice.GetAsync("/api/account/me")).StatusCode);

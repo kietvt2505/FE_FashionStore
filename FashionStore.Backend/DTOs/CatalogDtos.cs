@@ -9,6 +9,8 @@ public sealed class ProductQuery : IValidatableObject
     [StringLength(30)] public string? Size { get; set; }
     [StringLength(60)] public string? Color { get; set; }
     public bool InStock { get; set; }
+    public bool SaleOnly { get; set; }
+    [RegularExpression("^[a-z0-9-]{1,40}$")] public string? Kind { get; set; }
     public IEnumerable<ValidationResult> Validate(ValidationContext context)
     {
         if (MinPrice.HasValue && MaxPrice.HasValue && MinPrice > MaxPrice)
@@ -23,15 +25,24 @@ public sealed class ProductQuery : IValidatableObject
 }
 
 public sealed record CategoryResponse(string Id, string Name);
-public sealed record VariantResponse(string Sku, string Size, string Color, decimal Price, int Stock);
-public sealed record ProductImageResponse(string? Sku, string Url);
+public sealed record VariantResponse(string Sku, string Size, string Color, decimal Price, int Stock)
+{
+    public decimal? OriginalPrice {get;init;}
+}
+public sealed record ProductImageResponse(string? Sku, string Url)
+{
+    public string? Color { get; init; }
+    public string? Alt { get; init; }
+}
 public class ProductSummaryResponse
 {
     public string Id { get; init; } = "";
     public string Name { get; init; } = "";
     public CategoryResponse Category { get; init; } = null!;
     public string? Audience { get; init; }
+    public string? Kind { get; init; }
     public decimal Price { get; init; }
+    public decimal? OriginalPrice { get; init; }
     public long Stock { get; init; }
     public string? ImageUrl { get; init; }
     public DateTime? CreatedAt { get; init; }
@@ -46,4 +57,7 @@ public sealed record ProductListResponse(IReadOnlyList<ProductSummaryResponse> I
 {
     public bool SupportsAudience { get; init; } = true;
     public bool SupportsNewest { get; init; } = true;
+    public string? Notice { get; init; }
+    public IReadOnlyList<string> Sizes { get; init; } = [];
+    public IReadOnlyList<string> Colors { get; init; } = [];
 }

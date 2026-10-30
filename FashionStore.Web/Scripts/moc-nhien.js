@@ -72,30 +72,61 @@
     if (nav) nav.addEventListener("click", function (event) {
         if (event.target.closest("a") && !wide.matches) setOpen(panels[0], false, true);
     });
+    var categoryFilter = document.getElementById("catalog-category");
+    if (categoryFilter) categoryFilter.addEventListener("change", function () {
+        var kindInput = categoryFilter.form.querySelector('input[name="kind"]');
+        if (kindInput) kindInput.disabled = true;
+    });
+    var catalogMenus = Array.prototype.slice.call(document.querySelectorAll("[data-catalog-menu]"));
+    function closeCatalogMenus(except) {
+        catalogMenus.forEach(function (item) {
+            if (item === except) return;
+            clearTimeout(item.catalogCloseTimer);
+            item.querySelector(".catalog-mega-menu").hidden = true;
+            item.querySelector(".catalog-nav-toggle").setAttribute("aria-expanded", "false");
+        });
+    }
+    catalogMenus.forEach(function (item) {
+        var toggle = item.querySelector(".catalog-nav-toggle"), panel = item.querySelector(".catalog-mega-menu");
+        function open() { clearTimeout(item.catalogCloseTimer); closeCatalogMenus(item); panel.hidden = false; toggle.setAttribute("aria-expanded", "true"); }
+        item.addEventListener("mouseenter", function () { if (wide.matches) open(); });
+        item.addEventListener("mouseleave", function () { if (wide.matches) item.catalogCloseTimer = setTimeout(function () { if (!item.contains(document.activeElement)) closeCatalogMenus(); }, 180); });
+        item.addEventListener("focusin", function (event) { if (wide.matches && event.target !== toggle) open(); });
+        item.addEventListener("focusout", function () { setTimeout(function () { if (!item.contains(document.activeElement)) { panel.hidden = true; toggle.setAttribute("aria-expanded", "false"); } }, 0); });
+        toggle.addEventListener("click", function () { if (panel.hidden) open(); else { panel.hidden = true; toggle.setAttribute("aria-expanded", "false"); } });
+        item.addEventListener("keydown", function (event) { if (event.key === "Escape") { closeCatalogMenus(); toggle.focus(); event.stopPropagation(); } });
+    });
+    document.addEventListener("click", function (event) { if (nav && !nav.contains(event.target)) closeCatalogMenus(); });
+    if (wide.addEventListener) wide.addEventListener("change", function () { closeCatalogMenus(); });
     var accountNavButton = document.querySelector(".yody-account-nav-toggle");
     var accountNav = document.getElementById("customer-nav-links");
-    var accountNarrow = window.matchMedia("(max-width: 767px)");
     if (accountNavButton && accountNav) {
-        function syncAccountNav() {
-            accountNavButton.hidden = !accountNarrow.matches;
-            if (accountNarrow.matches && accountNav.contains(document.activeElement)) accountNavButton.focus();
-            accountNav.hidden = accountNarrow.matches;
-            accountNavButton.setAttribute("aria-expanded", String(!accountNav.hidden));
+        var accountNavigation = accountNavButton.closest(".yody-account-navigation");
+        function setAccountNav(open, returnFocus) {
+            accountNav.hidden = !open;
+            accountNavButton.setAttribute("aria-expanded", String(open));
+            if (returnFocus) accountNavButton.focus();
         }
+        accountNavigation.classList.add("is-enhanced");
+        accountNavButton.hidden = false;
+        setAccountNav(false, false);
         accountNavButton.addEventListener("click", function () {
-            accountNav.hidden = !accountNav.hidden;
-            accountNavButton.setAttribute("aria-expanded", String(!accountNav.hidden));
+            closeOthers();
+            closeCatalogMenus();
+            setAccountNav(accountNav.hidden, false);
         });
-        accountNav.addEventListener("keydown", function (event) {
-            if (event.key === "Escape" && accountNarrow.matches) {
-                accountNav.hidden = true;
-                accountNavButton.setAttribute("aria-expanded", "false");
-                accountNavButton.focus();
+        accountNavigation.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && !accountNav.hidden) {
+                setAccountNav(false, true);
+                event.stopPropagation();
             }
         });
-        syncAccountNav();
-        if (accountNarrow.addEventListener) accountNarrow.addEventListener("change", syncAccountNav);
-        else accountNarrow.addListener(syncAccountNav);
+        document.addEventListener("click", function (event) {
+            if (!accountNavigation.contains(event.target)) setAccountNav(false, false);
+        });
+        document.addEventListener("focusin", function (event) {
+            if (!accountNavigation.contains(event.target)) setAccountNav(false, false);
+        });
     }
 
     // Keep unavailable remote images from leaving broken-image icons.
@@ -163,7 +194,7 @@
  if (!document.body.classList.contains("customer-site")) return;
  var badge=document.getElementById("cart-count");
  if(badge && window.fetch) fetch(badge.getAttribute("data-url"),{credentials:"same-origin",headers:{"Accept":"application/json"}}).then(function(r){if(!r.ok)throw new Error();return r.json();}).then(function(data){if(typeof data.count==="number"){badge.textContent=data.count>99?"99+":String(data.count);badge.hidden=data.count===0;}}).catch(function(){badge.hidden=true;});
- document.querySelectorAll(".account-nav a").forEach(function(a){if(a.pathname.toLowerCase()===location.pathname.toLowerCase())a.setAttribute("aria-current","page");});
+ document.querySelectorAll(".account-nav a").forEach(function(a){if(a.pathname.toLowerCase()===location.pathname.toLowerCase()||(a.getAttribute("data-active-path")||"").toLowerCase()===location.pathname.toLowerCase())a.setAttribute("aria-current","page");});
  document.addEventListener("submit",function(e){
   var form=e.target;var submitter=e.submitter;
   if(submitter&&submitter.hasAttribute("data-confirm")&&!window.confirm(submitter.getAttribute("data-confirm"))){e.preventDefault();return;}

@@ -2,17 +2,22 @@
 @using FashionStore.Web.Helpers
 @{
     var picture = CatalogViewHelper.ImagePath(Model.HinhAnh);
+    var origin=Request.RawUrl.StartsWith("/Product/Details",StringComparison.OrdinalIgnoreCase)?Session["ShoppingReturnUrl"] as string:Request.RawUrl;
+    var detailsUrl=Url.Action("Details","Product",new{id=Model.MaSP,returnUrl=origin});
+    var discount=Model.GiaGoc.HasValue && Model.GiaGoc.Value>Model.DonGia?(int)Math.Round((1-Model.DonGia/Model.GiaGoc.Value)*100):0;
 }
 <article class="product-card">
-    <a class="product-image" href="@Url.Action("Details", "Product", new { id = Model.MaSP })" aria-label="Xem chi tiết @Model.TenSanPham">
+    <a class="product-image" href="@detailsUrl" aria-label="Xem chi tiết @Model.TenSanPham">
         <img width="600" height="800" loading="lazy" decoding="async" src="@Url.Content(picture)" alt="@Model.TenSanPham" />
         <span class="product-tag">@(Model.ConHang ? CatalogViewHelper.AudienceLabel(Model.DoiTuong) : "HẾT HÀNG")</span>
+        @if(discount>0){<span class="product-discount-tag">−@discount%</span>}
         <span class="product-view">Xem sản phẩm <span aria-hidden="true">↗</span></span>
     </a>
     <div class="product-detail">
         <p class="product-category">@Model.TenLoai</p>
-        <h3><a href="@Url.Action("Details", "Product", new { id = Model.MaSP })">@Model.TenSanPham</a></h3>
-        <strong>Từ @CatalogViewHelper.Vnd(Model.DonGia)</strong>
+        <h3><a href="@detailsUrl">@Model.TenSanPham</a></h3>
+        <div class="product-price-row"><strong class="@(Model.GiaGoc.HasValue ? "sale-price" : "")">Từ @CatalogViewHelper.Vnd(Model.DonGia)</strong>
+        @if (Model.GiaGoc.HasValue) { <del aria-label="Giá gốc">@CatalogViewHelper.Vnd(Model.GiaGoc.Value)</del><span class="product-sale-badge">Khuyến mãi</span> }</div>
         <span class="product-meta">@(Model.ConHang ? "Có sẵn tại cửa hàng" : "Tạm hết hàng")</span>
     </div>
     @using(Html.BeginForm("SaveWishlist","Customer",FormMethod.Post,new{@class="wishlist-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@Model.MaSP"/><button type="submit" aria-label="Lưu yêu thích @Model.TenSanPham"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 3.8 12A5.2 5.2 0 0 1 12 5.6 5.2 5.2 0 0 1 20.2 12Z" /></svg><span>Yêu thích</span></button>}

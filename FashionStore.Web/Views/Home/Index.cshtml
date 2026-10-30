@@ -2,105 +2,108 @@
 @{
     ViewBag.Title = "Trang chủ";
     ViewBag.IsStorefrontHome = true;
+    var allProducts = Url.Action("Index", "Product");
+    var promotions = Url.Action("Index", "Product", new { saleOnly = true, sort = "price_asc" });
 }
-<main class="mn-home yody-home">
-    <section class="mn-container yody-hero" aria-labelledby="yody-hero-title">
-        <div class="yody-hero-copy">
-            <p class="eyebrow yody-hero-kicker">YODY / THỜI TRANG VÀ PHỤ KIỆN</p>
-            <h1 id="yody-hero-title">Mặc đẹp.<br /><span>Theo cách của bạn.</span></h1>
-            <p>Chọn những thiết kế tinh tế, dễ kết hợp và thoải mái để tự tin trong từng khoảnh khắc.</p>
-            <div class="yody-hero-actions">
-                <a class="mn-btn mn-btn-primary" href="@Url.Action("Index", "Product")">Khám phá sản phẩm <span aria-hidden="true">↗</span></a>
-                <a class="mn-text-link" href="#categories">Xem danh mục <span aria-hidden="true">↓</span></a>
+@section styles {
+    <link rel="stylesheet" href="@Url.Content("~/Content/home.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/home.css")).Ticks" />
+}
+<main class="yody-home-refresh">
+    <section class="hp-hero" aria-labelledby="hp-hero-title">
+        <div class="hp-hero-photo"><img src="@Url.Content("~/Content/images/home-men.png")" alt="Gợi ý phối áo khoác màu be cho phong cách hằng ngày" fetchpriority="high" width="1140" height="1540" /></div>
+        <div class="mn-container hp-hero-inner">
+            <div class="hp-hero-copy">
+                <p class="hp-kicker">YODY / THỜI TRANG VÀ PHỤ KIỆN</p>
+                <h1 id="hp-hero-title">Mặc đơn giản.<br /><span class="hp-hero-accent">Đẹp mỗi ngày.</span></h1>
+                <p>Những thiết kế dễ mặc, dễ phối.<br />Cùng bạn tạo nên phong cách của riêng mình.</p>
+                <div class="hp-hero-actions"><a class="hp-button" href="@allProducts">Khám phá ngay <span aria-hidden="true">→</span></a><a class="hp-link" href="@promotions">Xem ưu đãi <span aria-hidden="true">↗</span></a></div>
             </div>
-            <div class="yody-hero-footer"><span>BỘ SƯU TẬP YODY</span><span>PHONG CÁCH HẰNG NGÀY</span></div>
-        </div>
-        <div class="yody-hero-image">
-            <img src="https://images.unsplash.com/photo-1526413232644-8a40f03cc03b?auto=format&amp;fit=crop&amp;w=1600&amp;q=85"
-                 alt="Hình ảnh minh họa phong cách thời trang thanh lịch" fetchpriority="high" />
-            <span class="yody-hero-photo-caption">THANH LỊCH · HIỆN ĐẠI</span>
         </div>
     </section>
 
-    <section class="mn-container yody-benefits" aria-label="Khám phá YODY">
-        <div><span aria-hidden="true" class="yody-benefit-symbol">01</span><div><strong>Dễ phối, dễ mặc</strong><p>Khám phá phong cách phù hợp với bạn.</p></div></div>
-        <div><span aria-hidden="true" class="yody-benefit-symbol">02</span><div><strong>Quyền lợi thành viên</strong><p>Theo dõi ưu đãi và điểm tích lũy.</p></div></div>
-        <div><span aria-hidden="true" class="yody-benefit-symbol">03</span><div><strong>Chính sách đổi trả</strong><p>Xem điều kiện đổi trả trước khi mua.</p></div></div>
-    </section>
-
-    <section class="mn-container yody-home-section" id="categories" aria-labelledby="yody-category-heading">
-        <header class="yody-section-heading">
-            <div><p class="eyebrow">DANH MỤC MUA SẮM</p><h2 id="yody-category-heading">Khám phá theo phong cách</h2></div>
-            <a class="mn-text-link" href="@Url.Action("Index", "Product")">Tất cả sản phẩm <span aria-hidden="true">↗</span></a>
+    <section class="mn-container hp-section" id="products" aria-labelledby="hp-featured-title">
+        <header class="hp-section-heading">
+            <div><p class="hp-kicker">LỰA CHỌN DÀNH CHO BẠN</p><h2 id="hp-featured-title">Sản phẩm nổi bật</h2></div>
+            <div class="hp-section-actions"><a class="hp-link" href="@allProducts">Xem tất cả <span aria-hidden="true">→</span></a>
+                @if (Model.FeaturedProducts.Count > 1) {
+                    <div class="hp-rail-controls" data-home-controls hidden><button type="button" data-home-prev aria-label="Xem nhóm sản phẩm trước" aria-controls="hp-featured-rail">←</button><button type="button" data-home-next aria-label="Xem nhóm sản phẩm tiếp theo" aria-controls="hp-featured-rail">→</button></div>
+                }
+            </div>
         </header>
-        <div class="yody-category-grid">
-            <a class="yody-category-card" href="@Url.Action("Index", "Product", new { audience = "NAM" })">
-                <img src="https://images.unsplash.com/photo-1565101129934-0da84e9fd368?auto=format&amp;fit=crop&amp;w=1100&amp;q=85" alt="Hình minh họa danh mục thời trang nam" loading="lazy" />
-                <span class="yody-category-info"><span><small>01 / KHÁM PHÁ</small><strong>Thời trang nam</strong></span><span class="yody-category-arrow" aria-hidden="true">↗</span></span>
-            </a>
-            <a class="yody-category-card" href="@Url.Action("Index", "Product", new { audience = "NU" })">
-                <img src="https://images.unsplash.com/photo-1772443325539-0572726cb8c6?auto=format&amp;fit=crop&amp;w=1100&amp;q=85" alt="Hình minh họa danh mục thời trang nữ" loading="lazy" />
-                <span class="yody-category-info"><span><small>02 / KHÁM PHÁ</small><strong>Thời trang nữ</strong></span><span class="yody-category-arrow" aria-hidden="true">↗</span></span>
-            </a>
-            <a class="yody-category-card" href="@Url.Action("Index", "Product", new { audience = "TRE_EM" })">
-                <img src="https://images.unsplash.com/photo-1772443323934-2bf0282359c3?auto=format&amp;fit=crop&amp;w=1100&amp;q=85" alt="Hình minh họa danh mục thời trang trẻ em" loading="lazy" />
-                <span class="yody-category-info"><span><small>03 / KHÁM PHÁ</small><strong>Thời trang trẻ em</strong></span><span class="yody-category-arrow" aria-hidden="true">↗</span></span>
-            </a>
-        </div>
-    </section>
-
-    <section class="yody-products-band" id="products" aria-labelledby="yody-products-heading">
-        <div class="mn-container yody-home-section">
-            <header class="yody-section-heading">
-                <div><p class="eyebrow">SẢN PHẨM NỔI BẬT</p><h2 id="yody-products-heading">Tuyển chọn dành cho bạn</h2></div>
-                <a class="mn-text-link" href="@Url.Action("Index", "Product")">Xem toàn bộ <span aria-hidden="true">↗</span></a>
-            </header>
-            @if (!String.IsNullOrEmpty(Model.CatalogError))
-            {
-                <div class="catalog-alert" role="alert">@Model.CatalogError</div>
-            }
-            else if (Model.FeaturedProducts.Count == 0)
-            {
-                <div class="catalog-empty" role="status"><h3>Sản phẩm đang được cập nhật</h3><p>Hãy quay lại sau để khám phá các thiết kế mới.</p><a class="mn-btn mn-btn-outline" href="@Url.Action("Index", "Product")">Đến trang sản phẩm</a></div>
-            }
-            else
-            {
-                <div class="product-grid yody-home-products">
-                    @foreach (var product in Model.FeaturedProducts)
-                    {
-                        @Html.Partial("_ProductCard", product)
-                    }
-                </div>
-            }
-        </div>
-    </section>
-
-    <section class="mn-container yody-editorial" aria-labelledby="yody-editorial-heading">
-        <div class="yody-editorial-image">
-            <img src="https://images.unsplash.com/photo-1565101129934-0da84e9fd368?auto=format&amp;fit=crop&amp;w=1400&amp;q=85" alt="Hình ảnh minh họa phong cách thời trang thường ngày" loading="lazy" />
-        </div>
-        <div class="yody-editorial-copy">
-            <p class="eyebrow">PHONG CÁCH YODY</p>
-            <h2 id="yody-editorial-heading">Tinh giản trong lựa chọn.<br />Khác biệt ở cách mặc.</h2>
-            <p>Để trang phục trở thành một phần của nhịp sống: tự nhiên, thoải mái và thể hiện cá tính của riêng bạn.</p>
-            <a class="mn-text-link" href="@Url.Action("About", "Home")">Tìm hiểu thêm <span aria-hidden="true">↗</span></a>
-        </div>
-    </section>
-
-    <section class="mn-container yody-promotion" aria-labelledby="yody-promo-heading">
-        <div><p class="eyebrow">ƯU ĐÃI DÀNH CHO BẠN</p><h2 id="yody-promo-heading">Mua sắm thông minh, chọn đúng ưu đãi.</h2><p>Kiểm tra các chương trình, mã giảm giá và điều kiện áp dụng đang có.</p></div>
-        <a class="mn-btn mn-btn-outline" href="@Url.Action("Promotions", "Customer")">Xem ưu đãi <span aria-hidden="true">↗</span></a>
-    </section>
-
-    <section class="yody-membership" id="membership" aria-labelledby="yody-membership-heading">
-        <div class="mn-container yody-membership-grid">
-            <div class="yody-membership-copy">
-                <p class="eyebrow">THÀNH VIÊN YODY</p>
-                <h2 id="yody-membership-heading">Phong cách của bạn.<br />Quyền lợi của bạn.</h2>
-                <p>Đăng nhập để theo dõi điểm tích lũy, ưu đãi và lịch sử mua sắm trong tài khoản thành viên.</p>
-                <a class="mn-btn mn-btn-light" href="@Url.Action("Index", "Customer")">Khám phá quyền lợi <span aria-hidden="true">↗</span></a>
+        @if (!String.IsNullOrEmpty(Model.CatalogError)) {
+            <div class="hp-empty" role="alert"><p>@Model.CatalogError</p><a class="hp-link" href="@allProducts">Đến trang sản phẩm →</a></div>
+        } else if (Model.FeaturedProducts.Count == 0) {
+            <div class="hp-empty"><h3>Bộ sưu tập đang được cập nhật</h3><p>Hãy quay lại để khám phá những lựa chọn mới.</p><a class="hp-link" href="@allProducts">Xem sản phẩm →</a></div>
+        } else {
+            <div id="hp-featured-rail" class="hp-product-rail" data-home-rail tabindex="0" aria-label="Sản phẩm nổi bật, cuộn ngang để xem thêm">
+                @foreach (var product in Model.FeaturedProducts) { @Html.Partial("_ProductCard", product) }
             </div>
-            <div class="yody-membership-monogram" aria-hidden="true"><span>YODY</span><small>THỜI TRANG &amp; PHỤ KIỆN</small></div>
+        }
+    </section>
+
+    <section class="mn-container hp-collections" id="categories" aria-labelledby="hp-collections-title">
+        <h2 id="hp-collections-title" class="yody-visually-hidden">Khám phá các bộ sưu tập</h2>
+        <a class="hp-collection hp-collection-large" href="@allProducts">
+            <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&amp;fit=crop&amp;w=1100&amp;q=85" alt="Gợi ý trang phục dạo phố thường ngày" loading="lazy" width="900" height="850" />
+            <div class="hp-collection-copy"><p class="hp-kicker">PHONG CÁCH THƯỜNG NGÀY</p><h3>Tự tin<br />xuống phố.</h3><p>Dễ kết hợp. Thoải mái chuyển động.<br />Một lựa chọn mới cho ngày của bạn.</p><span class="hp-link">Khám phá bộ sưu tập <span aria-hidden="true">→</span></span></div>
+        </a>
+        <a class="hp-collection hp-collection-shoes" href="@Url.Action("Index", "Product", new { kind = "giay" })">
+            <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&amp;fit=crop&amp;w=950&amp;q=85" alt="Giày thể thao cho trang phục thường ngày" loading="lazy" width="800" height="500" />
+            <div class="hp-collection-copy"><p class="hp-kicker">TỪNG BƯỚC CHÂN</p><h3>Giày dễ phối.</h3><span class="hp-link">Xem bộ sưu tập <span aria-hidden="true">→</span></span></div>
+        </a>
+        <a class="hp-collection hp-collection-accessories" href="@Url.Action("Index", "Product", new { kind = "kinh-mat" })">
+            <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&amp;fit=crop&amp;w=950&amp;q=85" alt="Kính mát gọng vàng trên nền sáng" loading="lazy" width="800" height="500" />
+            <div class="hp-collection-copy"><p class="hp-kicker">ĐIỂM NHẤN RIÊNG</p><h3>Thêm chút cá tính.</h3><span class="hp-link">Khám phá phụ kiện <span aria-hidden="true">→</span></span></div>
+        </a>
+    </section>
+
+    <section class="hp-offers-band" aria-labelledby="hp-offers-title">
+        <div class="mn-container hp-section">
+            <header class="hp-section-heading"><div><p class="hp-kicker">MUA SẮM VỚI GIÁ TỐT</p><h2 id="hp-offers-title">Ưu đãi dành cho bạn</h2></div><a class="hp-link" href="@promotions">Tất cả ưu đãi <span aria-hidden="true">→</span></a></header>
+            @if (!String.IsNullOrEmpty(Model.SaleError)) {
+                <div class="hp-empty" role="status"><p>@Model.SaleError</p><a class="hp-link" href="@promotions">Xem trang khuyến mãi →</a></div>
+            } else if (Model.SaleProducts.Count == 0) {
+                <div class="hp-offer-empty"><div><h3>Chờ đón những ưu đãi mới.</h3><p>Khám phá sản phẩm hiện có và lựa chọn thiết kế bạn yêu thích.</p></div><a class="hp-button hp-button-outline" href="@allProducts">Tiếp tục khám phá <span aria-hidden="true">→</span></a></div>
+            } else {
+                <div class="hp-sale-grid">@foreach (var product in Model.SaleProducts) { @Html.Partial("_ProductCard", product) }</div>
+            }
+        </div>
+    </section>
+
+    <section class="mn-container hp-denim" aria-labelledby="hp-denim-title">
+        <div class="hp-denim-photo"><img src="https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&amp;fit=crop&amp;w=1200&amp;q=85" alt="Chất liệu denim cho phong cách thường ngày" loading="lazy" width="1000" height="700" /></div>
+        <div class="hp-denim-copy"><p class="hp-kicker">DẤU ẤN THƯỜNG NGÀY</p><h2 id="hp-denim-title">Đơn giản.<br />Chất riêng.</h2><p>Một chiếc quần dễ phối, một diện mạo mới.<br />Khám phá những lựa chọn đồng hành cùng nhịp sống của bạn.</p><a class="hp-link" href="@Url.Action("Index", "Product", new { kind = "quan-dai" })">Khám phá bộ sưu tập <span aria-hidden="true">→</span></a></div>
+    </section>
+
+    <section class="mn-container hp-quote" id="membership" aria-labelledby="hp-quote-title">
+        <div class="hp-membership-copy">
+            <p class="hp-kicker">THÀNH VIÊN YODY</p><h2 id="hp-quote-title">Phong cách bắt đầu từ bạn.</h2>
+            <p>“Mặc điều khiến bạn thoải mái.<br />Tự tin với điều làm nên chính mình.”</p>
+            <a class="hp-link" href="@Url.Action("Index", "Customer")">Khám phá quyền lợi thành viên <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="hp-membership-visual">
+            <div class="hp-membership-card" role="img" aria-label="Thẻ thành viên YODY màu xanh navy với chi tiết ánh bạc">
+                <span class="hp-member-watermark" aria-hidden="true">Y</span>
+                <div class="hp-member-top"><span class="hp-member-logo">YODY</span><span class="hp-member-label">PHONG CÁCH MỖI NGÀY</span></div>
+                <div class="hp-member-identity">
+                    <span class="hp-member-caption">GẮN KẾT CÙNG YODY</span>
+                    <strong class="hp-member-title">Thẻ thành viên</strong>
+                    <span class="hp-member-rule" aria-hidden="true"></span>
+                </div>
+                <div class="hp-member-bottom"><span class="hp-member-signature">Tích điểm <span aria-hidden="true">·</span> Nhận ưu đãi</span><span class="hp-member-emblem" aria-hidden="true">✦</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mn-container hp-section hp-inspiration" aria-labelledby="hp-inspiration-title">
+        <header class="hp-section-heading"><div><p class="hp-kicker">CHỌN THEO PHONG CÁCH</p><h2 id="hp-inspiration-title">Cảm hứng mặc đẹp</h2></div><a class="hp-link" href="@allProducts">Khám phá thêm <span aria-hidden="true">→</span></a></header>
+        <div class="hp-inspiration-grid">
+            <a class="hp-inspiration-card hp-inspiration-men" href="@Url.Action("Index", "Product", new { audience = "NAM" })"><div class="hp-inspiration-image"><img src="@Url.Content("~/Content/images/home-men.png")" alt="Người mẫu nam mặc áo khoác màu be" loading="lazy" width="1140" height="1540" /></div><div class="hp-inspiration-caption"><span aria-hidden="true">01</span><div><p class="hp-kicker">THỜI TRANG NAM</p><h3>Gọn gàng, tự tin mỗi ngày.</h3></div><span class="hp-inspiration-arrow" aria-hidden="true">↗</span></div></a>
+            <a class="hp-inspiration-card" href="@Url.Action("Index", "Product", new { audience = "NU" })"><div class="hp-inspiration-image"><img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&amp;fit=crop&amp;w=750&amp;q=85" alt="Gợi ý trang phục thời trang nữ" loading="lazy" width="750" height="560" /></div><div class="hp-inspiration-caption"><span aria-hidden="true">02</span><div><p class="hp-kicker">THỜI TRANG NỮ</p><h3>Thoải mái thể hiện chất riêng.</h3></div><span class="hp-inspiration-arrow" aria-hidden="true">↗</span></div></a>
+            <a class="hp-inspiration-card hp-inspiration-accessories" href="@Url.Action("Index", "Product", new { kind = "phu-kien" })"><div class="hp-inspiration-image"><img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&amp;fit=crop&amp;w=750&amp;q=85" alt="Kính mát gọng vàng và phụ kiện thời trang" loading="lazy" width="750" height="750" /></div><div class="hp-inspiration-caption"><span aria-hidden="true">03</span><div><p class="hp-kicker">PHỤ KIỆN</p><h3>Chi tiết nhỏ, dấu ấn riêng.</h3></div><span class="hp-inspiration-arrow" aria-hidden="true">↗</span></div></a>
         </div>
     </section>
 </main>
+@section scripts {
+    <script src="@Url.Content("~/Scripts/home.js")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Scripts/home.js")).Ticks"></script>
+}

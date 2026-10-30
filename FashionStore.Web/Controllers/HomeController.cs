@@ -12,13 +12,30 @@ namespace FashionStore.Web.Controllers
         public async Task<ActionResult> Index()
         {
             var model = new HomeViewModel();
-            try { model.FeaturedProducts = await new CatalogRepository().GetFeaturedAsync(8); }
+            CatalogRepository catalog;
+            try { catalog = new CatalogRepository(); }
+            catch (Exception error) {
+                Trace.TraceError("Catalog home configuration: " + error);
+                Response.StatusCode = 503;
+                Response.TrySkipIisCustomErrors = true;
+                model.CatalogError = "Chưa thể tải danh sách sản phẩm. Vui lòng thử lại sau.";
+                model.SaleError = "Chưa thể tải sản phẩm ưu đãi. Vui lòng thử lại sau.";
+                return View(model);
+            }
+            var featuredTask = catalog.GetFeaturedAsync(8);
+            var saleTask = catalog.SearchAsync(null, null, null, "price_asc", 1, 4, saleOnly: true);
+            try { model.FeaturedProducts = await featuredTask; }
             catch (Exception error)
             {
                 Trace.TraceError("Catalog home: " + error);
                 Response.StatusCode = 503;
                 Response.TrySkipIisCustomErrors = true;
                 model.CatalogError = "Chưa thể tải danh sách sản phẩm. Vui lòng thử lại sau.";
+            }
+            try { model.SaleProducts = (await saleTask).Products; }
+            catch (Exception error) {
+                Trace.TraceError("Catalog home promotions: " + error);
+                model.SaleError = "Chưa thể tải sản phẩm ưu đãi. Vui lòng thử lại sau.";
             }
             return View(model);
         }
