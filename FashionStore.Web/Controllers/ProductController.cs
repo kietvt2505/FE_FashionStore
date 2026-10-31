@@ -24,7 +24,8 @@ namespace FashionStore.Web.Controllers
             {
                 var catalog = new CatalogRepository();
                 model = await catalog.SearchAsync(q, audience, category, sort, pageNumber, PageSize, minPrice, maxPrice, size, color, inStock, kind, saleOnly);
-                model.Categories = await catalog.GetCategoriesAsync();
+                model.Categories = FashionStore.Web.Helpers.CatalogViewHelper.CategoriesForContext(await catalog.GetCategoriesAsync(),null,kind);
+                ViewBag.CatalogSelectedColor=model.Color;
                 Session["ShoppingReturnUrl"]=Request.RawUrl;
             }
             catch (CatalogApiException error)
@@ -47,18 +48,18 @@ namespace FashionStore.Web.Controllers
         [ChildActionOnly]
         public ActionResult Navigation()
         {
-            var categories = System.Web.HttpRuntime.Cache["catalog-nav-categories"] as System.Collections.Generic.IList<CategoryOption>;
+            var categories = System.Web.HttpRuntime.Cache["catalog-nav-categories-v2"] as System.Collections.Generic.IList<CategoryOption>;
             if (categories == null) {
                 try {
                     categories = new CatalogRepository().GetCategoriesAsync().GetAwaiter().GetResult();
-                    System.Web.HttpRuntime.Cache.Insert("catalog-nav-categories", categories, null, DateTime.UtcNow.AddMinutes(5), System.Web.Caching.Cache.NoSlidingExpiration);
+                    System.Web.HttpRuntime.Cache.Insert("catalog-nav-categories-v2", categories, null, DateTime.UtcNow.AddMinutes(1), System.Web.Caching.Cache.NoSlidingExpiration);
                 } catch (Exception) { categories = new System.Collections.Generic.List<CategoryOption>(); }
             }
             return PartialView("_CatalogNavigation", categories);
         }
 
         [HttpGet]
-        public async Task<ActionResult> Details(string id,string returnUrl=null)
+        public async Task<ActionResult> Details(string id,string returnUrl=null,string color=null)
         {
             if(Url.IsLocalUrl(returnUrl)&&returnUrl.StartsWith("/Product",StringComparison.OrdinalIgnoreCase))Session["ShoppingReturnUrl"]=returnUrl;
             ViewBag.ShoppingReturnUrl=Session["ShoppingReturnUrl"] as string??Url.Action("Index","Product");
@@ -67,6 +68,7 @@ namespace FashionStore.Web.Controllers
             {
                 var model = await new CatalogRepository().GetDetailAsync(id);
                 if (model.Product == null) return HttpNotFound();
+                model.SelectedColor=FashionStore.Web.Helpers.CatalogViewHelper.InitialColor(model.Variants,color);
                 try {
                     var related = await new CatalogRepository().SearchAsync(null,null,model.Product.MaLoai,"new",1,5);
                     model.Related = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Take(System.Linq.Enumerable.Where(related.Products, p => p.MaSP != id),4));

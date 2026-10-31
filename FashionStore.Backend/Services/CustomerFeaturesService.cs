@@ -68,13 +68,20 @@ INSERT dbo.WebAddress(MaKH,Recipient,Phone,Address) VALUES(@kh,@name,@phone,@add
             ("@name",input.Recipient.Trim()),("@phone",input.Phone.Trim()),("@address",input.Address.Trim()),("@kh",kh),("@id",id));
         if(await cmd.ExecuteNonQueryAsync(ct)!=1) throw new CustomerRequestException(404,"Không tìm thấy địa chỉ của bạn.");
     }
+    public Task<List<Dictionary<string,object?>>> ReviewOrders(string kh,string product,CancellationToken ct) => db.Database.IsNpgsql()
+        ? postgres!.ReviewOrders(kh,product,ct)
+        : Query(@"SELECT DISTINCT h.SoHD,h.NgayLap FROM dbo.HoaDon h
+JOIN dbo.ChiTietHoaDon ct ON ct.SoHD=h.SoHD JOIN dbo.BienTheSanPham b ON b.MaSKU=ct.MaSKU
+WHERE h.MaKH=@kh AND b.MaSP=@sp AND h.TrangThaiHoaDon='HOAN_TAT' AND h.TrangThaiGiaoHang='DA_GIAO' AND h.TrangThaiThanhToan='DA_THANH_TOAN'
+AND NOT EXISTS(SELECT 1 FROM dbo.DanhGiaSanPham r WHERE r.MaKH=@kh AND r.MaSP=@sp AND r.SoHD=h.SoHD)
+ORDER BY h.NgayLap DESC,h.SoHD DESC",ct,("@kh",kh),("@sp",product));
     public async Task Review(string kh,ReviewInput input,CancellationToken ct)
     {
         if (db.Database.IsNpgsql()) { await postgres!.Review(kh,input,ct); return; }
         await using var c=Connection(); await c.OpenAsync(ct);
         await using var tx=(SqlTransaction)await c.BeginTransactionAsync(IsolationLevel.Serializable,ct);
         await using var cmd=Command(c,tx,@"
-IF NOT EXISTS(SELECT 1 FROM dbo.HoaDon h JOIN dbo.ChiTietHoaDon ct ON h.SoHD=ct.SoHD JOIN dbo.BienTheSanPham b ON b.MaSKU=ct.MaSKU WHERE h.MaKH=@kh AND h.SoHD=@hd AND b.MaSP=@sp AND h.TrangThaiHoaDon='HOAN_TAT') THROW 55203,N'Chỉ đánh giá sản phẩm trong đơn đã hoàn tất của bạn.',1;
+IF NOT EXISTS(SELECT 1 FROM dbo.HoaDon h WITH(UPDLOCK,HOLDLOCK) JOIN dbo.ChiTietHoaDon ct ON h.SoHD=ct.SoHD JOIN dbo.BienTheSanPham b ON b.MaSKU=ct.MaSKU WHERE h.MaKH=@kh AND h.SoHD=@hd AND b.MaSP=@sp AND h.TrangThaiHoaDon='HOAN_TAT' AND h.TrangThaiGiaoHang='DA_GIAO' AND h.TrangThaiThanhToan='DA_THANH_TOAN') THROW 55203,N'Chỉ được đánh giá sản phẩm thuộc đơn đã giao hàng thành công và thanh toán của bạn.',1;
 IF EXISTS(SELECT 1 FROM dbo.DanhGiaSanPham WITH(UPDLOCK,HOLDLOCK) WHERE MaKH=@kh AND MaSP=@sp AND SoHD=@hd) THROW 55204,N'Bạn đã gửi đánh giá cho sản phẩm trong đơn này.',1;
 INSERT dbo.DanhGiaSanPham(MaKH,MaSP,SoHD,SoSao,NoiDung) VALUES(@kh,@sp,@hd,@stars,@body)",("@kh",kh),("@sp",input.ProductId),("@hd",input.OrderId),("@stars",input.Stars),("@body",input.Body.Trim()));
         await cmd.ExecuteNonQueryAsync(ct);await tx.CommitAsync(ct);

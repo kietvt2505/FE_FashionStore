@@ -15,6 +15,9 @@ namespace FashionStore.Web.Helpers {
   public string Notice {get;set;}
  }
  public static class CustomerViewHelper {
+  public static bool CanReviewOrder(OrderDetailsModel order) {
+   return order!=null && order.Status=="HOAN_TAT" && order.PaymentStatus=="DA_THANH_TOAN" && DeliveryStep(order.ShippingStatus)==4;
+  }
   // Shared database and legacy API names describe the same customer-facing delivery milestones.
   private static int DeliveryStep(string value) {
    switch((value??"").Trim().ToUpperInvariant()) {

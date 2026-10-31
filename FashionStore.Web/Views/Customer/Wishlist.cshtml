@@ -11,16 +11,23 @@
     }
     else
     {
-        <div class="yody-feature-grid">
+        <div class="yody-feature-grid yody-wishlist-grid">
             @foreach (var p in Model)
             {
-                <article class="yody-surface-card yody-wishlist-item">
-                    @if (!String.IsNullOrWhiteSpace((string)p["ImageUrl"])) { <img class="yody-wishlist-image" src="@Url.Content(CatalogViewHelper.ImagePath((string)p["ImageUrl"]))" alt="@p["TenSanPham"]" loading="lazy" width="72" height="90" /> }
-                    <p class="eyebrow">ĐÃ LƯU</p>
-                    <h2>@p["TenSanPham"]</h2>
-                    @if ((bool)p["TrangThai"])
+                var image=CatalogViewHelper.PhotoPath((string)p["ImageUrl"]);
+                var detailUrl=Url.Action("Details","Product",new{id=(string)p["MaSP"]});
+                var active=(bool)p["TrangThai"];
+                <article class="product-card catalog-product-card wishlist-product-card" data-product-card data-product-name="@p["TenSanPham"]">
+                    @if(active) {
+                        <a class="product-image" href="@detailUrl" aria-label="Xem chi tiết @p["TenSanPham"]"><img data-card-image data-managed-image src="@(image==null?null:Url.Content(image))" hidden="@(image==null?"hidden":null)" alt="@p["TenSanPham"]" loading="lazy" width="600" height="800" /></a>
+                    } else {
+                        <div class="product-image"><img data-card-image data-managed-image src="@(image==null?null:Url.Content(image))" hidden="@(image==null?"hidden":null)" alt="@p["TenSanPham"]" loading="lazy" width="600" height="800" /></div>
+                    }
+                    <div class="product-detail wishlist-product-detail">
+                    <h2 title="@p["TenSanPham"]">@p["TenSanPham"]</h2>
+                    @if (active)
                     {
-                        <a class="yody-text-link" href="@Url.Action("Details", "Product", new { id = (string)p["MaSP"] })">Chọn kích cỡ, màu sắc và mua sắm →</a>
+                        <a class="yody-text-link" href="@detailUrl">Chọn kích cỡ, màu sắc và mua sắm →</a>
                     }
                     else
                     {
@@ -32,6 +39,7 @@
                         <input type="hidden" name="id" value="@p["MaSP"]" />
                         <button type="submit" class="mn-btn mn-btn-outline">BỎ YÊU THÍCH</button>
                     }
+                    </div>
                 </article>
             }
         </div>

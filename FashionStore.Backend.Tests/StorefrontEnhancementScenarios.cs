@@ -59,6 +59,16 @@ internal static class StorefrontEnhancementScenarios
         Assert.Equal("Mô tả từ cơ sở dữ liệu <không thực thi HTML>",detail.Description);
         Assert.Equal(2,detail.Images.Count(i=>i.Color=="Đỏ" && i.Url.StartsWith("https://example.test/")));
         Assert.Contains(detail.Images,i=>i.Alt=="Mặt sau màu đỏ");
+        var colorCards=(await alice.GetFromJsonAsync<ProductListResponse>("/api/products?q=P1"))!;
+        Assert.Equal("/red.png",Assert.Single(colorCards.Items).ColorOptions.Single(c=>c.Color=="Đỏ").ImageUrl);
+        // A color with no SKU photo can use its own media, never a different color's photo.
+        await Exec("UPDATE public.sanpham SET hinhanh=NULL WHERE masku='SKU-L'");
+        colorCards=(await alice.GetFromJsonAsync<ProductListResponse>("/api/products?q=P1"))!;
+        Assert.Equal("https://example.test/red-back.png",Assert.Single(colorCards.Items).ColorOptions.Single(c=>c.Color=="Đỏ").ImageUrl);
+        var angles=(await alice.GetFromJsonAsync<ProductDetailResponse>("/api/products/P1"))!;
+        Assert.Equal(2,angles.Images.Count(i=>i.Color=="Đỏ"));
+        Assert.Equal("https://example.test/red-back.png",angles.ColorOptions.Single(c=>c.Color=="Đỏ").ImageUrl);
+        await Exec("UPDATE public.sanpham SET hinhanh='/red.png' WHERE masku='SKU-L'");
         var filters=(await alice.GetFromJsonAsync<ProductListResponse>("/api/products?q=P1&size=M&color=Đen"))!;
         Assert.Equal(new[]{"L","M"},filters.Sizes);Assert.Equal(new[]{"Đen","Đỏ"},filters.Colors);
         Assert.Single(filters.Items);

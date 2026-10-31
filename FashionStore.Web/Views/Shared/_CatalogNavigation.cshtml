@@ -24,7 +24,7 @@
                             <h2>@if (!String.IsNullOrEmpty(menuSection.Kind)) { <a href="@Url.Action("Index","Product",new{audience,kind=menuSection.Kind})">@menuSection.Title</a> } else { @menuSection.Title }</h2>
                             @foreach (var item in menuSection.Items)
                             {
-                                <a href="@Url.Action("Index", "Product", new { audience, category = item.Category, kind = item.Kind })">@item.Label</a>
+                                <a href="@Url.Action("Index", "Product", new { audience, category = item.Category })">@item.Label</a>
                             }
                         </section>
                     }
@@ -40,8 +40,8 @@
         <div id="catalog-menu-accessories" class="catalog-mega-menu" hidden>
             <div class="catalog-mega-heading"><strong>Phụ kiện</strong><a href="@Url.Action("Index","Product",new{kind="phu-kien"})">Xem tất cả phụ kiện <span aria-hidden="true">↗</span></a></div>
             <div class="catalog-accessory-links">
-                @foreach(var item in System.Linq.Enumerable.Where(System.Linq.Enumerable.First(CatalogViewHelper.MenuSections("NU",Model),s=>s.Kind=="phu-kien").Items,i=>!String.IsNullOrEmpty(i.Kind))) {
-                    <a href="@Url.Action("Index","Product",new{kind=item.Kind})">@item.Label</a>
+                @foreach(var item in CatalogViewHelper.CategoriesForContext(Model,null,"phu-kien")) {
+                    <a href="@Url.Action("Index","Product",new{kind="phu-kien",category=item.MaLoai})">@item.TenLoai</a>
                 }
             </div>
         </div>

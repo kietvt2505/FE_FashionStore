@@ -38,6 +38,28 @@ namespace FashionStore.Web.Controllers
                 if(GuestCartStore.Items(Session).Count>0)TempData["PromptGuestMerge"]=true;
                 // Prevent a browser from retaining both kinds of active cookies.
                 AdminSessionCookie.SignOut(HttpContext);
+                var pendingWishlist=Session[WishlistLoginIntent.SessionKey] as WishlistLoginIntent;
+                Session.Remove(WishlistLoginIntent.SessionKey);
+                if(pendingWishlist!=null && pendingWishlist.IsCurrent(DateTimeOffset.UtcNow))
+                {
+                    // Resume only the server-held, CSRF-validated intent. Never replay a POST return URL.
+                    // A wishlist error must not turn a successful customer login into an Admin login attempt.
+                    try{
+                        await api.FeatureAsync(login.AccessToken,"wishlist/"+Uri.EscapeDataString(pendingWishlist.ProductId),null,"PUT");
+                        TempData["CustomerMessage"]="Đã thêm sản phẩm vào danh sách yêu thích.";
+                    }catch(CustomerApiException error){
+                        if(error.StatusCode==401){
+                            Session[WishlistLoginIntent.SessionKey]=pendingWishlist;
+                            CustomerAuthentication.SignOut();
+                            TempData["AccountMessage"]="Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để lưu sản phẩm.";
+                            return RedirectToAction("Login",new{returnUrl=Url.Action("Wishlist","Customer")});
+                        }
+                        TempData["CustomerError"]=error.Message;
+                    }catch(Exception){
+                        TempData["CustomerError"]="Đã đăng nhập nhưng chưa thể lưu sản phẩm yêu thích. Vui lòng thử lại.";
+                    }
+                    return RedirectToAction("Wishlist","Customer");
+                }
                 if (Url.IsLocalUrl(model.ReturnUrl) &&
                     !model.ReturnUrl.StartsWith("/Admin", StringComparison.OrdinalIgnoreCase) &&
                     !model.ReturnUrl.StartsWith("~/Admin", StringComparison.OrdinalIgnoreCase))
@@ -70,6 +92,7 @@ namespace FashionStore.Web.Controllers
 
                     AdminSessionCookie.SignIn(HttpContext, adminLogin.AccessToken, adminLogin.ExpiresAtUtc);
                     CustomerAuthentication.SignOut();
+                    Session.Remove(WishlistLoginIntent.SessionKey);
                     return RedirectToAction("Index", "Admin");
                 }
                 catch (AdminApiException adminError) when (
@@ -191,7 +214,7 @@ namespace FashionStore.Web.Controllers
             var token=CustomerAuthentication.Token(Request);
             try{if(!String.IsNullOrEmpty(token))await api.LogoutAsync(token);}
             catch(Exception){/* Local sign-out still removes the protected cookie; API session expires within one hour. */}
-            finally{CustomerAuthentication.SignOut();}
+            finally{CustomerAuthentication.SignOut();Session.Remove(WishlistLoginIntent.SessionKey);}
             return RedirectToAction("Login");
         }
         private ActionResult LoginAgain(){CustomerAuthentication.SignOut();return RedirectToAction("Login",new{returnUrl=Url.Action("Profile")});}

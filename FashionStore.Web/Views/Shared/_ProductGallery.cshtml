@@ -1,0 +1,37 @@
+@model FashionStore.Web.Models.ProductDetailViewModel
+@using FashionStore.Web.Helpers
+@using System.Linq
+@{
+    var selectedColor=Model.SelectedColor??CatalogViewHelper.InitialColor(Model.Variants,null);
+    var colors=Model.Variants.Select(v=>v.MauSac??"").Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    if(colors.Count==0){colors.Add("");}
+    var selectedPhotos=CatalogViewHelper.ColorPhotos(Model,selectedColor);
+    var first=selectedPhotos.FirstOrDefault();
+    var firstPath=first==null?null:CatalogViewHelper.PhotoPath(first.DuongDan);
+}
+<div class="yody-product-gallery color-product-gallery" data-product-gallery data-initial-color="@selectedColor" data-product-title="@Model.Product.TenSanPham">
+    <div class="yody-product-thumbnails" role="group" aria-label="Các góc chụp của màu đang chọn"><div class="gallery-thumb-list">
+        @foreach(var color in colors){
+            var photos=CatalogViewHelper.ColorPhotos(Model,color);
+            for(var index=0;index<Math.Max(4,photos.Count);index++){
+                var photo=index<photos.Count?photos[index]:null;
+                var path=photo==null?null:CatalogViewHelper.PhotoPath(photo.DuongDan);
+                var caption=photo!=null&&!String.IsNullOrWhiteSpace(photo.Alt)?photo.Alt:Model.Product.TenSanPham+" - "+color+" - Góc chụp "+(index+1);
+                var label=caption+(path==null?" — chưa có ảnh":"");
+                var active=String.Equals(color,selectedColor,StringComparison.OrdinalIgnoreCase)&&index==0;
+                <button type="button" class="detail-thumb" data-managed-gallery data-gallery-color="@color" data-gallery-index="@index" data-gallery-image="@(path==null?"":Url.Content(path))" data-gallery-alt="@caption" aria-label="@label" title="@label" aria-pressed="@(active?"true":"false")" hidden="@(String.Equals(color,selectedColor,StringComparison.OrdinalIgnoreCase)?null:"hidden")">
+                    @if(path!=null){<img loading="lazy" data-managed-image src="@Url.Content(path)" alt="@caption" />}
+                    else{<span class="gallery-empty" aria-hidden="true"></span>}
+                </button>
+            }
+        }
+    </div></div>
+    <div class="gallery-main">
+        <div class="yody-product-main-image product-zoom" data-gallery-frame data-empty="@(firstPath==null?"true":"false")" tabindex="@(firstPath==null?-1:0)" aria-label="Ảnh sản phẩm, di chuột hoặc chạm để phóng to">
+            <img id="detail-main-image" data-managed-image src="@(firstPath==null?null:Url.Content(firstPath))" hidden="@(firstPath==null?"hidden":null)" alt="@Model.Product.TenSanPham - @selectedColor" />
+            <span class="zoom-hint" hidden="@(firstPath==null?"hidden":null)">Di chuột để phóng to</span>
+        </div>
+        <div class="gallery-controls"><button type="button" data-gallery-prev aria-label="Xem góc chụp trước" aria-controls="detail-main-image">‹</button><button type="button" data-gallery-next aria-label="Xem góc chụp tiếp theo" aria-controls="detail-main-image">›</button></div>
+        <span class="yody-visually-hidden" data-gallery-caption role="status" aria-live="polite"></span>
+    </div>
+</div>

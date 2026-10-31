@@ -18,6 +18,7 @@
     <Compile Include="../FashionStore.Web/Models/CustomerModels.cs" Link="MvcClient/CustomerModels.cs" />
     <Compile Include="../FashionStore.Web/Services/CustomerApiClient.cs" Link="MvcClient/CustomerApiClient.cs" />
     <Compile Include="../FashionStore.Web/Helpers/CatalogViewHelper.cs" Link="MvcClient/CatalogViewHelper.cs" />
+    <Compile Include="../FashionStore.Web/Helpers/WishlistLoginIntent.cs" Link="MvcClient/WishlistLoginIntent.cs" />
     <Compile Include="../FashionStore.Web/Helpers/CustomerViewHelper.cs" Link="MvcClient/CustomerViewHelper.cs" />
     <Compile Include="../FashionStore.Web/Models/CatalogModels.cs" Link="MvcClient/CatalogModels.cs" />
     <Compile Include="../FashionStore.Web/Services/CatalogRepository.cs" Link="MvcClient/CatalogRepository.cs" />

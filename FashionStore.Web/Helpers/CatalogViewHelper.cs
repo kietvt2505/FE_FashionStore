@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using FashionStore.Web.Models;
+using FashionStore.Catalog;
 
 namespace FashionStore.Web.Helpers
 {
@@ -15,41 +16,25 @@ namespace FashionStore.Web.Helpers
         private static string Normalize(string text) { return new string((text ?? "").ToLowerInvariant().Normalize(NormalizationForm.FormD).Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark).ToArray()).Replace('đ','d'); }
         public static IList<MenuSection> MenuSections(string audience, IList<CategoryOption> categories)
         {
-            Func<string,string,MenuEntry> entry = (label, kind) => {
-                var category = categories.FirstOrDefault(c => Normalize(c.TenLoai) == Normalize(label));
-                return new MenuEntry { Label=label, Kind=kind, Category=category == null ? null : category.MaLoai };
+            var groups=new Dictionary<string,MenuSection> {
+                {"shirts",new MenuSection{Title="Áo"}}, {"bottoms",new MenuSection{Title=audience=="NU"?"Quần / Váy":"Quần"}},
+                {"clothing",new MenuSection{Title="Trang phục khác"}}, {"footwear",new MenuSection{Title="Giày dép"}},
+                {"accessories",new MenuSection{Title="Phụ kiện",Kind="phu-kien"}}, {"other",new MenuSection{Title="Danh mục khác"}}
             };
-            var shirts = new MenuSection { Title="Áo", Items=new List<MenuEntry> { entry("Áo thun","ao-thun"), entry("Áo polo","ao-polo"), entry("Áo sơ mi","ao-so-mi"), entry("Áo khoác","ao-khoac"), entry("Áo hoodie","ao-hoodie"), entry("Áo vest","ao-vest") } };
-            var pants = new MenuSection { Title=audience == "NU" ? "Quần / Váy" : "Quần", Items=new List<MenuEntry> { entry("Quần ngắn","quan-ngan"), entry("Quần dài","quan-dai"), entry("Quần jogger","quan-jogger") } };
-            if (audience == "NU") pants.Items.AddRange(new[]{entry("Váy ngắn","vay-ngan"),entry("Váy dài","vay-dai"),entry("Đầm ngắn","dam-ngan"),entry("Đầm dài","dam-dai")});
-            var footwear = new MenuSection { Title="Giày dép", Items=new List<MenuEntry> { entry("Giày","giay"), entry("Dép","dep") } };
-            var accessories = new MenuSection { Title="Phụ kiện", Kind="phu-kien", Items=new List<MenuEntry> { entry("Kính mát","kinh-mat"), entry("Mũ","mu"), entry("Vớ","vo"), entry("Dây nịt","day-nit"), entry("Balo","balo") } };
-            if (audience == "NU") accessories.Items.Add(entry("Túi xách","tui-xach"));
-            var groups = new[] { shirts, pants, footwear, accessories };
-            foreach (var category in categories) {
-                var normalized=Normalize(category.TenLoai);
-                if (normalized.Trim() == "123") continue;
-                // Match whole gender words after normalizing case and Vietnamese accents.
-                var male=Regex.IsMatch(normalized,@"\bnam\b");
-                var female=Regex.IsMatch(normalized,@"\bnu\b");
-                if (audience == "NAM" && female && !male) continue;
-                if (audience == "NU" && male && !female) continue;
-                if (audience == "NAM" && Regex.IsMatch(normalized,@"\bdam\b")) continue;
-                if (audience != "NU" && (normalized.Contains("vay") || normalized.Contains("tui"))) continue;
-                if (groups.SelectMany(g=>g.Items).Any(e=>e.Category == category.MaLoai)) continue;
-                var target=normalized.Contains("quan") || normalized.Contains("vay") || normalized.Contains("dam") ? pants : normalized.Contains("giay") || normalized.Contains("dep") ? footwear : normalized.Contains("ao") && !normalized.Contains("balo") ? shirts : accessories;
-                target.Items.Add(new MenuEntry { Label=category.TenLoai, Category=category.MaLoai });
-            }
-            return groups;
+            foreach(var category in CategoriesForContext(categories,audience,null).GroupBy(c=>c.MaLoai).Select(g=>g.First()))
+                groups[CatalogTaxonomy.Section(category.TenLoai)].Items.Add(new MenuEntry{Label=category.TenLoai,Category=category.MaLoai});
+            return groups.Values.Where(g=>g.Items.Count>0).ToList();
+        }
+        public static IList<CategoryOption> CategoriesForContext(IList<CategoryOption> categories,string audience,string kind)
+        {
+            return categories.Where(c=>CatalogTaxonomy.Normalize(c.TenLoai)!="123"&&CatalogTaxonomy.MatchesAudience(c.TenLoai,audience))
+                .Where(c=>String.IsNullOrEmpty(kind)||(kind=="phu-kien"?CatalogTaxonomy.Section(c.TenLoai)=="accessories":CatalogTaxonomy.Find(c.TenLoai)!=null&&CatalogTaxonomy.Find(c.TenLoai).Kind==kind)).ToList();
         }
         public static string KindLabel(string kind)
         {
-            if(kind=="phu-kien")return "Phụ kiện";
-            if(kind=="ao-khac")return "Áo khác";
-            var item=MenuSections("NU",new List<CategoryOption>()).SelectMany(g=>g.Items).FirstOrDefault(e=>e.Kind==kind);
-            return item == null ? "" : item.Label;
+            return CatalogTaxonomy.KindLabel(kind);
         }
-        public static bool IsAccessoryKind(string kind) { return new[]{"phu-kien","kinh-mat","mu","vo","day-nit","balo","tui-xach"}.Contains(kind); }
+        public static bool IsAccessoryKind(string kind) { return CatalogTaxonomy.AccessoryKinds.Contains(kind); }
         public static string ColorCss(string color)
         {
             var value=Normalize(color).Trim();
@@ -63,6 +48,28 @@ namespace FashionStore.Web.Helpers
         }
 
         private const string Placeholder = "~/Content/images/product-placeholder.svg";
+
+        public static string PhotoPath(string raw)
+        {
+            var path=ImagePath(raw);
+            return path==Placeholder?null:path;
+        }
+
+        public static string InitialColor(IEnumerable<ProductVariant> variants,string requested)
+        {
+            var choices=variants.ToList();
+            var match=choices.FirstOrDefault(v=>!String.IsNullOrWhiteSpace(requested)&&String.Equals(v.MauSac==null?null:v.MauSac.Trim(),requested.Trim(),StringComparison.OrdinalIgnoreCase));
+            return match!=null?match.MauSac:choices.Where(v=>v.SoLuongTonKho>0).Select(v=>v.MauSac).FirstOrDefault()??choices.Select(v=>v.MauSac).FirstOrDefault()??"";
+        }
+
+        public static IList<ProductImage> ColorPhotos(ProductDetailViewModel model,string color)
+        {
+            return model.Images.Where(image=>{
+                var effective=image.MauSac??model.Variants.Where(v=>v.MaSKU==image.MaSKU).Select(v=>v.MauSac).FirstOrDefault();
+                var shared=String.IsNullOrWhiteSpace(image.MauSac)&&String.IsNullOrWhiteSpace(image.MaSKU);
+                return PhotoPath(image.DuongDan)!=null&&(shared||String.Equals(effective==null?null:effective.Trim(),color==null?null:color.Trim(),StringComparison.OrdinalIgnoreCase));
+            }).GroupBy(image=>PhotoPath(image.DuongDan),StringComparer.Ordinal).Select(group=>group.First()).ToList();
+        }
 
         public static string ImagePath(string raw)
         {

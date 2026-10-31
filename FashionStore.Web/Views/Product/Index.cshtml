@@ -35,7 +35,8 @@
                         <option value="">Tất cả danh mục</option>
                         @foreach (var cat in Model.Categories)
                         {
-                            <option value="@cat.MaLoai" @(Model.CategoryId == cat.MaLoai ? "selected" : "")>@cat.TenLoai</option>
+                            var visible=FashionStore.Catalog.CatalogTaxonomy.MatchesAudience(cat.TenLoai,Model.Audience);
+                            <option value="@cat.MaLoai" data-audience="@FashionStore.Catalog.CatalogTaxonomy.Audience(cat.TenLoai)" hidden="@(visible?null:"hidden")" disabled="@(visible?null:"disabled")" @(visible&&Model.CategoryId == cat.MaLoai ? "selected" : "")>@cat.TenLoai</option>
                         }
                     </select></div>
                     <div class="yody-filter-price">

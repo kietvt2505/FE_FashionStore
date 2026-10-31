@@ -62,6 +62,16 @@ public sealed class CatalogService(FashionStoreDbContext db) : ICatalogService
     {
         var total = await FilterProducts(query).CountAsync(cancellationToken);
         var items = await CreateSearchQuery(query).ToListAsync(cancellationToken);
+        if(items.Count==0)return new ProductListResponse(items,total,query.Page,query.PageSize);
+        var ids=items.Select(p=>p.Id).ToArray();
+        var variants=await db.Variants.AsNoTracking().Where(v=>ids.Contains(v.MaSP)&&v.TrangThai).OrderBy(v=>v.MaSKU).ToListAsync(cancellationToken);
+        var photos=await db.Images.AsNoTracking().Where(i=>ids.Contains(i.MaSP)).OrderByDescending(i=>i.AnhChinh).ThenBy(i=>i.ThuTu).ThenBy(i=>i.MaHinh).ToListAsync(cancellationToken);
+        foreach(var item in items){
+            var choices=variants.Where(v=>v.MaSP==item.Id).ToList();
+            var skus=choices.Select(v=>v.MaSKU).ToHashSet(StringComparer.Ordinal);
+            item.ColorOptions=CatalogColorOptions.Create(choices.Select(v=>new VariantResponse(v.MaSKU,v.KichCo,v.MauSac,v.DonGia,v.SoLuongTonKho)),
+                photos.Where(i=>i.MaSP==item.Id&&(i.MaSKU==null||skus.Contains(i.MaSKU))).Select(i=>new ProductImageResponse(i.MaSKU,i.DuongDan)));
+        }
         return new ProductListResponse(items, total, query.Page, query.PageSize);
     }
 
@@ -81,6 +91,8 @@ public sealed class CatalogService(FashionStoreDbContext db) : ICatalogService
         var images = product.Images.Where(i => i.MaSKU == null || skuIds.Contains(i.MaSKU))
             .OrderBy(i => i.MaSKU == null ? 0 : 1).ThenByDescending(i => i.AnhChinh)
             .ThenBy(i => i.ThuTu).ThenBy(i => i.MaHinh).ToList();
+        var variants=product.Variants.OrderBy(v=>v.MaSKU).Select(v=>new VariantResponse(v.MaSKU,v.KichCo,v.MauSac,v.DonGia,v.SoLuongTonKho)).ToList();
+        var photos=images.Select(i=>new ProductImageResponse(i.MaSKU,i.DuongDan){Color=product.Variants.FirstOrDefault(v=>v.MaSKU==i.MaSKU)?.MauSac}).ToList();
         return new ProductDetailResponse
         {
             Id = product.MaSP, Name = product.TenSanPham, Description = product.MoTa,
@@ -89,9 +101,7 @@ public sealed class CatalogService(FashionStoreDbContext db) : ICatalogService
             Price = product.Variants.Min(v => v.DonGia),
             Stock = product.Variants.Sum(v => (long)v.SoLuongTonKho),
             ImageUrl = images.FirstOrDefault()?.DuongDan,
-            Images = images.Select(i => new ProductImageResponse(i.MaSKU, i.DuongDan)).ToList(),
-            Variants = product.Variants.OrderBy(v => v.MaSKU).Select(v =>
-                new VariantResponse(v.MaSKU, v.KichCo, v.MauSac, v.DonGia, v.SoLuongTonKho)).ToList()
+            Images=photos,Variants=variants,ColorOptions=CatalogColorOptions.Create(variants,photos)
         };
     }
 

@@ -17,7 +17,17 @@ namespace FashionStore.Web.Models
         public decimal? GiaGoc { get; set; }
         public long TonKho { get; set; }
         public string HinhAnh { get; set; }
+        public IList<ProductColorOption> ColorOptions {get;set;}=new List<ProductColorOption>();
         public bool ConHang { get { return TonKho > 0; } }
+    }
+
+    public class ProductColorOption
+    {
+        public string Color {get;set;}
+        public string ImageUrl {get;set;}
+        public decimal Price {get;set;}
+        public decimal? OriginalPrice {get;set;}
+        public long Stock {get;set;}
     }
 
     public class CategoryOption
@@ -87,6 +97,7 @@ namespace FashionStore.Web.Models
 
     public class ProductDetailViewModel
     {
+        public string SelectedColor {get;set;}
         public ProductDetailViewModel()
         {
             Variants = new List<ProductVariant>();

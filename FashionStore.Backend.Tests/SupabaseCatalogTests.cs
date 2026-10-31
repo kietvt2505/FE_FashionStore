@@ -48,6 +48,9 @@ public sealed class SupabaseCatalogTests
         Assert.Equal("P3", Assert.Single(page2.Items).Id);
         Assert.Equal(8, page1.Items[0].Stock);
         Assert.Equal(100, page1.Items[0].Price);
+        Assert.Equal(new[]{"Đen","Đỏ"},page1.Items[0].ColorOptions.Select(c=>c.Color));
+        Assert.Equal("/B.png",page1.Items[0].ColorOptions.Single(c=>c.Color=="Đỏ").ImageUrl);
+        Assert.Equal(5,page1.Items[0].ColorOptions.Single(c=>c.Color=="Đỏ").Stock);
         Assert.False(page1.SupportsNewest);
         var sorted = await service.SearchAsync(new ProductQuery { Sort = "price_asc" }, default);
         Assert.Equal(new[] { "P3", "P1", "P2" }, sorted.Items.Select(p => p.Id));

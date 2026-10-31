@@ -34,6 +34,10 @@ public sealed record ProductImageResponse(string? Sku, string Url)
     public string? Color { get; init; }
     public string? Alt { get; init; }
 }
+public sealed record ProductColorResponse(string Color,string? ImageUrl,decimal Price,long Stock)
+{
+    public decimal? OriginalPrice {get;init;}
+}
 public class ProductSummaryResponse
 {
     public string Id { get; init; } = "";
@@ -46,6 +50,7 @@ public class ProductSummaryResponse
     public long Stock { get; init; }
     public string? ImageUrl { get; init; }
     public DateTime? CreatedAt { get; init; }
+    public IReadOnlyList<ProductColorResponse> ColorOptions {get;set;} = [];
 }
 public sealed class ProductDetailResponse : ProductSummaryResponse
 {

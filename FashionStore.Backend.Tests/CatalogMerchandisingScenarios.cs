@@ -125,5 +125,6 @@ internal static class CatalogMerchandisingScenarios
         var changed=await Assert.ThrowsAsync<PostgresException>(()=>Exec(assignments));
         Assert.Equal("P0001",changed.SqlState);
         await Exec("ROLLBACK");
+        await CatalogClassificationScenarios.VerifyAsync(client,sql);
     }
 }

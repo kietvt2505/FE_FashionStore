@@ -136,17 +136,33 @@ public sealed class SupabaseCustomerFeaturesService(DatabaseMode mode)
         AND EXISTS(SELECT 1 FROM public.sanpham p JOIN public.loaisanpham c USING(maloai) WHERE p.masp=r.masp AND p.trangthai AND c.trangthai)
         ORDER BY r.createdat DESC,r.id DESC LIMIT 10 OFFSET @skip
         """,ct,("id",id),("skip",(page-1)*10));
+    private const string ReviewPurchases = """
+        FROM public.hoadon h JOIN webstore.order_snapshot s ON s.sohd=h.sohd AND s.makh=h.makh
+        JOIN webstore.order_line_snapshot l ON l.sohd=h.sohd JOIN public.sanpham p ON p.masku=l.masku
+        WHERE h.makh=@kh AND p.masp=@sp AND h.trangthaigiaohang='Hàng giao thành công'
+            AND h.trangthaithanhtoan='DA_THANH_TOAN' AND h.loaihoadon IS DISTINCT FROM 'WEB_HUY'
+        """;
+    public Task<List<Dictionary<string,object?>>> ReviewOrders(string kh,string product,CancellationToken ct) => Query(
+        "SELECT DISTINCT s.sohd AS \"SoHD\",s.ngaylap AT TIME ZONE 'UTC' AS \"NgayLap\" " + ReviewPurchases + " " + """
+        AND NOT EXISTS(SELECT 1 FROM webstore.product_review r WHERE r.makh=@kh AND r.masp=@sp AND r.sohd=h.sohd)
+        ORDER BY "NgayLap" DESC,"SoHD" DESC
+        """,ct,("kh",kh),("sp",product));
     public async Task Review(string kh,ReviewInput input,CancellationToken ct)
     {
         await using var c=Connection(); await c.OpenAsync(ct);
-        await using var cmd=Command(c,null,"""
+        await using var tx=await c.BeginTransactionAsync(ct);
+        // A WinForms status update and a review submission must not pass each other mid-check.
+        await using(var invoice=Command(c,tx,"SELECT sohd FROM public.hoadon WHERE sohd=@hd AND makh=@kh FOR UPDATE",("hd",input.OrderId),("kh",kh)))
+            if(await invoice.ExecuteScalarAsync(ct) is null)
+                throw new CustomerRequestException(409,"Chỉ được đánh giá sản phẩm thuộc đơn đã giao hàng thành công và thanh toán của bạn.");
+        await using var cmd=Command(c,tx,"""
             INSERT INTO webstore.product_review(makh,masp,sohd,stars,body)
-            SELECT @kh,@sp,@hd,@stars,@body WHERE EXISTS(
-                SELECT 1 FROM public.hoadon h JOIN webstore.order_snapshot s ON s.sohd=h.sohd AND s.makh=h.makh
-                JOIN webstore.order_line_snapshot l ON l.sohd=h.sohd JOIN public.sanpham p ON p.masku=l.masku
-                WHERE h.sohd=@hd AND h.makh=@kh AND p.masp=@sp AND h.trangthaigiaohang='Hàng giao thành công' AND h.trangthaithanhtoan='DA_THANH_TOAN')
-            """,("kh",kh),("sp",input.ProductId),("hd",input.OrderId),("stars",input.Stars),("body",input.Body.Trim()));
-        if(await cmd.ExecuteNonQueryAsync(ct)!=1) throw new CustomerRequestException(409,"Chỉ đánh giá sản phẩm trong đơn đã giao và thanh toán của bạn.");
+            SELECT @kh,@sp,@hd,@stars,@body WHERE EXISTS(SELECT 1
+            """ + " " + ReviewPurchases + " AND h.sohd=@hd) ON CONFLICT(makh,masp,sohd) DO NOTHING",
+            ("kh",kh),("sp",input.ProductId),("hd",input.OrderId),("stars",input.Stars),("body",input.Body.Trim()));
+        if(await cmd.ExecuteNonQueryAsync(ct)!=1)
+            throw new CustomerRequestException(409,"Chỉ được đánh giá sản phẩm thuộc đơn đã giao hàng thành công và thanh toán của bạn. Mỗi sản phẩm trong một đơn chỉ được đánh giá một lần.");
+        await tx.CommitAsync(ct);
     }
     public Task<List<Dictionary<string,object?>>> Returns(string kh,int page,CancellationToken ct) => Query("""
         SELECT sophieudt AS "SoPhieuDT",sohd AS "SoHD",createdat AT TIME ZONE 'UTC' AS "NgayLap",kind AS "HinhThucXuLy",

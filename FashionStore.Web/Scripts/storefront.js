@@ -20,8 +20,8 @@
   });input.addEventListener('input',function(){input.removeAttribute('aria-invalid');});
  });
  var frame=document.querySelector('.product-zoom'),image=document.getElementById('detail-main-image');
- if(frame&&image){frame.addEventListener('pointermove',function(event){if(event.pointerType==='touch')return;var r=frame.getBoundingClientRect();image.style.transformOrigin=((event.clientX-r.left)/r.width*100)+'% '+((event.clientY-r.top)/r.height*100)+'%';frame.classList.add('is-zoomed');});
-  frame.addEventListener('pointerleave',function(){frame.classList.remove('is-zoomed');});frame.addEventListener('click',function(){frame.classList.toggle('is-zoomed');});frame.addEventListener('keydown',function(event){if(event.key==='Enter'||event.key===' '){event.preventDefault();frame.classList.toggle('is-zoomed');}if(event.key==='Escape')frame.classList.remove('is-zoomed');});
+ if(frame&&image){function canZoom(){return !image.hidden&&!!image.getAttribute('src')&&image.naturalWidth>0&&frame.dataset.empty!=='true';}frame.addEventListener('pointermove',function(event){if(event.pointerType==='touch'||!canZoom())return;var r=frame.getBoundingClientRect();image.style.transformOrigin=((event.clientX-r.left)/r.width*100)+'% '+((event.clientY-r.top)/r.height*100)+'%';frame.classList.add('is-zoomed');});
+  frame.addEventListener('pointerleave',function(){frame.classList.remove('is-zoomed');});frame.addEventListener('click',function(){if(canZoom())frame.classList.toggle('is-zoomed');});frame.addEventListener('keydown',function(event){if((event.key==='Enter'||event.key===' ')&&canZoom()){event.preventDefault();frame.classList.toggle('is-zoomed');}if(event.key==='Escape')frame.classList.remove('is-zoomed');});
  }
  document.querySelectorAll('[data-suggest-color]').forEach(function(button){button.addEventListener('click',function(){var match=Array.from(document.querySelectorAll('[data-color-choice]')).find(function(choice){return choice.dataset.colorChoice===button.dataset.suggestColor;});if(match){match.click();document.querySelector('.yody-product-purchase').scrollIntoView({behavior:'smooth',block:'start'});}});});
 }());

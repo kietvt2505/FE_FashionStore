@@ -12,6 +12,7 @@ public sealed class CustomerFeaturesController(CustomerFeaturesService service):
     [HttpGet("points")] public Task<List<Dictionary<string,object?>>> Points(CancellationToken ct,[Range(1,100000)]int page=1)=>service.Points(Id,page,ct);
     [HttpGet("orders/{id}/history")] public Task<List<Dictionary<string,object?>>> History(string id,CancellationToken ct)=>service.History(Id,id,ct);
     [AllowAnonymous,HttpGet("reviews/{id}")] public Task<List<Dictionary<string,object?>>> Reviews(string id,CancellationToken ct,[Range(1,100000)]int page=1)=>service.Reviews(id,page,ct);
+    [HttpGet("reviews/{id}/eligible-orders")] public Task<List<Dictionary<string,object?>>> ReviewOrders([StringLength(20,MinimumLength=1)]string id,CancellationToken ct)=>service.ReviewOrders(Id,id,ct);
     [HttpPost("reviews")] public async Task<IActionResult> Review(ReviewInput input,CancellationToken ct){await service.Review(Id,input,ct);return NoContent();}
     [HttpGet("returns")] public Task<List<Dictionary<string,object?>>> Returns(CancellationToken ct,[Range(1,100000)]int page=1)=>service.Returns(Id,page,ct);
     [HttpPost("returns")] public async Task<IActionResult> Return(ReturnInput input,CancellationToken ct){await service.CreateReturn(Id,input,ct);return NoContent();}

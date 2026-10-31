@@ -61,6 +61,21 @@ public sealed class MvcClientContractTests
     }
 
     [Fact]
+    public async Task CardColorsKeepTheirOwnImagesPricesAndSoldOutState()
+    {
+        var summary=Summary.TrimEnd().TrimEnd('}')+"""
+            ,"colorOptions":[{"color":"Đỏ","imageUrl":"/red.png","price":150000,"originalPrice":200000,"stock":2},
+            {"color":"Đen","imageUrl":null,"price":175000,"stock":0}]}
+            """;
+        var handler=new ResponseHandler(HttpStatusCode.OK,"{\"items\":["+summary+"],\"total\":1,\"page\":1,\"pageSize\":12}");
+        var model=await new CatalogRepository(new HttpClient(handler),"http://localhost").SearchAsync(null,null,null,null,1,12,color:"Đỏ");
+        Assert.Equal("Đỏ",model.Color);
+        var colors=Assert.Single(model.Products).ColorOptions;
+        Assert.Equal(2,colors.Count);Assert.Equal("/red.png",colors[0].ImageUrl);Assert.Equal(200000,colors[0].OriginalPrice);
+        Assert.Null(colors[1].ImageUrl);Assert.Equal(0,colors[1].Stock);
+    }
+
+    [Fact]
     public async Task FeaturedUsesNewestProductEndpointOnce()
     {
         var handler = new ResponseHandler(HttpStatusCode.OK, "{\"items\":[],\"total\":0,\"page\":1,\"pageSize\":8}");

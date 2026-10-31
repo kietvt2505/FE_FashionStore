@@ -4,14 +4,9 @@
 @{
     ViewBag.Title = Model.Product == null ? "Chi tiết sản phẩm" : Model.Product.TenSanPham;
     ViewBag.IsCatalogPage = true;
-    var displayImage = Model.Product == null ? "~/Content/images/product-placeholder.svg" : CatalogViewHelper.ImagePath(Model.Product.HinhAnh);
-    var primaryImage = Model.Images.FirstOrDefault(x => String.IsNullOrEmpty(x.MaSKU)&&String.IsNullOrEmpty(x.MauSac));
-    if (primaryImage != null) { displayImage = CatalogViewHelper.ImagePath(primaryImage.DuongDan); }
     var sizeOrder = new[] { "XS", "S", "M", "L", "XL", "XXL", "XXXL" };
     var sizes = Model.Variants.Select(v => v.KichCo).Distinct().OrderBy(s => Array.IndexOf(sizeOrder, s) < 0 ? 99 : Array.IndexOf(sizeOrder, s)).ThenBy(s => s).ToList();
-    var colors = Model.Variants.Select(v => v.MauSac).Distinct().ToList();
-    var gallery = Model.Images.Select(p => new { Picture = p, Color = p.MauSac??Model.Variants.Where(v => v.MaSKU == p.MaSKU).Select(v => v.MauSac).FirstOrDefault() })
-        .GroupBy(p => (p.Color??"")+"|"+p.Picture.DuongDan).Select(g => g.First()).ToList();
+    var colors = Model.Variants.Select(v => v.MauSac??"").Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 }
 <main class="mn-container product-page yody-product-page">
 @if (!String.IsNullOrEmpty(Model.CatalogError))
@@ -21,20 +16,7 @@
     else if (Model.Product != null)
     {
         <div class="yody-product-layout">
-            <div class="yody-product-gallery">
-                <div class="yody-product-main-image product-zoom" tabindex="0" aria-label="Ảnh sản phẩm, di chuột hoặc chạm để phóng to"><img id="detail-main-image" src="@Url.Content(displayImage)" alt="@Model.Product.TenSanPham" /><span class="zoom-hint">Di chuột để phóng to</span></div>
-                @if (gallery.Count > 1)
-                {
-                    <div class="yody-product-thumbnails" role="group" aria-label="Chọn hình ảnh sản phẩm">
-                        @foreach (var entry in gallery)
-                        {
-                            <button type="button" class="detail-thumb" data-gallery-color="@entry.Color" data-gallery-image="@Url.Content(CatalogViewHelper.ImagePath(entry.Picture.DuongDan))" aria-label="@(entry.Picture.Alt??("Xem ảnh "+entry.Color))" aria-pressed="false" title="@(entry.Picture.Alt??entry.Color)">
-                                <img loading="lazy" src="@Url.Content(CatalogViewHelper.ImagePath(entry.Picture.DuongDan))" alt="@Model.Product.TenSanPham - @entry.Color" />
-                            </button>
-                        }
-                    </div>
-                }
-            </div>
+            @Html.Partial("_ProductGallery",Model)
             <section class="yody-product-purchase" aria-labelledby="detail-product-name">
                 <p class="eyebrow">@Model.Product.TenLoai · @CatalogViewHelper.AudienceLabel(Model.Product.DoiTuong)</p>
                 <h1 id="detail-product-name">@Model.Product.TenSanPham</h1>
@@ -63,12 +45,12 @@
                             }
                         </select>
                         </div>
-                        <div id="sku-picker" class="image-variant-picker">
+                        <div id="sku-picker" class="image-variant-picker" data-initial-color="@Model.SelectedColor">
                             <fieldset class="product-choice product-color-choice"><legend>Màu sắc</legend><div class="color-options">
                             @foreach (var color in colors) {
-                                var colorImage = gallery.FirstOrDefault(p => p.Color == color);
-                                var colorImagePath = colorImage == null ? "~/Content/images/product-placeholder.svg" : CatalogViewHelper.ImagePath(colorImage.Picture.DuongDan);
-                                <button type="button" class="color-option" data-color-choice="@color" data-color-image="@Url.Content(colorImagePath)" aria-label="@color" title="@color" aria-pressed="false"><img src="@Url.Content(colorImagePath)" alt="@Model.Product.TenSanPham - @color" /></button>
+                                var colorImage=CatalogViewHelper.ColorPhotos(Model,color).FirstOrDefault();
+                                var colorImagePath=colorImage==null?null:CatalogViewHelper.PhotoPath(colorImage.DuongDan);
+                                <button type="button" class="color-option" data-color-choice="@color" aria-label="@color" title="@color" aria-pressed="false">@if(colorImagePath!=null){<img data-managed-image src="@Url.Content(colorImagePath)" alt="@Model.Product.TenSanPham - @color" />}</button>
                             }
                             </div><p id="selected-color-label" aria-live="polite">Chưa chọn màu</p></fieldset>
                             <fieldset class="product-choice"><legend>Kích cỡ</legend><div class="size-options">
@@ -104,7 +86,7 @@
             </section>
         </div>
         <section class="product-size-guide"><h2>Bảng size tham khảo</h2><p>Số đo cơ thể tham khảo, đơn vị cm. Form dáng từng sản phẩm có thể khác; hãy đối chiếu số đo thực tế trước khi chọn.</p><div class="size-guide-grid"><div><h3>Áo</h3><table><thead><tr><th>Size</th><th>Vòng ngực</th><th>Chiều cao</th></tr></thead><tbody><tr><td>S</td><td>86–92</td><td>155–165</td></tr><tr><td>M</td><td>92–98</td><td>160–170</td></tr><tr><td>L</td><td>98–104</td><td>165–175</td></tr><tr><td>XL</td><td>104–110</td><td>170–180</td></tr></tbody></table></div><div><h3>Quần</h3><table><thead><tr><th>Size</th><th>Vòng eo</th><th>Vòng hông</th></tr></thead><tbody><tr><td>28</td><td>70–74</td><td>88–92</td></tr><tr><td>30</td><td>75–79</td><td>93–97</td></tr><tr><td>32</td><td>80–84</td><td>98–102</td></tr><tr><td>34</td><td>85–89</td><td>103–107</td></tr></tbody></table></div></div></section>
-        if(colors.Count>1){<section class="product-more-colors"><h2>Khám phá thêm màu sắc</h2><div class="more-color-options">@foreach(var color in colors){var photo=gallery.FirstOrDefault(i=>i.Color==color);<button type="button" data-suggest-color="@color"><img loading="lazy" src="@Url.Content(photo==null?displayImage:CatalogViewHelper.ImagePath(photo.Picture.DuongDan))" alt="@Model.Product.TenSanPham - @color"/><span>@color</span></button>}</div></section>}
+        if(colors.Count>1){<section class="product-more-colors"><h2>Khám phá thêm màu sắc</h2><div class="more-color-options">@foreach(var color in colors){var photo=CatalogViewHelper.ColorPhotos(Model,color).FirstOrDefault();var path=photo==null?null:CatalogViewHelper.PhotoPath(photo.DuongDan);<button type="button" data-suggest-color="@color">@if(path!=null){<img loading="lazy" data-managed-image src="@Url.Content(path)" alt="@Model.Product.TenSanPham - @color"/>}<span>@color</span></button>}</div></section>}
         if (Model.Related.Count > 0)
         {
             <section class="yody-related-products" aria-labelledby="yody-related-heading"><div class="yody-section-heading"><div><p class="eyebrow">DÀNH CHO BẠN</p><h2 id="yody-related-heading">Sản phẩm cùng danh mục</h2></div><a class="mn-text-link" href="@Url.Action("Index", "Product", new { category = Model.Product.MaLoai })">Xem thêm <span aria-hidden="true">↗</span></a></div><div class="product-grid yody-related-grid">@foreach (var p in Model.Related) { @Html.Partial("_ProductCard", p) }</div></section>
@@ -113,6 +95,7 @@
     }
 </main>
 @section scripts {
+    <script src="@Url.Content("~/Scripts/product-gallery.js")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Scripts/product-gallery.js")).Ticks"></script>
     <script src="@Url.Content("~/Scripts/product-picker.js")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Scripts/product-picker.js")).Ticks"></script>
     <noscript><p class="mn-container catalog-alert">Vui lòng bật JavaScript để chọn màu sắc và kích cỡ.</p></noscript>
 }

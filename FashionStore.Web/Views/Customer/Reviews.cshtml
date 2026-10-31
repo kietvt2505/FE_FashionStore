@@ -1,10 +1,10 @@
 @model Newtonsoft.Json.Linq.JArray
 @using FashionStore.Web.Helpers
-@{ ViewBag.Title = "Đánh giá sản phẩm"; }
+@{ ViewBag.Title = "Đánh giá sản phẩm"; var reviewOrders=ViewBag.ReviewOrders as Newtonsoft.Json.Linq.JArray ?? new Newtonsoft.Json.Linq.JArray(); var requestedOrder=ViewBag.ReviewOrderId as string; }
 <div class="yody-account-shell">
     @Html.Partial("_CustomerNav")
     @Html.Partial("_CustomerMessages")
-    <header class="yody-page-heading"><p class="eyebrow">YODY / CẢM NHẬN KHÁCH HÀNG</p><h1>Đánh giá sản phẩm</h1><p>Chia sẻ trải nghiệm thực tế sau khi mua hàng. Chỉ những đánh giá được duyệt mới xuất hiện công khai.</p><a class="yody-text-link" href="@Url.Action("Details", "Product", new { id = ViewBag.ProductId })">← Quay lại chi tiết sản phẩm</a></header>
+    <header class="yody-page-heading"><p class="eyebrow">YODY / CẢM NHẬN KHÁCH HÀNG</p><h1>Đánh giá sản phẩm</h1><p>Chỉ khách đã mua và nhận hàng thành công mới được viết đánh giá. Nhận xét sẽ xuất hiện công khai sau khi được cửa hàng duyệt.</p><a class="yody-text-link" href="@Url.Action("Details", "Product", new { id = ViewBag.ProductId })">← Quay lại chi tiết sản phẩm</a></header>
     <div class="yody-review-layout">
         <section class="yody-review-list" aria-labelledby="review-list-heading">
             <h2 id="review-list-heading" class="yody-section-subtitle">Nhận xét đã được duyệt</h2>
@@ -23,16 +23,23 @@
             @Html.Partial("_FeaturePaging", Model)
         </section>
         <aside class="yody-review-side">
-            @if (User.Identity.IsAuthenticated)
+            @if (User.Identity.IsAuthenticated && reviewOrders.Count>0)
             {
                 <section class="yody-surface-card yody-review-form" aria-labelledby="review-form-heading">
                     <h2 id="review-form-heading">Chia sẻ trải nghiệm</h2>
-                    <p>Đánh giá phải gắn với đơn đã hoàn tất và sẽ hiển thị sau khi cửa hàng duyệt.</p>
+                    <p>Chọn đơn đã giao hàng thành công của bạn. Mỗi sản phẩm trong một đơn chỉ được đánh giá một lần.</p>
                     @using (Html.BeginForm("Review", "Customer", FormMethod.Post, new { @class = "yody-account-form" }))
                     {
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="productId" value="@ViewBag.ProductId" />
-                        <div class="yody-field"><label for="orderId">Mã đơn đã mua sản phẩm</label><input class="filter-input" id="orderId" name="orderId" value="@ViewBag.ReviewOrderId" required maxlength="30" /><small><a href="@Url.Action("Index", "Orders")">Xem mã đơn của tôi →</a></small></div>
+                        <div class="yody-field"><label for="orderId">Đơn đã giao hàng thành công</label><select class="filter-input" id="orderId" name="orderId" required>
+                            <option value="">Chọn đơn đã nhận sản phẩm</option>
+                            @foreach(var order in reviewOrders){
+                                var eligibleId=(string)order["SoHD"];
+                                if(String.Equals(eligibleId,requestedOrder,StringComparison.Ordinal)||reviewOrders.Count==1){<option value="@eligibleId" selected>@eligibleId</option>}
+                                else{<option value="@eligibleId">@eligibleId</option>}
+                            }
+                        </select><small><a href="@Url.Action("Index", "Orders")">Xem đơn hàng của tôi →</a></small></div>
                         <div class="yody-field"><label for="stars">Đánh giá sao</label><select class="filter-input" id="stars" name="stars">
                             @for (var i = 5; i >= 1; i--)
                             {
@@ -43,6 +50,10 @@
                         <button type="submit" class="mn-btn mn-btn-primary">GỬI ĐÁNH GIÁ</button>
                     }
                 </section>
+            }
+            else if(User.Identity.IsAuthenticated)
+            {
+                <div class="yody-surface-card"><h2>@(ViewBag.ReviewEligibilityError==null?"Chưa có đơn đủ điều kiện":"Chưa thể kiểm tra đơn hàng")</h2><p>@(ViewBag.ReviewEligibilityError ?? "Bạn chỉ được đánh giá sản phẩm thuộc đơn của mình sau khi giao hàng thành công và thanh toán. Đơn chờ xác nhận, đang giao hoặc đã hủy chưa đủ điều kiện; đơn đã đánh giá sẽ không hiện lại.")</p><a class="mn-btn mn-btn-outline" href="@Url.Action("Index", "Orders")">XEM ĐƠN HÀNG CỦA TÔI</a></div>
             }
             else
             {

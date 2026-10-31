@@ -79,8 +79,52 @@ internal static class SupabaseCustomerFeatureScenarios
         var details = (await alice.GetFromJsonAsync<OrderDetails>("/api/orders/" + orderId))!;
         Assert.True(details.SupportsHistory); Assert.True(details.SupportsReturns);
         var review = new ReviewInput { ProductId = "P1", OrderId = orderId, Stars = 5, Body = "Sản phẩm phù hợp, nội dung thử nghiệm." };
+        var eligiblePath="reviews/P1/eligible-orders";
+        Assert.Equal(orderId,Assert.Single(await Rows(alice,eligiblePath))["SoHD"].GetString());
+        Assert.Empty(await Rows(bob,eligiblePath));
+        Assert.Empty(await Rows(alice,"reviews/N1/eligible-orders"));
+        var authorization=alice.DefaultRequestHeaders.Authorization;
+        alice.DefaultRequestHeaders.Authorization=null;
+        try { await Status(HttpStatusCode.Unauthorized,alice.GetAsync("/api/customer/"+eligiblePath)); }
+        finally { alice.DefaultRequestHeaders.Authorization=authorization; }
+        string? originalKind;
+        await using(var kind=new NpgsqlCommand("SELECT loaihoadon FROM public.hoadon WHERE sohd=@hd",sql))
+        { kind.Parameters.AddWithValue("hd",orderId); originalKind=await kind.ExecuteScalarAsync() as string; }
+        async Task SetReviewState(string shipping,string payment,string? kind=null)
+        {
+            await using var cmd=new NpgsqlCommand("UPDATE public.hoadon SET trangthaigiaohang=@shipping,trangthaithanhtoan=@payment,loaihoadon=@kind WHERE sohd=@hd",sql);
+            cmd.Parameters.AddWithValue("shipping",shipping);cmd.Parameters.AddWithValue("payment",payment);
+            cmd.Parameters.AddWithValue("hd",orderId);
+            cmd.Parameters.Add("kind",NpgsqlTypes.NpgsqlDbType.Varchar).Value=(object?)(kind??originalKind)??DBNull.Value;
+            await cmd.ExecuteNonQueryAsync();
+        }
+        // Prepaid orders still cannot be reviewed until the customer actually receives the goods.
+        // The eligible list read above must not authorize a later POST after the status changes.
+        foreach(var shipping in new[]{"Chờ xác nhận","Vừa xác nhận đơn","Chờ đơn vị vận chuyển tới lấy hàng","Shipper đã lấy hàng","Hàng đang được vận chuyển","UNKNOWN"})
+        {
+            await SetReviewState(shipping,"DA_THANH_TOAN");
+            Assert.Empty(await Rows(alice,eligiblePath));
+            await Status(HttpStatusCode.Conflict,alice.PostAsJsonAsync("/api/customer/reviews",review));
+        }
+        await SetReviewState("Hàng giao thành công","CHUA_THANH_TOAN");
+        Assert.Empty(await Rows(alice,eligiblePath));
+        await Status(HttpStatusCode.Conflict,alice.PostAsJsonAsync("/api/customer/reviews",review));
+        await SetReviewState("Hàng giao thành công","DA_THANH_TOAN","WEB_HUY");
+        Assert.Empty(await Rows(alice,eligiblePath));
+        await Status(HttpStatusCode.Conflict,alice.PostAsJsonAsync("/api/customer/reviews",review));
+        Assert.Equal(0L,await Scalar<long>("SELECT count(*) FROM webstore.product_review"));
+        await SetReviewState("Hàng giao thành công","DA_THANH_TOAN");
+        await Status(HttpStatusCode.Conflict,alice.PostAsJsonAsync("/api/customer/reviews",new ReviewInput
+            {ProductId="N1",OrderId=orderId,Stars=5,Body="Not purchased"}));
+        await Status(HttpStatusCode.Conflict,alice.PostAsJsonAsync("/api/customer/reviews",new ReviewInput
+            {ProductId="P1",OrderId="NOT-MY-ORDER",Stars=5,Body="Not purchased"}));
         await Status(HttpStatusCode.Conflict, bob.PostAsJsonAsync("/api/customer/reviews", review));
-        await Status(HttpStatusCode.NoContent, alice.PostAsJsonAsync("/api/customer/reviews", review));
+        var reviewsRace=await Task.WhenAll(alice.PostAsJsonAsync("/api/customer/reviews",review),alice.PostAsJsonAsync("/api/customer/reviews",review));
+        Assert.Single(reviewsRace,r=>r.StatusCode==HttpStatusCode.NoContent);
+        Assert.Single(reviewsRace,r=>r.StatusCode==HttpStatusCode.Conflict);
+        foreach(var response in reviewsRace)response.Dispose();
+        Assert.Equal(1L,await Scalar<long>("SELECT count(*) FROM webstore.product_review"));
+        Assert.Empty(await Rows(alice,eligiblePath));
         Assert.Empty(await Rows(alice, "reviews/P1")); // Pending reviews are never public.
         await Status(HttpStatusCode.Conflict, alice.PostAsJsonAsync("/api/customer/reviews", review));
         await Exec("UPDATE webstore.product_review SET status='HIEN_THI'");

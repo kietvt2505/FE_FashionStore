@@ -31,7 +31,7 @@
                         <tr><td data-label="Sản phẩm"><div class="yody-order-product">
                             <img class="yody-order-product-image" width="56" height="72" loading="lazy" decoding="async" src="@Url.Content(CatalogViewHelper.ImagePath(item.ImageUrl))" alt="@item.Name - @item.Color" />
                             <div class="yody-order-product-text"><strong>@item.Name</strong><small class="yody-table-detail">@item.Sku · @item.Size · @item.Color</small>
-                            @if (Model.Status=="HOAN_TAT" && Model.PaymentStatus=="DA_THANH_TOAN" && !String.IsNullOrWhiteSpace(item.ProductId)) {
+                            @if (CustomerViewHelper.CanReviewOrder(Model) && !String.IsNullOrWhiteSpace(item.ProductId)) {
                                 <a class="yody-text-link" href="@Url.Action("Reviews","Customer",new{id=item.ProductId,orderId=Model.OrderId})">Viết đánh giá</a>
                             }
                             </div>

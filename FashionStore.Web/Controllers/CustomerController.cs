@@ -37,12 +37,48 @@ namespace FashionStore.Web.Controllers
             }catch(Exception e){return Error(e);}
         }
         public Task<ActionResult> Returns(int page=1){return List("Returns","returns",page);}
-        [AllowAnonymous] public Task<ActionResult> Reviews(string id,int page=1,string orderId=null){if(String.IsNullOrWhiteSpace(id)||id.Length>20||orderId!=null&&orderId.Length>30)return Task.FromResult<ActionResult>(HttpNotFound());ViewBag.ProductId=id;ViewBag.ReviewOrderId=orderId;return List("Reviews","reviews/"+Uri.EscapeDataString(id),page);}
+        [AllowAnonymous] public async Task<ActionResult> Reviews(string id,int page=1,string orderId=null){
+            if(String.IsNullOrWhiteSpace(id)||id.Length>20||orderId!=null&&orderId.Length>30)return HttpNotFound();
+            if(page<1||page>100000)return new HttpStatusCodeResult(400);
+            ViewBag.ProductId=id;ViewBag.ReviewOrderId=orderId;ViewBag.Page=page;
+            ViewBag.ReviewOrders=new JArray();
+            try{
+                var reviews=await api.FeatureListAsync(Token,"reviews/"+Uri.EscapeDataString(id)+"?page="+page);
+                if(User.Identity.IsAuthenticated){
+                    try{ViewBag.ReviewOrders=await api.FeatureListAsync(Token,"reviews/"+Uri.EscapeDataString(id)+"/eligible-orders");}
+                    catch(Exception e){if(IsUnauthorized(e))return Error(e);ViewBag.ReviewEligibilityError="Chưa thể kiểm tra đơn đủ điều kiện đánh giá. Vui lòng thử lại sau.";}
+                }
+                return View("Reviews",reviews);
+            }catch(Exception e){return Error(e);}
+        }
         public async Task<ActionResult> Return(string id) {
             if(String.IsNullOrWhiteSpace(id)||id.Length>30)return HttpNotFound();
             try{ViewBag.RequestId=Guid.NewGuid();return View(await api.OrderAsync(Token,id));}catch(Exception e){return Error(e);}
         }
-        [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> SaveWishlist(string id) {return Change("Wishlist",()=>api.FeatureAsync(Token,"wishlist/"+Uri.EscapeDataString(id??""),null,"PUT"));}
+        // A return URL is opened with GET after login. Keep legacy bookmarks safe and non-mutating.
+        [HttpGet,ActionName("SaveWishlist")] public ActionResult WishlistAfterLogin(){return RedirectToAction("Wishlist");}
+        [HttpPost,AllowAnonymous,ValidateAntiForgeryToken]
+        public async Task<ActionResult> SaveWishlist(string id)
+        {
+            var intent=WishlistLoginIntent.Create(id,DateTimeOffset.UtcNow);
+            if(intent==null)return new HttpStatusCodeResult(400);
+            if(!User.Identity.IsAuthenticated)return LoginForWishlist(intent);
+            Session.Remove(WishlistLoginIntent.SessionKey);
+            try{
+                await api.FeatureAsync(Token,"wishlist/"+Uri.EscapeDataString(intent.ProductId),null,"PUT");
+                TempData["CustomerMessage"]="Đã thêm sản phẩm vào danh sách yêu thích.";
+            }catch(Exception error){
+                if(IsUnauthorized(error))return LoginForWishlist(intent);
+                TempData["CustomerError"]=Message(error);
+            }
+            return RedirectToAction("Wishlist");
+        }
+        private ActionResult LoginForWishlist(WishlistLoginIntent intent)
+        {
+            Session[WishlistLoginIntent.SessionKey]=intent;
+            CustomerAuthentication.SignOut();
+            return RedirectToAction("Login","Account",new{returnUrl=Url.Action("Wishlist","Customer")});
+        }
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> RemoveWishlist(string id){return Change("Wishlist",()=>api.FeatureAsync(Token,"wishlist/"+Uri.EscapeDataString(id??""),null,"DELETE"));}
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> SaveAddress(string recipient,string phone,string address,long? id=null){return Change("Addresses",()=>api.FeatureAsync(Token,id.HasValue?"addresses/"+id.Value:"addresses",new{Recipient=recipient,Phone=phone,Address=address},id.HasValue?"PUT":"POST"));}
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> RemoveAddress(long id){return Change("Addresses",()=>api.FeatureAsync(Token,"addresses/"+id,null,"DELETE"));}

@@ -41,15 +41,31 @@ public sealed class CatalogNavigationTests
         var items = CatalogViewHelper.MenuSections(audience, categories).SelectMany(s => s.Items).ToList();
         Assert.Equal(female, items.Any(i => i.Label == "Túi xách"));
         Assert.Equal(female, items.Any(i => i.Label == "Váy ngắn"));
-        Assert.Equal(audience!="NAM",items.Any(i=>i.Label=="Đầm"));
+        Assert.Equal(audience=="NU",items.Any(i=>i.Label=="Đầm"));
         Assert.DoesNotContain(items,i=>i.Label=="123");
-        Assert.Contains(items,i=>i.Kind=="day-nit");
         Assert.True(CatalogViewHelper.IsAccessoryKind("day-nit"));
         Assert.False(CatalogViewHelper.IsAccessoryKind("ao-vest"));
-        Assert.Contains(items, i => i.Kind == "quan-ngan"); Assert.Contains(items, i => i.Kind == "quan-dai");
-        Assert.Contains(items, i => i.Kind == "giay"); Assert.Contains(items, i => i.Kind == "dep");
+        Assert.DoesNotContain(items,i=>i.Label=="Quần ngắn"||i.Label=="Giày"||i.Label=="Dép"); // No links to nonexistent categories.
+        Assert.All(items,i=>{Assert.False(String.IsNullOrEmpty(i.Category));Assert.Null(i.Kind);});
         Assert.Contains(items, i => i.Category == "OTHER");
-        Assert.Equal("POLO", Assert.Single(items.Where(i => i.Label == "Áo polo")).Category);
+        Assert.Equal("POLO", Assert.Single(items,i => i.Label == "Áo polo").Category);
         Assert.Equal("Quần dài", CatalogViewHelper.KindLabel("quan-dai"));
+    }
+
+    [Fact]
+    public void CurrentCategoriesUseOneExactFilterAndAccessoriesExcludeClothing()
+    {
+        var categories=new List<CategoryOption>{
+            new(){MaLoai="T-M",TenLoai="Áo thun nam"},new(){MaLoai="T-F",TenLoai="Áo thun baby tee nữ"},
+            new(){MaLoai="P-M",TenLoai="Quần tây nam"},new(){MaLoai="P-F",TenLoai="Quần jeans nữ"},
+            new(){MaLoai="U-M",TenLoai="Đồ lót nam"},new(){MaLoai="D-F",TenLoai="Đầm"},
+            new(){MaLoai="H",TenLoai="Nón"},new(){MaLoai="S",TenLoai="Vớ"}
+        };
+        var male=CatalogViewHelper.MenuSections("NAM",categories).SelectMany(s=>s.Items).ToList();
+        Assert.Equal(new[]{"T-M","P-M","U-M","H","S"}.OrderBy(x=>x),male.Select(i=>i.Category).OrderBy(x=>x));
+        Assert.All(male,i=>Assert.Null(i.Kind));
+        Assert.Equal(new[]{"H","S"},CatalogViewHelper.CategoriesForContext(categories,null,"phu-kien").Select(c=>c.MaLoai));
+        Assert.Equal("Trang phục khác",CatalogViewHelper.MenuSections("NAM",categories).Single(s=>s.Items.Any(i=>i.Category=="U-M")).Title);
+        Assert.Equal(new[]{"P-M"},CatalogViewHelper.CategoriesForContext(categories,"NAM","quan-dai").Select(c=>c.MaLoai));
     }
 }

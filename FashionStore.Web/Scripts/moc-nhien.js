@@ -73,9 +73,14 @@
         if (event.target.closest("a") && !wide.matches) setOpen(panels[0], false, true);
     });
     var categoryFilter = document.getElementById("catalog-category");
-    if (categoryFilter) categoryFilter.addEventListener("change", function () {
-        var kindInput = categoryFilter.form.querySelector('input[name="kind"]');
-        if (kindInput) kindInput.disabled = true;
+    var audienceFilter = document.getElementById("catalog-audience");
+    if (categoryFilter && audienceFilter) audienceFilter.addEventListener("change", function () {
+        Array.prototype.forEach.call(categoryFilter.options,function(option){
+            var actual=option.dataset.audience||"",wanted=audienceFilter.value;
+            var visible=!wanted||!actual||actual===wanted||actual==='UNISEX'&&(wanted==='NAM'||wanted==='NU');
+            option.hidden=!visible;option.disabled=!visible;
+            if(!visible&&option.selected)categoryFilter.value="";
+        });
     });
     var catalogMenus = Array.prototype.slice.call(document.querySelectorAll("[data-catalog-menu]"));
     function closeCatalogMenus(except) {
@@ -137,6 +142,7 @@
         '<text x="300" y="452" text-anchor="middle" fill="#44403C" font-family="sans-serif" font-size="22">Ảnh đang cập nhật</text></svg>'
     );
     Array.prototype.forEach.call(document.querySelectorAll("img"), function (image) {
+        if(image.hasAttribute('data-managed-image')) return;
         function showPlaceholder() {
             image.removeEventListener("error", showPlaceholder);
             image.src = placeholder;
@@ -168,7 +174,7 @@
     });
 
     var galleryImage = document.getElementById("detail-main-image");
-    var galleryButtons = document.querySelectorAll("[data-gallery-image]");
+    var galleryButtons = document.querySelectorAll("[data-gallery-image]:not([data-managed-gallery])");
     Array.prototype.forEach.call(galleryButtons, function (button) {
         // The initial full-size image may differ from the first thumbnail.
         var selectedInitially = !!(galleryImage && button.getAttribute("data-gallery-image") === galleryImage.getAttribute("src"));

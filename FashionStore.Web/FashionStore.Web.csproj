@@ -26,6 +26,9 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\shared\CatalogTaxonomy.cs"><Link>Helpers\CatalogTaxonomy.cs</Link></Compile>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -123,6 +126,7 @@
     <Compile Include="Models\CatalogModels.cs" />
     <Compile Include="Services\CatalogRepository.cs" />
     <Compile Include="Helpers\CatalogViewHelper.cs" />
+    <Compile Include="Helpers\WishlistLoginIntent.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -308,6 +312,11 @@
     <Content Include="Content\storefront-polish.css" />
     <Content Include="Scripts\storefront-motion.js" />
     <Content Include="Content\brand.css" />
+    <Content Include="Content\product-media.css" />
+    <Content Include="Content\product-cards.css" />
+    <Content Include="Scripts\product-cards.js" />
+    <Content Include="Scripts\product-gallery.js" />
+    <Content Include="Views\Shared\_ProductGallery.cshtml" />
     <Content Include="Content\images\brand\yody-logo-source.png" />
     <Content Include="Content\images\brand\yody-logo.svg" />
     <Content Include="Content\images\brand\yody-favicon.svg" />

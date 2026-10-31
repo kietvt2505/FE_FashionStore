@@ -104,7 +104,8 @@ namespace FashionStore.Web.Services
                 MaSP = product.Id, TenSanPham = product.Name, MaLoai = product.Category.Id,
                 TenLoai = product.Category.Name, DoiTuong = product.Audience, MoTa = product.Description,
                 Kind=product.Kind,
-                DonGia = product.Price, GiaGoc = product.OriginalPrice, TonKho = product.Stock, HinhAnh = product.ImageUrl
+                DonGia = product.Price, GiaGoc = product.OriginalPrice, TonKho = product.Stock, HinhAnh = product.ImageUrl,
+                ColorOptions=product.ColorOptions??new List<ProductColorOption>()
             };
         }
 
@@ -158,6 +159,7 @@ namespace FashionStore.Web.Services
             public decimal? OriginalPrice { get; set; }
             public long Stock { get; set; }
             public string ImageUrl { get; set; }
+            public List<ProductColorOption> ColorOptions {get;set;}
         }
         private class ProductDetailDto : ProductDto
         {

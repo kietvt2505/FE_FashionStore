@@ -1,24 +1,39 @@
 @model FashionStore.Web.Models.ProductSummary
 @using FashionStore.Web.Helpers
+@using System.Linq
 @{
-    var picture = CatalogViewHelper.ImagePath(Model.HinhAnh);
+    var choices=Model.ColorOptions.Where(c=>c!=null&&!String.IsNullOrWhiteSpace(c.Color)).GroupBy(c=>c.Color,StringComparer.OrdinalIgnoreCase).Select(g=>g.First()).ToList();
+    var selected=choices.FirstOrDefault(c=>String.Equals(c.Color,ViewBag.CatalogSelectedColor as string,StringComparison.OrdinalIgnoreCase))??choices.FirstOrDefault(c=>c.Price==Model.DonGia&&(!Model.GiaGoc.HasValue||c.OriginalPrice==Model.GiaGoc))??choices.OrderBy(c=>c.Price).FirstOrDefault();
+    var picture=CatalogViewHelper.PhotoPath(selected==null?Model.HinhAnh:selected.ImageUrl);
+    var price=selected==null?Model.DonGia:selected.Price;
+    var original=selected==null?Model.GiaGoc:selected.OriginalPrice;
+    var inStock=selected==null?Model.ConHang:selected.Stock>0;
     var origin=Request.RawUrl.StartsWith("/Product/Details",StringComparison.OrdinalIgnoreCase)?Session["ShoppingReturnUrl"] as string:Request.RawUrl;
-    var detailsUrl=Url.Action("Details","Product",new{id=Model.MaSP,returnUrl=origin});
-    var discount=Model.GiaGoc.HasValue && Model.GiaGoc.Value>Model.DonGia?(int)Math.Round((1-Model.DonGia/Model.GiaGoc.Value)*100):0;
+    var detailsUrl=Url.Action("Details","Product",new{id=Model.MaSP,color=selected==null?null:selected.Color,returnUrl=origin});
+    var discount=original.HasValue&&original.Value>price?(int)Math.Round((1-price/original.Value)*100):0;
 }
-<article class="product-card">
-    <a class="product-image" href="@detailsUrl" aria-label="Xem chi tiết @Model.TenSanPham">
-        <img width="600" height="800" loading="lazy" decoding="async" src="@Url.Content(picture)" alt="@Model.TenSanPham" />
-        <span class="product-tag">@(Model.ConHang ? CatalogViewHelper.AudienceLabel(Model.DoiTuong) : "HẾT HÀNG")</span>
-        @if(discount>0){<span class="product-discount-tag">−@discount%</span>}
-        <span class="product-view">Xem sản phẩm <span aria-hidden="true">↗</span></span>
+<article class="product-card catalog-product-card" data-product-card data-product-name="@Model.TenSanPham">
+    <a class="product-image" href="@detailsUrl" data-product-details aria-label="Xem chi tiết @Model.TenSanPham">
+        <img width="600" height="800" loading="lazy" decoding="async" data-card-image data-managed-image src="@(picture==null?null:Url.Content(picture))" hidden="@(picture==null?"hidden":null)" alt="@Model.TenSanPham@(selected==null?"":" - "+selected.Color)" />
+        <span class="product-discount-tag" data-card-discount hidden="@(discount>0?null:"hidden")">−@discount%</span>
     </a>
     <div class="product-detail">
-        <p class="product-category">@Model.TenLoai</p>
-        <h3><a href="@detailsUrl">@Model.TenSanPham</a></h3>
-        <div class="product-price-row"><strong class="@(Model.GiaGoc.HasValue ? "sale-price" : "")">Từ @CatalogViewHelper.Vnd(Model.DonGia)</strong>
-        @if (Model.GiaGoc.HasValue) { <del aria-label="Giá gốc">@CatalogViewHelper.Vnd(Model.GiaGoc.Value)</del><span class="product-sale-badge">Khuyến mãi</span> }</div>
-        <span class="product-meta">@(Model.ConHang ? "Có sẵn tại cửa hàng" : "Tạm hết hàng")</span>
+        <div class="product-price-row"><del aria-label="Giá gốc" data-card-original hidden="@(discount>0?null:"hidden")">@(original.HasValue?CatalogViewHelper.Vnd(original.Value):"")</del><strong class="@(discount>0?"sale-price":"")" data-card-price>@CatalogViewHelper.Vnd(price)</strong></div>
+        <h3><a href="@detailsUrl" data-product-details title="@Model.TenSanPham">@Model.TenSanPham</a></h3>
+        <p class="product-category"><span>@Model.TenLoai</span><span class="product-availability" data-card-availability hidden="@(inStock?"hidden":null)">Hết hàng</span></p>
+        @if(choices.Count>0){
+            <div class="card-color-section">
+            <div class="card-color-options" role="group" aria-label="Chọn màu @Model.TenSanPham">
+                @foreach(var choice in choices){
+                    var image=CatalogViewHelper.PhotoPath(choice.ImageUrl);
+                    var percent=choice.OriginalPrice.HasValue&&choice.OriginalPrice>choice.Price?(int)Math.Round((1-choice.Price/choice.OriginalPrice.Value)*100):0;
+                    <button type="button" class="card-color-choice" style="--swatch-color:@CatalogViewHelper.ColorCss(choice.Color)" data-card-color="@choice.Color" data-card-photo="@(image==null?"":Url.Content(image))" data-card-href="@Url.Action("Details","Product",new{id=Model.MaSP,color=choice.Color,returnUrl=origin})" data-card-display-price="@CatalogViewHelper.Vnd(choice.Price)" data-card-display-original="@(percent>0?CatalogViewHelper.Vnd(choice.OriginalPrice.Value):"")" data-card-percent="@percent" data-card-stock="@choice.Stock" aria-label="Màu @choice.Color@(choice.Stock>0?"":" — tạm hết hàng")" title="@choice.Color@(choice.Stock>0?"":" — tạm hết hàng")" aria-pressed="@(selected!=null&&String.Equals(selected.Color,choice.Color,StringComparison.OrdinalIgnoreCase)?"true":"false")"><span aria-hidden="true"></span></button>
+                }
+            </div>
+            <span class="card-color-name" data-card-color-name aria-live="polite">@(selected==null?"":selected.Color+(inStock?"":" — tạm hết hàng"))</span>
+            </div>
+        }
+        <span class="yody-visually-hidden" data-card-stock-note>@(inStock?"Còn hàng":"Màu này tạm hết hàng")</span>
     </div>
-    @using(Html.BeginForm("SaveWishlist","Customer",FormMethod.Post,new{@class="wishlist-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@Model.MaSP"/><button type="submit" aria-label="Lưu yêu thích @Model.TenSanPham"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 3.8 12A5.2 5.2 0 0 1 12 5.6 5.2 5.2 0 0 1 20.2 12Z" /></svg><span>Yêu thích</span></button>}
+    @using(Html.BeginForm("SaveWishlist","Customer",FormMethod.Post,new{@class="wishlist-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@Model.MaSP"/><button type="submit" title="Lưu yêu thích @Model.TenSanPham" aria-label="Lưu yêu thích @Model.TenSanPham"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 3.8 12A5.2 5.2 0 0 1 12 5.6 5.2 5.2 0 0 1 20.2 12Z" /></svg></button>}
 </article>
