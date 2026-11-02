@@ -67,6 +67,11 @@ namespace FashionStore.Web.Models
         public bool SupportsHistory { get; set; } = true;
         public bool SupportsReturns { get; set; } = true;
         public bool CanCancel { get; set; }
+        public bool CanUpdateDelivery { get; set; }
+        public bool CanUpdatePayment { get; set; }
+        public bool SupportsBankTransfer { get; set; }
+        public string EditVersion { get; set; }
+        public string PaymentUpdateNotice { get; set; }
         public DateTime? CancelledAt { get; set; }
         public string CancellationReason {get;set;}
         public OrderRefundModel Refund {get;set;}
@@ -103,6 +108,8 @@ namespace FashionStore.Web.Models
     public sealed class CancelOrderViewModel
     {
         public string Id {get;set;}
+        [RegularExpression("^(NO_NEED|ADDRESS|PAYMENT|OTHER)$",ErrorMessage="Vui lòng chọn lý do hủy đơn.")]
+        public string ReasonCode {get;set;}
         [StringLength(500,ErrorMessage="Lý do tối đa 500 ký tự.")]
         public string Reason {get;set;}
         [StringLength(150,ErrorMessage="Tên chủ tài khoản tối đa 150 ký tự.")]
@@ -115,6 +122,21 @@ namespace FashionStore.Web.Models
         public bool RequiresRefund {get;set;}
         public bool RefundAccountOnly {get;set;}
         public bool Open {get;set;}
+        public bool CanUpdateDelivery {get;set;}
+        public bool CanUpdatePayment {get;set;}
+        public string PaymentUpdateNotice {get;set;}
+    }
+    public sealed class UpdateOrderViewModel
+    {
+        public string Id {get;set;}
+        [Required,RegularExpression("^(delivery|payment)$")] public string Section {get;set;}
+        [Required,RegularExpression("^[A-F0-9]{64}$")] public string Version {get;set;}
+        [StringLength(150)] public string Recipient {get;set;}
+        [StringLength(20)] public string Phone {get;set;}
+        [StringLength(300)] public string Address {get;set;}
+        [RegularExpression("^(COD|CHUYEN_KHOAN|VISA|VNPAY|ZALOPAY|PAYOS)$")] public string PaymentMethod {get;set;}
+        public OrderDetailsModel Order {get;set;}
+        public List<OnlinePaymentOptionModel> OnlineMethods {get;set;} = new List<OnlinePaymentOptionModel>();
     }
     public sealed class OrderActionModel
     {

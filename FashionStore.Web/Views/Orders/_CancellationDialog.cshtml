@@ -6,8 +6,23 @@
         @Html.HiddenFor(m=>m.Id)
         @Html.ValidationSummary(false,"",new{@class="customer-errors",role="alert"})
         if(!Model.RefundAccountOnly) {
-            <div class="yody-field"><label for="Reason">Lý do hủy đơn @(Model.RequiresReason?"*":"(không bắt buộc)")</label>
-                @Html.TextAreaFor(m=>m.Reason,new{rows="3",maxlength="500",placeholder="Vui lòng cho cửa hàng biết lý do bạn muốn hủy đơn",@class="filter-input",data_reason_required=Model.RequiresReason?"true":"false"})
+            <div class="yody-field"><label for="ReasonCode">Lý do hủy đơn *</label>
+                @Html.DropDownListFor(m=>m.ReasonCode,new[]{
+                    new SelectListItem{Value="NO_NEED",Text="Tôi không còn nhu cầu mua hàng"},
+                    new SelectListItem{Value="ADDRESS",Text="Tôi muốn thay đổi địa chỉ nhận hàng"},
+                    new SelectListItem{Value="PAYMENT",Text="Tôi muốn thay đổi phương thức thanh toán"},
+                    new SelectListItem{Value="OTHER",Text="Lý do khác"}},"Chọn lý do hủy đơn",new{@class="filter-input",required="required"})
+            </div>
+            <div class="order-change-offer" data-address-offer hidden>
+                @if(Model.CanUpdateDelivery){<p>Bạn có muốn cập nhật địa chỉ nhận hàng mà không cần hủy đơn?</p><a class="mn-btn mn-btn-primary" href="@Url.Action("Update","Orders",new{id=Model.Id,section="delivery"})">CẬP NHẬT ĐỊA CHỈ</a><p class="yody-muted">Hoặc chọn Tiếp tục hủy đơn bên dưới nếu bạn vẫn muốn hủy.</p>}
+                else{<p>Đơn hiện không thể tự cập nhật địa chỉ. Vui lòng liên hệ cửa hàng để được hỗ trợ.</p>}
+            </div>
+            <div class="order-change-offer" data-payment-offer hidden>
+                @if(Model.CanUpdatePayment){<p>Bạn có muốn đổi phương thức thanh toán mà không cần hủy đơn?</p><a class="mn-btn mn-btn-primary" href="@Url.Action("Update","Orders",new{id=Model.Id,section="payment"})">ĐỔI PHƯƠNG THỨC THANH TOÁN</a><p class="yody-muted">Hoặc chọn Tiếp tục hủy đơn bên dưới nếu bạn vẫn muốn hủy.</p>}
+                else{<p>@(Model.PaymentUpdateNotice??"Đơn hiện không thể tự đổi phương thức thanh toán. Vui lòng liên hệ cửa hàng để được hỗ trợ.")</p>}
+            </div>
+            <div class="yody-field" data-other-reason hidden><label for="Reason">Lý do khác *</label>
+                @Html.TextAreaFor(m=>m.Reason,new{rows="3",maxlength="500",minlength="5",placeholder="Vui lòng cho cửa hàng biết lý do bạn muốn hủy đơn",@class="filter-input"})
             </div>
         }
         if(Model.RequiresRefund) {

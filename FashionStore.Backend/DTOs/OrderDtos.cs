@@ -35,6 +35,11 @@ public sealed record OrderDetails(string OrderId, DateTime CreatedAt, string Sta
     public bool SupportsHistory { get; init; } = true;
     public bool SupportsReturns { get; init; } = true;
     public bool CanCancel { get; init; }
+    public bool CanUpdateDelivery { get; init; }
+    public bool CanUpdatePayment { get; init; }
+    public bool SupportsBankTransfer { get; init; }
+    public string? EditVersion { get; init; }
+    public string? PaymentUpdateNotice { get; init; }
     public DateTime? CancelledAt { get; init; }
     public string? CancellationReason { get; init; }
     public OrderRefundDetails? Refund { get; init; }
@@ -52,3 +57,11 @@ public sealed record CancelOrderRequest(
 public sealed record OrderRefundDetails(string Status,decimal Amount,string? AccountHolder,string? MaskedAccountNumber,
     string? BankName,DateTime? RefundedAt);
 public sealed record OrderActionResponse(string OrderId, string Status, string Result);
+
+public sealed record UpdateOrderRequest(
+    [param: Required, RegularExpression("^(delivery|payment)$")] string Section,
+    [param: Required, RegularExpression("^[A-F0-9]{64}$")] string Version,
+    [param: StringLength(150)] string? Recipient = null,
+    [param: StringLength(20)] string? Phone = null,
+    [param: StringLength(300)] string? Address = null,
+    [param: RegularExpression("^(COD|CHUYEN_KHOAN|VISA|VNPAY|ZALOPAY|PAYOS)$")] string? PaymentMethod = null);

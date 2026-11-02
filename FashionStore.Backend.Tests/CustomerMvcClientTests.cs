@@ -9,6 +9,16 @@ namespace FashionStore.Backend.Tests;
 
 public sealed class CustomerMvcClientTests
 {
+    [Fact] public async Task OrderInformationUpdateSendsOnlyTheChosenSectionAndEditableFields()
+    {
+        var handler=new CaptureHandler();using var http=new HttpClient(handler);
+        var api=new CustomerApiClient(http,"http://backend.test/");
+        await api.UpdateOrderAsync("owner",new UpdateOrderViewModel{Id="HD-1",Section="delivery",Version=new string('A',64),
+            Recipient="Customer",Phone="0900000001",Address="New delivery address",Order=new OrderDetailsModel{OrderId="OTHER",Total=1}});
+        var request=Assert.Single(handler.Requests);
+        Assert.Equal("PUT",request.Method);Assert.Equal("owner",request.Token);Assert.EndsWith("/api/orders/HD-1/information",request.Path);
+        Assert.Equal(new[]{"Address","PaymentMethod","Phone","Recipient","Section","Version"},request.Body!.Properties().Select(p=>p.Name).OrderBy(n=>n));
+    }
     [Fact] public async Task CancellationSendsOnlyReasonAndRefundAccountToOwnedEndpoint()
     {
         var handler=new CaptureHandler();using var http=new HttpClient(handler);

@@ -1,5 +1,7 @@
 # Khách hàng hủy đơn website
 
+**Luồng giao diện ngày 03/11/2026:** form có bốn lý do và lựa chọn cập nhật địa chỉ/phương thức thanh toán trên cùng đơn mà không hủy. Xem [ORDER_INFORMATION_UPDATES.md](ORDER_INFORMATION_UPDATES.md) về điều kiện và kiểm thử. Phần cập nhật thông tin không yêu cầu migration mới.
+
 **Bản mở rộng hiện tại:** xem `ORDER_CANCELLATION_REFUNDS.md` và chạy `database/Supabase-Order-Cancellation-Refunds.sql` sau cùng. Bản này bổ sung lý do, tài khoản nhận hoàn tiền và cho phép hủy đơn online đã thanh toán hợp lệ ở hai bước đầu. Các giới hạn chỉ đơn chưa thanh toán dưới đây mô tả bản cũ trước khi cài phần mở rộng.
 
 ## Bật chức năng

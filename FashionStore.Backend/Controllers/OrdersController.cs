@@ -21,4 +21,8 @@ public sealed class OrdersController(OrderService orders) : ControllerBase
         CancelOrderRequest input,CancellationToken ct)
     {await orders.SaveRefundAccountAsync(CustomerId,id,input,ct);return NoContent();}
     [HttpGet("{id}")] public Task<OrderDetails> Details(string id, CancellationToken ct) => orders.DetailAsync(id, CustomerId, ct);
+    [HttpPut("{id}/information")] public async Task<IActionResult> UpdateInformation(
+        [System.ComponentModel.DataAnnotations.StringLength(30,MinimumLength=1)] string id,
+        UpdateOrderRequest input,CancellationToken ct)
+    {await orders.UpdateCustomerAsync(CustomerId,id,input,ct);return NoContent();}
 }

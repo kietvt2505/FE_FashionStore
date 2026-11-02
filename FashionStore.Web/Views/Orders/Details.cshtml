@@ -148,7 +148,8 @@
 </div>
 @if(Model.CanCancel || (Model.Refund!=null&&Model.Refund.Status=="CHO_THONG_TIN")) {
     var cancellationForm=ViewBag.CancellationForm as FashionStore.Web.Models.CancelOrderViewModel ?? new FashionStore.Web.Models.CancelOrderViewModel {
-        Id=Model.OrderId,RequiresReason=Model.PaymentMethod!="COD",RequiresRefund=Model.PaymentStatus=="DA_THANH_TOAN",
+        Id=Model.OrderId,RequiresReason=true,RequiresRefund=Model.PaymentStatus=="DA_THANH_TOAN",
+        CanUpdateDelivery=Model.CanUpdateDelivery,CanUpdatePayment=Model.CanUpdatePayment,PaymentUpdateNotice=Model.PaymentUpdateNotice,
         RefundAccountOnly=Model.Refund!=null&&Model.Refund.Status=="CHO_THONG_TIN",Open=Model.Refund!=null&&Model.Refund.Status=="CHO_THONG_TIN"
     };
     @Html.Partial("_CancellationDialog",cancellationForm)

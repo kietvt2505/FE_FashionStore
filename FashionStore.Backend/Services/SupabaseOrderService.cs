@@ -9,7 +9,7 @@ using Npgsql;
 namespace FashionStore.Backend.Services;
 
 // COD is completed by Windows. Prepaid invoices enter its delivery queue only after verified settlement.
-public sealed class SupabaseOrderService(DatabaseMode mode,PaymentGatewaySettings? paymentSettings=null)
+public sealed partial class SupabaseOrderService(DatabaseMode mode,PaymentGatewaySettings? paymentSettings=null)
 {
     private NpgsqlConnection Connection()
     {
@@ -241,6 +241,7 @@ public sealed class SupabaseOrderService(DatabaseMode mode,PaymentGatewaySetting
             await using var reader=await refund.ExecuteReaderAsync(ct);
             if(await reader.ReadAsync(ct))order=order with {Refund=new(reader.GetString(0),reader.GetDecimal(1),reader.IsDBNull(2)?null:reader.GetString(2),reader.IsDBNull(3)?null:reader.GetString(3),reader.IsDBNull(4)?null:reader.GetString(4),reader.IsDBNull(5)?null:reader.GetDateTime(5))};
         }
+        order = await WithUpdateCapabilities(c,tx,order,customer,ct);
         await tx.CommitAsync(ct);
         return order with { Items = lines, SupportsHistory = enabled, SupportsReturns = enabled,
             VoucherDiscount=order.Voucher==null?0:Math.Max(0,order.Discount-order.MemberDiscount) };

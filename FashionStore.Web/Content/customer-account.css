@@ -20,6 +20,11 @@
 .order-refund-bank-grid {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;}
 .order-refund-notice {background:#eef3f8;border-left:3px solid #152d4e;padding:12px 14px;margin:18px 0;font-size:13px;}
 .order-refund-notice p {margin:5px 0 0;line-height:1.65;}
+.order-change-offer {padding:16px;margin:16px 0;background:#eef3f8;border-left:3px solid #173654;border-radius:6px;}
+.order-change-offer[hidden],.order-cancellation-form [data-other-reason][hidden] {display:none;}
+.order-change-offer p {font-size:13px;line-height:1.7;margin:0 0 12px;}
+.order-change-offer .mn-btn {width:100%;white-space:normal;font-size:12px;}
+.order-change-offer .yody-muted {margin:12px 0 0;font-size:12px;}
 .order-refund-privacy {font-size:12px;line-height:1.65;color:#425774;}
 .order-dialog-actions {display:flex;gap:12px;margin-top:22px;}
 .order-dialog-actions .mn-btn {flex:1;min-height:46px;padding:12px 10px;font-size:12px;}

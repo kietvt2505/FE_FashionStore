@@ -13,6 +13,11 @@ namespace FashionStore.Backend.Services;
 // Stock is NOT deducted at checkout. Existing SQL procedures own confirmation/cancellation.
 public sealed class OrderService(FashionStoreDbContext db, SupabaseOrderService? postgres = null)
 {
+    public Task UpdateCustomerAsync(string customer,string id,UpdateOrderRequest input,CancellationToken ct)
+    {
+        if (db.Database.IsNpgsql()) return postgres!.UpdateInformationAsync(customer,id,input,ct);
+        throw new CustomerRequestException(409,"Cập nhật thông tin đơn hiện chỉ được bật trên cửa hàng Supabase.");
+    }
     private SqlConnection Connection()
     {
         var original = db.Database.GetDbConnection();

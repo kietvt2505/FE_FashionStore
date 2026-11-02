@@ -272,6 +272,7 @@
     <Content Include="Scripts\storefront.js" />
     <Content Include="Scripts\order-cancellation.js" />
     <Content Include="Views\Orders\_CancellationDialog.cshtml" />
+    <Content Include="Views\Orders\Update.cshtml" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\CartController.cs" />
     <Compile Include="Controllers\AdminController.cs" />

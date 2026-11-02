@@ -65,6 +65,9 @@ namespace FashionStore.Web.Services
         public Task<object> FeatureAsync(string token,string path,object body=null,string method="POST")=>SendAsync<object>(new HttpMethod(method),"api/customer/"+path,token,body);
         public Task<object> CancelAsync(string token,string id,CancelOrderViewModel model=null)=>SendAsync<object>(HttpMethod.Post,"api/orders/"+Uri.EscapeDataString(id)+"/cancel",token,
             model==null?null:new{model.Reason,model.AccountHolder,model.AccountNumber,model.BankName});
+        public Task<object> UpdateOrderAsync(string token,UpdateOrderViewModel model)=>SendAsync<object>(HttpMethod.Put,
+            "api/orders/"+Uri.EscapeDataString(model.Id)+"/information",token,
+            new{model.Section,model.Version,model.Recipient,model.Phone,model.Address,model.PaymentMethod});
         public Task<object> RefundAccountAsync(string token,string id,CancelOrderViewModel model)=>SendAsync<object>(HttpMethod.Post,"api/orders/"+Uri.EscapeDataString(id)+"/refund-account",token,
             new{model.AccountHolder,model.AccountNumber,model.BankName});
         public Task<object> RecoveryAsync(string email)=>SendAsync<object>(HttpMethod.Post,"api/account/recovery",null,new{Email=email});
