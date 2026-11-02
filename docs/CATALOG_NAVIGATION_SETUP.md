@@ -16,7 +16,7 @@ Bộ lọc và phân trang kết hợp audience, kind, category, giá, kích c�
 
 ## Áp dụng lên Supabase
 
-1. Nếu chưa có bảng `webstore.catalog_product`, chạy toàn bộ `database/Supabase-Catalog-Merchandising.sql` trong SQL Editor. File này tạo bảng và gợi ý loại từ tên rõ nghĩa, chưa gán đối tượng.
+1. Nếu chưa có bảng `public.catalog_product`, chạy toàn bộ `database/Supabase-Catalog-Merchandising.sql` trong SQL Editor. File này tạo bảng và gợi ý loại từ tên rõ nghĩa, chưa gán đối tượng.
 2. Chạy toàn bộ `database/Supabase-Catalog-Assignments.sql`. File đã bao gồm cập nhật ràng buộc loại mới nên database đã có bảng không cần chạy lại bước 1.
 3. Khởi động lại backend để nhận bộ lọc Phụ kiện có Dây nịt và tải lại website.
 
@@ -39,7 +39,7 @@ SQL dừng nếu mã hoặc tên 22 sản phẩm đã thay đổi; chỉ điền
 
 ## Điều chỉnh sau này
 
-Schema `webstore`, bảng `catalog_product`:
+Schema `public`, bảng `catalog_product`:
 - `audience`: NAM, NU, UNISEX hoặc NULL; TRE_EM giữ để tương thích dữ liệu cũ.
 - `kind`: ao-thun, ao-polo, ao-so-mi, ao-khoac, ao-hoodie, ao-vest, ao-khac, quan-ngan, quan-dai, quan-jogger, vay-ngan, vay-dai, dam-ngan, dam-dai, giay, dep, kinh-mat, mu, vo, day-nit, balo, tui-xach.
 - `regular_price`: giá gốc thật; NULL nếu không giảm. Giá bán vẫn dùng sanpham.dongia.

@@ -12,13 +12,29 @@
  }
  document.querySelectorAll('.yody-cart-update').forEach(function(form){
   var input=form.querySelector('[name="quantity"]');
+  var steps=form.querySelectorAll('[data-quantity-step]');
+  function validQuantity(){var value=Number(input.value);return /^\d+$/.test(input.value)&&Number.isSafeInteger(value)?value:0;}
+  function refreshSteps(){var value=validQuantity(),max=Number(input.dataset.max);
+   steps.forEach(function(button){button.disabled=max<1||(Number(button.dataset.quantityStep)<0?value<=1:value>=max);});
+  }
+  function clearError(){input.removeAttribute('aria-invalid');var error=form.querySelector('.quantity-error');if(error)error.remove();refreshSteps();}
+  steps.forEach(function(button){button.addEventListener('click',function(){
+   var max=Number(input.dataset.max);if(max<1)return;
+   input.value=String(Math.max(1,Math.min(max,validQuantity()+Number(button.dataset.quantityStep))));
+   clearError();input.dispatchEvent(new Event('change',{bubbles:true}));
+  });});
+  refreshSteps();
   function highlight(){input.focus();input.select();input.setAttribute('aria-invalid','true');}
   if(input.dataset.focusQuantity==='true')highlight();
   form.addEventListener('submit',function(event){var quantity=Number(input.value),max=Number(input.dataset.max);
    if(!/^\d+$/.test(input.value)||!Number.isSafeInteger(quantity)||quantity<1||quantity>max){event.preventDefault();
     var error=form.querySelector('.quantity-error');if(!error){error=document.createElement('p');error.className='quantity-error';error.setAttribute('role','alert');form.appendChild(error);}error.textContent='Số lượng phải từ 1 đến '+max+'.';highlight();}
-  });input.addEventListener('input',function(){input.removeAttribute('aria-invalid');});
+  });input.addEventListener('input',clearError);
  });
+ document.querySelectorAll('.wishlist-form, [data-wishlist-return]').forEach(function(form){form.addEventListener('submit',function(){
+  var returnUrl=form.querySelector('[name="returnUrl"]');
+  if(returnUrl)returnUrl.value=window.location.pathname+window.location.search+window.location.hash;
+ });});
  var frame=document.querySelector('.product-zoom'),image=document.getElementById('detail-main-image');
  if(frame&&image){function canZoom(){return !image.hidden&&!!image.getAttribute('src')&&image.naturalWidth>0&&frame.dataset.empty!=='true';}frame.addEventListener('pointermove',function(event){if(event.pointerType==='touch'||!canZoom())return;var r=frame.getBoundingClientRect();image.style.transformOrigin=((event.clientX-r.left)/r.width*100)+'% '+((event.clientY-r.top)/r.height*100)+'%';frame.classList.add('is-zoomed');});
   frame.addEventListener('pointerleave',function(){frame.classList.remove('is-zoomed');});frame.addEventListener('click',function(){if(canZoom())frame.classList.toggle('is-zoomed');});frame.addEventListener('keydown',function(event){if((event.key==='Enter'||event.key===' ')&&canZoom()){event.preventDefault();frame.classList.toggle('is-zoomed');}if(event.key==='Escape')frame.classList.remove('is-zoomed');});

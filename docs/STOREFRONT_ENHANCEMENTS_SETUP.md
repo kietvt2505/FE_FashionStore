@@ -9,9 +9,9 @@ Khởi động lại backend và website để nạp mã mới. Giữ các tùy 
 Kiểm tra cấu trúc bằng truy vấn chỉ đọc:
 
 ```sql
-SELECT to_regclass('webstore.product_media') AS bang_anh,
-       to_regclass('webstore.product_discount_price') AS bang_gia,
-       to_regclass('webstore.guest_cart_merge') AS bang_gop_gio;
+SELECT to_regclass('public.product_media') AS bang_anh,
+       to_regclass('public.product_discount_price') AS bang_gia,
+       to_regclass('public.guest_cart_merge') AS bang_gop_gio;
 SELECT column_name FROM information_schema.columns
 WHERE table_schema='webstore' AND table_name='catalog_product' AND column_name='description';
 ```
@@ -21,7 +21,7 @@ WHERE table_schema='webstore' AND table_name='catalog_product' AND column_name='
 Partner cần bổ sung ô nhập phần trăm giảm theo mã sản phẩm và gọi hàm bằng tài khoản backend có quyền phù hợp, dùng tham số Npgsql:
 
 ```sql
-SELECT webstore.set_product_discount(@ma_san_pham, @phan_tram);
+SELECT public.set_product_discount(@ma_san_pham, @phan_tram);
 ```
 
 - Phần trăm từ 0 đến dưới 100. Giá sau giảm làm tròn đến đồng. Giá sau giảm phải lớn hơn 0.
@@ -36,14 +36,14 @@ SELECT webstore.set_product_discount(@ma_san_pham, @phan_tram);
 
 ## Ảnh nhiều góc và mô tả
 
-Tải ảnh thật lên Storage trước, rồi lưu URL HTTPS và màu đúng tên đang có trong `sanpham.mausac` vào `webstore.product_media`. Mỗi góc là một dòng. `color=NULL` dùng cho ảnh chung. Không cần nhân bản ảnh theo size.
+Tải ảnh thật lên Storage trước, rồi lưu URL HTTPS và màu đúng tên đang có trong `sanpham.mausac` vào `public.product_media`. Mỗi góc là một dòng. `color=NULL` dùng cho ảnh chung. Không cần nhân bản ảnh theo size.
 
 ```sql
 -- Ví dụ cấu trúc, thay URL bằng ảnh thật của nhóm trước khi chạy.
-INSERT INTO webstore.product_media(masp,color,url,alt,sort_order)
+INSERT INTO public.product_media(masp,color,url,alt,sort_order)
 VALUES ('SP-001','Đỏ','https://YOUR-PROJECT.supabase.co/storage/v1/object/public/product-images/catalog/SP-001/do-mat-sau.png','Áo thun đỏ — mặt sau',10);
 
-UPDATE webstore.catalog_product
+UPDATE public.catalog_product
 SET description='Mô tả thực tế do nhóm cung cấp.' WHERE masp='SP-001';
 ```
 

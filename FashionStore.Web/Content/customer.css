@@ -464,8 +464,15 @@
 .customer-site .yody-cart-line-total {display:block;white-space:nowrap;font-size:14px;font-weight:600;color:var(--yody-primary);}
 .customer-site .yody-cart-quantity-control {display:grid;grid-template-rows:24px auto minmax(24px,auto);width:min(100%,168px);margin-inline:auto;}
 .customer-site .yody-cart-quantity-control::before {content:"";grid-row:1;}
-.customer-site .yody-cart-update {display:grid;grid-template-columns:60px minmax(0,1fr);grid-row:2;align-items:center;gap:8px;margin:0;min-width:0;}
+.customer-site .yody-cart-update {display:grid;grid-template-columns:minmax(0,1fr);grid-row:2;align-items:center;gap:8px;margin:0;min-width:0;}
 .customer-site .yody-cart-update .cart-quantity {width:100%;max-width:100%;height:44px;min-height:44px;padding:8px;text-align:center;}
+.customer-site .cart-quantity-stepper {display:grid;grid-template-columns:32px minmax(0,1fr) 32px;align-items:center;border:1px solid var(--yody-border);border-radius:8px;overflow:hidden;}
+.customer-site .yody-cart-update .cart-quantity-stepper .cart-quantity {min-width:0;border:0;border-radius:0;padding:8px 2px;}
+.customer-site .cart-quantity-step {height:44px;min-height:44px;padding:0;border:0;background:transparent;color:inherit;font:inherit;font-size:20px;cursor:pointer;}
+.customer-site .cart-quantity-step:hover:not(:disabled) {background:var(--yody-background);}
+.customer-site .cart-quantity-step:disabled {opacity:.35;cursor:not-allowed;}
+.customer-site .cart-quantity-step:focus-visible {outline:2px solid currentColor;outline-offset:-3px;}
+.customer-site .cart-quantity-stepper:focus-within {border-color:var(--yody-primary);}
 .customer-site .yody-cart-update .mn-btn {width:100%;height:44px;min-height:44px;margin:0;padding:8px;font-size:12px;white-space:nowrap;}
 .customer-site .yody-cart-update .quantity-error {grid-column:1/-1;margin:4px 0 0;}
 .customer-site .yody-cart-table .yody-cart-stock {grid-row:3;display:block;font-size:12px;line-height:18px;color:var(--yody-secondary);margin:0;padding-top:6px;text-align:center;}
@@ -780,6 +787,17 @@
 .customer-site .yody-review-card {padding:24px 28px;}
 .customer-site .yody-review-card .review-stars {font-size:15px;color:var(--yody-accent);margin:0 0 10px;}
 .customer-site .yody-review-card .review-body {margin:13px 0 0;color:var(--yody-primary);font-size:13px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;}
+.customer-site .yody-review-card .review-author {margin:10px 0 0;font-size:13px;line-height:1.75;overflow-wrap:anywhere;}
+.customer-site .review-author strong {font-weight:600;color:var(--yody-primary);}
+.customer-site .yody-my-reviews {display:grid;gap:14px;margin-bottom:14px;}
+.customer-site .yody-my-reviews > p {margin:0;font-size:13px;line-height:1.7;}
+.customer-site .yody-own-review {border-left:3px solid var(--yody-accent);}
+.customer-site .yody-review-status-row {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.customer-site .yody-review-status-row .review-stars {margin:0;}
+.customer-site .yody-review-status {display:inline-block;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;}
+.customer-site .yody-review-status.is-pending {background:#F4E7CF;color:#654514;}
+.customer-site .yody-review-status.is-published {background:#E4F1E9;color:#24563A;}
+.customer-site .yody-review-status.is-rejected {background:#F8E7E7;color:#803535;}
 .customer-site .yody-review-side {min-width:0;}
 .customer-site .yody-review-form h2 {font-size:22px;}
 .customer-site .yody-review-form > p {color:var(--yody-secondary);font-size:13px;line-height:1.8;}

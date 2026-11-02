@@ -14,7 +14,7 @@ internal static class SupabasePaymentScenarios
         async Task<T> Scalar<T>(string text) { await using var cmd = new NpgsqlCommand(text, sql); return (T)(await cmd.ExecuteScalarAsync())!; }
         async Task<string> Confirm(string id, decimal amount, string reference, string employee = "NV01")
         {
-            await using var cmd = new NpgsqlCommand("SELECT webstore.confirm_bank_payment(@id,@employee,@amount,@ref)", sql);
+            await using var cmd = new NpgsqlCommand("SELECT public.confirm_bank_payment(@id,@employee,@amount,@ref)", sql);
             cmd.Parameters.AddWithValue("id", id); cmd.Parameters.AddWithValue("employee", employee);
             cmd.Parameters.AddWithValue("amount", amount); cmd.Parameters.AddWithValue("ref", reference);
             return (string)(await cmd.ExecuteScalarAsync())!;
@@ -44,12 +44,12 @@ internal static class SupabasePaymentScenarios
         await Assert.ThrowsAsync<PostgresException>(() => Confirm(placed.OrderId, 398000, "BANK-001", "MISSING"));
         await Exec("UPDATE public.sanpham SET soluongtonkho=1 WHERE masku='SKU-L'");
         await Assert.ThrowsAsync<PostgresException>(() => Confirm(placed.OrderId, 398000, "BANK-001"));
-        Assert.Equal(0L, await Scalar<long>("SELECT count(*) FROM webstore.payment_confirmation"));
+        Assert.Equal(0L, await Scalar<long>("SELECT count(*) FROM public.payment_confirmation"));
         await Exec("UPDATE public.sanpham SET soluongtonkho=10 WHERE masku='SKU-L'");
         async Task<string> ParallelConfirm()
         {
             await using var c = new NpgsqlConnection(sql.ConnectionString); await c.OpenAsync();
-            await using var cmd = new NpgsqlCommand("SELECT webstore.confirm_bank_payment(@id,'NV01',398000,'BANK-001')", c);
+            await using var cmd = new NpgsqlCommand("SELECT public.confirm_bank_payment(@id,'NV01',398000,'BANK-001')", c);
             cmd.Parameters.AddWithValue("id", placed.OrderId); return (string)(await cmd.ExecuteScalarAsync())!;
         }
         var confirmations = await Task.WhenAll(ParallelConfirm(), ParallelConfirm());
@@ -69,11 +69,11 @@ internal static class SupabasePaymentScenarios
         var second = await Place();
         await Assert.ThrowsAsync<PostgresException>(() => Confirm(second.OrderId, 398000, "BANK-001"));
         Assert.Equal(8, await Scalar<int>("SELECT soluongtonkho FROM public.sanpham WHERE masku='SKU-L'"));
-        Assert.Equal(1L, await Scalar<long>("SELECT count(*) FROM webstore.payment_confirmation"));
+        Assert.Equal(1L, await Scalar<long>("SELECT count(*) FROM public.payment_confirmation"));
         // Paid non-COD delivery in the partner code only changes shipping state; stock was settled above.
         await Exec($"UPDATE public.hoadon SET trangthaigiaohang='Hàng giao thành công' WHERE sohd='{placed.OrderId}'");
         Assert.Equal("HOAN_TAT", (await alice.GetFromJsonAsync<OrderDetails>("/api/orders/" + placed.OrderId))!.Status);
         Assert.Equal(8, await Scalar<int>("SELECT soluongtonkho FROM public.sanpham WHERE masku='SKU-L'"));
-        Assert.Equal(0L, await Scalar<long>("SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace, LATERAL aclexplode(p.proacl) a WHERE n.nspname='webstore' AND p.proname='confirm_bank_payment' AND a.grantee=0 AND a.privilege_type='EXECUTE'"));
+        Assert.Equal(0L, await Scalar<long>("SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace, LATERAL aclexplode(p.proacl) a WHERE n.nspname='public' AND p.proname='confirm_bank_payment' AND a.grantee=0 AND a.privilege_type='EXECUTE'"));
     }
 }

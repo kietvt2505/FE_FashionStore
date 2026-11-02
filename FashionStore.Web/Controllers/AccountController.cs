@@ -32,39 +32,8 @@ namespace FashionStore.Web.Controllers
             {
                 // Customer uses the existing Forms Authentication ticket and Customer API.
                 var login = await api.LoginAsync(model);
-                // Dùng họ tên từ hồ sơ đã xác thực để hiển thị trên header, không dùng tên đăng nhập.
                 var profile = await api.ProfileAsync(login.AccessToken);
-                CustomerAuthentication.SignIn(HttpContext, profile.FullName, login);
-                if(GuestCartStore.Items(Session).Count>0)TempData["PromptGuestMerge"]=true;
-                // Prevent a browser from retaining both kinds of active cookies.
-                AdminSessionCookie.SignOut(HttpContext);
-                var pendingWishlist=Session[WishlistLoginIntent.SessionKey] as WishlistLoginIntent;
-                Session.Remove(WishlistLoginIntent.SessionKey);
-                if(pendingWishlist!=null && pendingWishlist.IsCurrent(DateTimeOffset.UtcNow))
-                {
-                    // Resume only the server-held, CSRF-validated intent. Never replay a POST return URL.
-                    // A wishlist error must not turn a successful customer login into an Admin login attempt.
-                    try{
-                        await api.FeatureAsync(login.AccessToken,"wishlist/"+Uri.EscapeDataString(pendingWishlist.ProductId),null,"PUT");
-                        TempData["CustomerMessage"]="Đã thêm sản phẩm vào danh sách yêu thích.";
-                    }catch(CustomerApiException error){
-                        if(error.StatusCode==401){
-                            Session[WishlistLoginIntent.SessionKey]=pendingWishlist;
-                            CustomerAuthentication.SignOut();
-                            TempData["AccountMessage"]="Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để lưu sản phẩm.";
-                            return RedirectToAction("Login",new{returnUrl=Url.Action("Wishlist","Customer")});
-                        }
-                        TempData["CustomerError"]=error.Message;
-                    }catch(Exception){
-                        TempData["CustomerError"]="Đã đăng nhập nhưng chưa thể lưu sản phẩm yêu thích. Vui lòng thử lại.";
-                    }
-                    return RedirectToAction("Wishlist","Customer");
-                }
-                if (Url.IsLocalUrl(model.ReturnUrl) &&
-                    !model.ReturnUrl.StartsWith("/Admin", StringComparison.OrdinalIgnoreCase) &&
-                    !model.ReturnUrl.StartsWith("~/Admin", StringComparison.OrdinalIgnoreCase))
-                    return Redirect(model.ReturnUrl);
-                return RedirectToAction("Index","Customer");
+                return await CompleteCustomerLogin(login,profile,model.ReturnUrl);
             }
             catch (CustomerApiException e) when (e.StatusCode == 401)
             {
@@ -120,6 +89,41 @@ namespace FashionStore.Web.Controllers
             }
             return View(model);
         }
+        private async Task<ActionResult> CompleteCustomerLogin(CustomerLoginResult login,CustomerProfile profile,string returnUrl)
+        {
+            // Dùng họ tên từ hồ sơ đã xác thực để hiển thị trên header, không dùng tên đăng nhập.
+            CustomerAuthentication.SignIn(HttpContext, profile.FullName, login);
+            if(GuestCartStore.Items(Session).Count>0)TempData["PromptGuestMerge"]=true;
+            // Prevent a browser from retaining both kinds of active cookies.
+            AdminSessionCookie.SignOut(HttpContext);
+            var pendingWishlist=Session[WishlistLoginIntent.SessionKey] as WishlistLoginIntent;
+            Session.Remove(WishlistLoginIntent.SessionKey);
+            if(pendingWishlist!=null && pendingWishlist.IsCurrent(DateTimeOffset.UtcNow))
+            {
+                // Resume only the server-held, CSRF-validated intent. Never replay a POST return URL.
+                // A wishlist error must not turn a successful customer login into an Admin login attempt.
+                try{
+                    await api.FeatureAsync(login.AccessToken,"wishlist/"+Uri.EscapeDataString(pendingWishlist.ProductId),null,"PUT");
+                    TempData["CustomerMessage"]="Đã thêm sản phẩm vào danh sách yêu thích.";
+                }catch(CustomerApiException error){
+                    if(error.StatusCode==401){
+                        Session[WishlistLoginIntent.SessionKey]=pendingWishlist;
+                        CustomerAuthentication.SignOut();
+                        TempData["AccountMessage"]="Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để lưu sản phẩm.";
+                        return RedirectToAction("Login",new{returnUrl=pendingWishlist.ReturnUrl});
+                    }
+                    TempData["CustomerError"]=error.Message;
+                }catch(Exception){
+                    TempData["CustomerError"]="Đã đăng nhập nhưng chưa thể lưu sản phẩm yêu thích. Vui lòng thử lại.";
+                }
+                returnUrl=pendingWishlist.ReturnUrl;
+            }
+            if (Url.IsLocalUrl(returnUrl) &&
+                !returnUrl.StartsWith("/Admin", StringComparison.OrdinalIgnoreCase) &&
+                !returnUrl.StartsWith("~/Admin", StringComparison.OrdinalIgnoreCase))
+                return Redirect(returnUrl);
+            return RedirectToAction("Index","Customer");
+        }
         [HttpGet] public ActionResult Forgot(){return View();}
         [HttpPost,ValidateAntiForgeryToken] public async Task<ActionResult> Forgot(string email){
             if(String.IsNullOrWhiteSpace(email)||email.Length>254||!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email)){ModelState.AddModelError("","Email không hợp lệ.");return View();}
@@ -147,7 +151,7 @@ namespace FashionStore.Web.Controllers
             catch (Exception) { Response.StatusCode = 503; return Json(new { error = "Chưa tải được phường/xã. Vui lòng thử lại." }, JsonRequestBehavior.AllowGet); }
         }
 
-        [HttpGet] public ActionResult Register(){return View(new RegisterViewModel());}
+        [HttpGet] public ActionResult Register(string returnUrl){return View(new RegisterViewModel{ReturnUrl=returnUrl});}
         [HttpPost,ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
@@ -165,9 +169,18 @@ namespace FashionStore.Web.Controllers
                 model.Phone = model.Phone.Trim();
                 model.Email = model.Email.Trim();
                 model.UserName = model.UserName.Trim();
-                await api.RegisterAsync(model);
-                TempData["AccountMessage"] = "Đăng ký thành công. Bạn có thể đăng nhập.";
-                return RedirectToAction("Login");
+                var profile = await api.RegisterAsync(model);
+                try
+                {
+                    var login = await api.LoginAsync(new LoginViewModel{UserName=model.UserName,Password=model.Password});
+                    return await CompleteCustomerLogin(login,profile,model.ReturnUrl);
+                }
+                catch(Exception)
+                {
+                    // Registration already succeeded; allow login without submitting registration again.
+                    TempData["AccountMessage"] = "Đăng ký thành công. Vui lòng đăng nhập để tiếp tục.";
+                    return RedirectToAction("Login",new{returnUrl=model.ReturnUrl});
+                }
             }
             catch(CustomerApiException e){ModelState.AddModelError("",e.Message);}
             catch(HttpRequestException){ModelState.AddModelError("", "Không tải được dữ liệu địa chỉ. Vui lòng thử lại khi có kết nối mạng.");}

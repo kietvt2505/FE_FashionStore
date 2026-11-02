@@ -18,8 +18,8 @@ internal static class SupabaseCheckoutPricingScenarios
         }
         Assert.False((await alice.GetFromJsonAsync<CartResponse>("/api/cart"))!.SupportsVouchers);
         await Exec(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,"Supabase-Checkout-Promotions.sql")));
-        var previous=await Scalar<string>("SELECT sohd FROM webstore.payment_confirmation WHERE reference='BANK-001'");
-        await Exec($"INSERT INTO webstore.order_pricing(sohd,subtotal,discount,voucher) VALUES('{previous}',398000,0,'LEGACY')");
+        var previous=await Scalar<string>("SELECT sohd FROM public.payment_confirmation WHERE reference='BANK-001'");
+        await Exec($"INSERT INTO public.order_pricing(sohd,subtotal,discount,voucher) VALUES('{previous}',398000,0,'LEGACY')");
         await Exec("UPDATE public.sanpham SET dongia=100000,soluongtonkho=20,soluong=20,trangthai=true WHERE masku='SKU-L'; UPDATE public.khachhang SET tongchitieu=5000001,diemtichluy=321,hangthe='Bạc' WHERE sodienthoai='0900000001'");
         await Status(HttpStatusCode.OK,alice.DeleteAsync("/api/cart"));
         await Status(HttpStatusCode.OK,alice.PostAsJsonAsync("/api/cart/items",new CartItemRequest {Sku="SKU-L",Quantity=2}));
@@ -76,9 +76,9 @@ internal static class SupabaseCheckoutPricingScenarios
         Assert.Equal(HttpStatusCode.OK,bankResponse.StatusCode);
         var bank=(await bankResponse.Content.ReadFromJsonAsync<PlaceOrderResponse>())!;
         Assert.Equal(90000,bank.Total);
-        await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT webstore.confirm_bank_payment('{bank.OrderId}','NV01',100000,'MEMBER-BANK-001')"));
-        Assert.Equal("CONFIRMED",await Scalar<string>($"SELECT webstore.confirm_bank_payment('{bank.OrderId}','NV01',90000,'MEMBER-BANK-001')"));
-        Assert.Equal("ALREADY_CONFIRMED",await Scalar<string>($"SELECT webstore.confirm_bank_payment('{bank.OrderId}','NV01',90000,'MEMBER-BANK-001')"));
+        await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT public.confirm_bank_payment('{bank.OrderId}','NV01',100000,'MEMBER-BANK-001')"));
+        Assert.Equal("CONFIRMED",await Scalar<string>($"SELECT public.confirm_bank_payment('{bank.OrderId}','NV01',90000,'MEMBER-BANK-001')"));
+        Assert.Equal("ALREADY_CONFIRMED",await Scalar<string>($"SELECT public.confirm_bank_payment('{bank.OrderId}','NV01',90000,'MEMBER-BANK-001')"));
         Assert.Equal(19,await Scalar<int>("SELECT soluongtonkho FROM public.sanpham WHERE masku='SKU-L'"));
         Assert.Equal(786,await Scalar<int>("SELECT diemtichluy FROM public.khachhang WHERE sodienthoai='0900000001'"));
         Assert.Equal(16090000,await Scalar<decimal>("SELECT tongchitieu FROM public.khachhang WHERE sodienthoai='0900000001'"));

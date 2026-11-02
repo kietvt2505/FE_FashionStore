@@ -4,7 +4,7 @@
 
 ## Áp dụng
 
-1. Chạy toàn bộ `database/Supabase-Short-Order-Numbers.sql` trong SQL Editor sau migration đơn hàng. Kết quả cuối phải có `webstore.web_order_number` và `co_khoa_chong_trung=true`.
+1. Chạy toàn bộ `database/Supabase-Short-Order-Numbers.sql` trong SQL Editor sau migration đơn hàng. Kết quả cuối phải có `public.web_order_number` và `co_khoa_chong_trung=true`.
 2. Khởi động lại backend bằng lệnh đang dùng. Đơn mới nhận mã ngắn; lịch sử vẫn mở được cả mã cũ và mã mới.
 
 Script thêm bộ đếm dùng chung và khóa chống trùng theo khách hàng + mã yêu cầu. Không đổi mã hóa đơn đang có, không sửa giá, tồn, thanh toán hoặc điểm. Chạy lại chỉ đưa bộ đếm tiến lên nếu cần; không đặt lại về 1. Không cần sửa cấu trúc bảng hóa đơn của partner.

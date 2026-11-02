@@ -9,6 +9,7 @@
     ViewBag.IsCatalogPage = true;
 }
 <main class="mn-container catalog-page yody-catalog-page">
+@Html.Partial("_CustomerMessages")
 <header class="yody-catalog-header">
         <div><p class="eyebrow">YODY / BỘ SƯU TẬP</p><h1>@pageLabel</h1><p>@(Model.SaleOnly ? "Tất cả sản phẩm đang có giá ưu đãi, dành cho mọi phong cách." : String.IsNullOrEmpty(categoryLabel) ? "Tìm những thiết kế phù hợp với phong cách của bạn." : categoryLabel + (String.IsNullOrEmpty(audienceLabel) ? "" : " dành cho " + audienceLabel.ToLower()))</p></div>
         <span class="yody-catalog-count" aria-live="polite">@Model.Total sản phẩm</span>

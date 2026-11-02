@@ -19,7 +19,7 @@ internal static class SupabaseCheckoutPricing
     {
         await using var cmd = new NpgsqlCommand("""
             SELECT count(*)=4 FROM information_schema.columns
-            WHERE table_schema='webstore' AND table_name='order_pricing'
+            WHERE table_schema='public' AND table_name='order_pricing'
               AND column_name IN ('member_rank','member_rate','member_points','member_discount')
             """,connection,transaction);
         return Convert.ToBoolean(await cmd.ExecuteScalarAsync(ct));
@@ -27,13 +27,13 @@ internal static class SupabaseCheckoutPricing
 
     internal static async Task<bool> IsInstalled(NpgsqlConnection connection, NpgsqlTransaction? transaction, CancellationToken ct)
     {
-        await using var cmd = new NpgsqlCommand("SELECT to_regclass('webstore.order_pricing') IS NOT NULL", connection, transaction);
+        await using var cmd = new NpgsqlCommand("SELECT to_regclass('public.order_pricing') IS NOT NULL", connection, transaction);
         return Convert.ToBoolean(await cmd.ExecuteScalarAsync(ct));
     }
 
     internal static async Task<bool> VouchersInstalled(NpgsqlConnection connection,NpgsqlTransaction? transaction,CancellationToken ct)
     {
-        await using var cmd=new NpgsqlCommand("SELECT to_regclass('webstore.checkout_voucher') IS NOT NULL",connection,transaction);
+        await using var cmd=new NpgsqlCommand("SELECT to_regclass('public.checkout_voucher') IS NOT NULL",connection,transaction);
         return Convert.ToBoolean(await cmd.ExecuteScalarAsync(ct));
     }
 
@@ -46,7 +46,7 @@ internal static class SupabaseCheckoutPricing
             SELECT v.makm,v.kind,v.value,v.minimum,v.active,
                 (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')::date BETWEEN v.starts_on AND v.ends_on,
                 v.product_promotion
-            FROM webstore.checkout_voucher v JOIN public.khuyenmai k ON k.makm=v.makm
+            FROM public.checkout_voucher v JOIN public.khuyenmai k ON k.makm=v.makm
             WHERE upper(btrim(v.makm))=upper(btrim(@code)) FOR SHARE OF k
             """,connection,transaction);
         cmd.Parameters.AddWithValue("code",voucher.Trim());

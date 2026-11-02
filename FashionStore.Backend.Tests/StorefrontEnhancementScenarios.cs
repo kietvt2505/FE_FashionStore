@@ -17,7 +17,7 @@ internal static class StorefrontEnhancementScenarios
         await Status(HttpStatusCode.ServiceUnavailable,alice.PostAsJsonAsync("/api/cart/merge",new GuestCartMergeRequest{RequestId=Guid.NewGuid(),Items=[new(){Sku="SKU-L",Quantity=1}]}));
         var migration=await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,"Supabase-Storefront-Enhancements.sql"));
         await Exec(migration);await Exec(migration);
-        await Exec("DROP FUNCTION webstore.merge_guest_cart(varchar,uuid,jsonb)");
+        await Exec("DROP FUNCTION public.merge_guest_cart(varchar,uuid,jsonb)");
         using(var missing=await alice.PostAsJsonAsync("/api/cart/merge",new GuestCartMergeRequest{RequestId=Guid.NewGuid(),Items=[new(){Sku="SKU-L",Quantity=1}]})){
             Assert.Equal(HttpStatusCode.ServiceUnavailable,missing.StatusCode);
             Assert.Contains("Sản phẩm bạn đã chọn vẫn được giữ lại",await missing.Content.ReadAsStringAsync());
@@ -26,8 +26,8 @@ internal static class StorefrontEnhancementScenarios
         await Exec("""
             UPDATE public.sanpham SET dongia=100000,soluongtonkho=5,soluong=5,trangthai=true WHERE masku='SKU-M';
             UPDATE public.sanpham SET dongia=200000,soluongtonkho=5,soluong=5,trangthai=true WHERE masku='SKU-L';
-            SELECT webstore.set_product_discount('P1',15);
-            SELECT webstore.set_product_discount('P1',15);
+            SELECT public.set_product_discount('P1',15);
+            SELECT public.set_product_discount('P1',15);
             """);
         Assert.Equal(85000,await Scalar<decimal>("SELECT dongia FROM public.sanpham WHERE masku='SKU-M'"));
         Assert.Equal(170000,await Scalar<decimal>("SELECT dongia FROM public.sanpham WHERE masku='SKU-L'"));
@@ -36,21 +36,21 @@ internal static class StorefrontEnhancementScenarios
         Assert.Equal(85000,sale.Items.Single(p=>p.Id=="P1").Price);
         var discounted=(await alice.GetFromJsonAsync<ProductDetailResponse>("/api/products/P1"))!;
         Assert.Equal(200000,discounted.Variants.Single(v=>v.Sku=="SKU-L").OriginalPrice);
-        await Exec("SELECT webstore.set_product_discount('P1',20)");
+        await Exec("SELECT public.set_product_discount('P1',20)");
         Assert.Equal(80000,await Scalar<decimal>("SELECT dongia FROM public.sanpham WHERE masku='SKU-M'"));
-        await Exec("SELECT webstore.set_product_discount('P1',0)");
+        await Exec("SELECT public.set_product_discount('P1',0)");
         Assert.Equal(200000,await Scalar<decimal>("SELECT dongia FROM public.sanpham WHERE masku='SKU-L'"));
-        Assert.True(await Scalar<bool>("SELECT regular_price IS NULL FROM webstore.catalog_product WHERE masp='P1'"));
+        Assert.True(await Scalar<bool>("SELECT regular_price IS NULL FROM public.catalog_product WHERE masp='P1'"));
         // A new base price entered at POS must not reuse an obsolete base price.
-        await Exec("UPDATE public.sanpham SET dongia=250000 WHERE masku='SKU-L';SELECT webstore.set_product_discount('P1',10)");
+        await Exec("UPDATE public.sanpham SET dongia=250000 WHERE masku='SKU-L';SELECT public.set_product_discount('P1',10)");
         Assert.Equal(225000,await Scalar<decimal>("SELECT dongia FROM public.sanpham WHERE masku='SKU-L'"));
-        await Exec("SELECT webstore.set_product_discount('P1',0)");
+        await Exec("SELECT public.set_product_discount('P1',0)");
         Assert.Equal(250000,await Scalar<decimal>("SELECT dongia FROM public.sanpham WHERE masku='SKU-L'"));
-        await Assert.ThrowsAsync<PostgresException>(()=>Exec("SELECT webstore.set_product_discount('P1',100)"));
+        await Assert.ThrowsAsync<PostgresException>(()=>Exec("SELECT public.set_product_discount('P1',100)"));
         Assert.Equal(250000,await Scalar<decimal>("SELECT dongia FROM public.sanpham WHERE masku='SKU-L'"));
         await Exec("""
-            UPDATE webstore.catalog_product SET description='Mô tả từ cơ sở dữ liệu <không thực thi HTML>' WHERE masp='P1';
-            INSERT INTO webstore.product_media(masp,color,url,alt,sort_order) VALUES
+            UPDATE public.catalog_product SET description='Mô tả từ cơ sở dữ liệu <không thực thi HTML>' WHERE masp='P1';
+            INSERT INTO public.product_media(masp,color,url,alt,sort_order) VALUES
               ('P1','Đỏ','https://example.test/red-back.png','Mặt sau màu đỏ',1),
               ('P1','Đỏ','https://example.test/red-side.png','Góc nghiêng màu đỏ',2),
               ('P1','Đỏ','https://example.test/red-side.png','Ảnh trùng',3);
@@ -97,8 +97,8 @@ internal static class StorefrontEnhancementScenarios
         await Status(HttpStatusCode.BadRequest,alice.PostAsJsonAsync("/api/cart/merge",new GuestCartMergeRequest{RequestId=Guid.Empty,Items=merge.Items}));
         await Status(HttpStatusCode.BadRequest,alice.PostAsJsonAsync("/api/cart/merge",new{RequestId=Guid.NewGuid(),Items=new[]{new{Sku="SKU-M",Quantity=-1}}}));
         var profile=(await alice.GetFromJsonAsync<CustomerResponse>("/api/account/me"))!;
-        await Assert.ThrowsAsync<PostgresException>(()=>Exec($"SELECT webstore.merge_guest_cart('{profile.Id}','{Guid.NewGuid()}',NULL)"));
-        await Assert.ThrowsAsync<PostgresException>(()=>Exec($"SELECT webstore.merge_guest_cart('{profile.Id}','{Guid.NewGuid()}', '[{{\"sku\":\"SKU-M\",\"quantity\":-1}},{{\"sku\":\"SKU-M\",\"quantity\":2}}]'::jsonb)"));
+        await Assert.ThrowsAsync<PostgresException>(()=>Exec($"SELECT public.merge_guest_cart('{profile.Id}','{Guid.NewGuid()}',NULL)"));
+        await Assert.ThrowsAsync<PostgresException>(()=>Exec($"SELECT public.merge_guest_cart('{profile.Id}','{Guid.NewGuid()}', '[{{\"sku\":\"SKU-M\",\"quantity\":-1}},{{\"sku\":\"SKU-M\",\"quantity\":2}}]'::jsonb)"));
         // Declared but unconfigured providers cannot create invoices, even with a forged browser request.
         var count=await Scalar<long>("SELECT count(*) FROM public.hoadon");
         foreach(var method in new[]{"VISA","ZALOPAY","VNPAY"})

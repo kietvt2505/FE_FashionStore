@@ -9,6 +9,7 @@
     var colors = Model.Variants.Select(v => v.MauSac??"").Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 }
 <main class="mn-container product-page yody-product-page">
+@Html.Partial("_CustomerMessages")
 @if (!String.IsNullOrEmpty(Model.CatalogError))
     {
         <div class="catalog-alert" role="alert">@Model.CatalogError</div>
@@ -16,7 +17,10 @@
     else if (Model.Product != null)
     {
         <div class="yody-product-layout">
-            @Html.Partial("_ProductGallery",Model)
+            <div class="product-media-column">
+                @Html.Partial("_ProductGallery",Model)
+                @Html.Partial("_ProductDescription",Model.Product)
+            </div>
             <section class="yody-product-purchase" aria-labelledby="detail-product-name">
                 <p class="eyebrow">@Model.Product.TenLoai · @CatalogViewHelper.AudienceLabel(Model.Product.DoiTuong)</p>
                 <h1 id="detail-product-name">@Model.Product.TenSanPham</h1>
@@ -73,13 +77,14 @@
                 <div class="yody-product-divider"></div>
                 <div class="yody-product-services"><a href="@Url.Action("Policy", "Home", new { id = "shipping" })">Giao hàng &amp; vận chuyển <span aria-hidden="true">↗</span></a><a href="@Url.Action("Policy", "Home", new { id = "returns" })">Chính sách đổi trả <span aria-hidden="true">↗</span></a></div>
                 <div class="yody-product-divider"></div>
-                <div class="yody-product-description"><h2>Thông tin sản phẩm</h2>@if(!String.IsNullOrWhiteSpace(Model.Product.MoTa)){<p class="product-description-text">@Model.Product.MoTa</p>}<dl class="product-specs"><dt>Danh mục</dt><dd>@Model.Product.TenLoai</dd><dt>Kiểu sản phẩm</dt><dd>@CatalogViewHelper.KindLabel(Model.Product.Kind)</dd><dt>Màu hiện có</dt><dd>@String.Join(", ",colors)</dd><dt>Kích cỡ</dt><dd>@String.Join(", ",sizes)</dd></dl></div>
+                <div class="yody-product-description"><h2>Thông tin sản phẩm</h2><dl class="product-specs"><dt>Danh mục</dt><dd>@Model.Product.TenLoai</dd><dt>Kiểu sản phẩm</dt><dd>@CatalogViewHelper.KindLabel(Model.Product.Kind)</dd><dt>Màu hiện có</dt><dd>@String.Join(", ",colors)</dd><dt>Kích cỡ</dt><dd>@String.Join(", ",sizes)</dd></dl></div>
                 <div class="yody-product-secondary-actions">
                     <a class="mn-btn mn-btn-outline" href="@Url.Action("Reviews", "Customer", new { id = Model.Product.MaSP })">Xem và viết đánh giá</a>
-                    @using (Html.BeginForm("SaveWishlist", "Customer", FormMethod.Post))
+                    @using (Html.BeginForm("SaveWishlist", "Customer", FormMethod.Post, new { data_wishlist_return = "true" }))
                     {
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="id" value="@Model.Product.MaSP" />
+                        <input type="hidden" name="returnUrl" value="@Request.RawUrl" />
                         <button class="mn-btn mn-btn-outline" type="submit">♡ Lưu yêu thích</button>
                     }
                 </div>

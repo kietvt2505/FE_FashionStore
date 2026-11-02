@@ -35,7 +35,7 @@ API riêng của WinForms dùng role database có quyền phù hợp, đọc vie
 SELECT sohd,makh,reason,amount,status,account_holder,account_number,bank_name,
        createdat,submittedat,refundedat,employeeid,refund_reference,
        stock_restored,reversed_points,reversed_spend
-FROM webstore.customer_refund_queue
+FROM public.customer_refund_queue
 WHERE status IN ('CHO_THONG_TIN','CHO_HOAN_TIEN')
 ORDER BY createdat;
 ```
@@ -45,12 +45,12 @@ CHO_THONG_TIN: chờ khách cung cấp tài khoản. CHO_HOAN_TIEN: đã đủ t
 Sau khi **thực sự chuyển tiền và kiểm tra kết quả**, API WinForms gọi hàm bằng tham số:
 
 ```sql
-SELECT webstore.complete_customer_refund(@order_id,@employee_id,@bank_reference);
+SELECT public.complete_customer_refund(@order_id,@employee_id,@bank_reference);
 ```
 
 Hàm yêu cầu nhân viên đang hoạt động, tài khoản nhận đã đủ và mã giao dịch ngân hàng. Hàm chỉ ghi nhận kết quả, không gửi lệnh chuyển tiền. Gọi lại cùng mã trả ALREADY_REFUNDED; mã khác sau khi hoàn bị chặn. Không lấy số tiền hoặc trạng thái hoàn tiền từ dữ liệu khách tự gửi.
 
-Tài khoản đầy đủ chỉ lưu ở bảng riêng `webstore.order_refund`, bật RLS và thu hồi quyền PUBLIC/anon/authenticated. API khách chỉ đọc được đơn của mình và chỉ nhận số tài khoản đã che. Giữ thông tin này trong API nội bộ của WinForms, không trả ra danh sách khách khác hoặc log nội dung biểu mẫu.
+Tài khoản đầy đủ chỉ lưu ở bảng riêng `public.order_refund`, bật RLS và thu hồi quyền PUBLIC/anon/authenticated. API khách chỉ đọc được đơn của mình và chỉ nhận số tài khoản đã che. Giữ thông tin này trong API nội bộ của WinForms, không trả ra danh sách khách khác hoặc log nội dung biểu mẫu.
 
 ## Năm bước giao hàng
 

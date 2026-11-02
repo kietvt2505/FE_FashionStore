@@ -3,20 +3,20 @@
 BEGIN;
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '60s';
-ALTER TABLE webstore.order_snapshot ADD COLUMN IF NOT EXISTS paymentmethod varchar(50) NOT NULL DEFAULT 'COD';
-CREATE TABLE IF NOT EXISTS webstore.payment_confirmation (
-    sohd varchar(30) PRIMARY KEY REFERENCES webstore.order_snapshot(sohd),
+ALTER TABLE public.order_snapshot ADD COLUMN IF NOT EXISTS paymentmethod varchar(50) NOT NULL DEFAULT 'COD';
+CREATE TABLE IF NOT EXISTS public.payment_confirmation (
+    sohd varchar(30) PRIMARY KEY REFERENCES public.order_snapshot(sohd),
     reference varchar(150) NOT NULL UNIQUE CHECK (btrim(reference)<>''),
     amount numeric(18,2) NOT NULL CHECK (amount>0),
     employeeid varchar(20) NOT NULL REFERENCES public.nhanvien(manv),
     confirmedat timestamp without time zone NOT NULL DEFAULT LOCALTIMESTAMP
 );
-ALTER TABLE webstore.payment_confirmation ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON webstore.payment_confirmation FROM PUBLIC;
+ALTER TABLE public.payment_confirmation ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.payment_confirmation FROM PUBLIC;
 
 -- Privileged backend/SQL Editor only. A customer selecting bank transfer is NOT evidence of payment.
 -- SECURITY INVOKER preserves the caller's normal table permissions; no browser RPC grant.
-CREATE OR REPLACE FUNCTION webstore.confirm_bank_payment(
+CREATE OR REPLACE FUNCTION public.confirm_bank_payment(
     p_order varchar, p_employee varchar, p_amount numeric, p_reference varchar
 ) RETURNS text LANGUAGE plpgsql SECURITY INVOKER SET search_path = pg_catalog AS $$
 DECLARE
@@ -31,10 +31,10 @@ BEGIN
     END IF;
     PERFORM 1 FROM public.nhanvien WHERE manv=p_employee AND trangthai=true FOR SHARE;
     IF NOT FOUND THEN RAISE EXCEPTION 'Active confirming employee is required'; END IF;
-    SELECT h.* INTO invoice FROM public.hoadon h JOIN webstore.order_snapshot s ON s.sohd=h.sohd AND s.makh=h.makh
+    SELECT h.* INTO invoice FROM public.hoadon h JOIN public.order_snapshot s ON s.sohd=h.sohd AND s.makh=h.makh
     WHERE h.sohd=p_order AND h.nguondon='WEB' AND s.paymentmethod='CHUYEN_KHOAN' FOR UPDATE OF h;
     IF NOT FOUND THEN RAISE EXCEPTION 'Pending website bank-transfer order not found'; END IF;
-    SELECT * INTO existing FROM webstore.payment_confirmation WHERE sohd=p_order;
+    SELECT * INTO existing FROM public.payment_confirmation WHERE sohd=p_order;
     IF FOUND THEN
         IF existing.reference=btrim(p_reference) AND existing.amount=p_amount THEN
             RETURN 'ALREADY_CONFIRMED';
@@ -70,23 +70,23 @@ BEGIN
                      WHEN tongchitieu+invoice.khachphaitra>5000000 THEN 'Vàng' ELSE 'Bạc' END
     WHERE makh=invoice.makh;
     IF NOT FOUND THEN RAISE EXCEPTION 'Invoice customer is missing'; END IF;
-    INSERT INTO webstore.payment_confirmation(sohd,reference,amount,employeeid)
+    INSERT INTO public.payment_confirmation(sohd,reference,amount,employeeid)
     VALUES(p_order,btrim(p_reference),p_amount,p_employee);
     UPDATE public.hoadon SET loaihoadon='GIAO_HANG',trangthaithanhtoan='DA_THANH_TOAN',
         tienkhachdua=p_amount,tienthua=0,tiencod=0,trangthaigiaohang='Vừa xác nhận đơn'
     WHERE sohd=p_order;
     RETURN 'CONFIRMED';
 END $$;
-REVOKE ALL ON FUNCTION webstore.confirm_bank_payment(varchar,varchar,numeric,varchar) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.confirm_bank_payment(varchar,varchar,numeric,varchar) FROM PUBLIC;
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
-        REVOKE ALL ON webstore.payment_confirmation FROM anon;
-        REVOKE ALL ON FUNCTION webstore.confirm_bank_payment(varchar,varchar,numeric,varchar) FROM anon;
+        REVOKE ALL ON public.payment_confirmation FROM anon;
+        REVOKE ALL ON FUNCTION public.confirm_bank_payment(varchar,varchar,numeric,varchar) FROM anon;
     END IF;
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
-        REVOKE ALL ON webstore.payment_confirmation FROM authenticated;
-        REVOKE ALL ON FUNCTION webstore.confirm_bank_payment(varchar,varchar,numeric,varchar) FROM authenticated;
+        REVOKE ALL ON public.payment_confirmation FROM authenticated;
+        REVOKE ALL ON FUNCTION public.confirm_bank_payment(varchar,varchar,numeric,varchar) FROM authenticated;
     END IF;
 END $$;
 COMMIT;

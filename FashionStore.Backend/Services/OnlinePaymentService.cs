@@ -22,7 +22,7 @@ public sealed class OnlinePaymentService(DatabaseMode mode,PaymentGatewaySetting
     };
     private static async Task Installed(NpgsqlConnection c,NpgsqlTransaction? tx,CancellationToken ct)
     {
-        await using var cmd=Sql(c,tx,"SELECT to_regprocedure('webstore.settle_gateway_payment(character varying,character varying,character varying,numeric,character varying)') IS NOT NULL");
+        await using var cmd=Sql(c,tx,"SELECT to_regprocedure('public.settle_gateway_payment(character varying,character varying,character varying,numeric,character varying)') IS NOT NULL");
         if(!Convert.ToBoolean(await cmd.ExecuteScalarAsync(ct)))throw new CustomerRequestException(503,"Cấu trúc thanh toán trực tuyến chưa được cập nhật tại cửa hàng.");
     }
     public async Task<PaymentLink> Start(string customer,string order,string ip,CancellationToken ct)
@@ -32,7 +32,7 @@ public sealed class OnlinePaymentService(DatabaseMode mode,PaymentGatewaySetting
         await using(var tx=await c.BeginTransactionAsync(IsolationLevel.ReadCommitted,ct)) {
             await using(var invoice=Sql(c,tx,"""
                 SELECT s.paymentmethod,h.khachphaitra,h.loaihoadon,h.trangthaithanhtoan
-                FROM webstore.order_snapshot s JOIN public.hoadon h ON h.sohd=s.sohd AND h.makh=s.makh
+                FROM public.order_snapshot s JOIN public.hoadon h ON h.sohd=s.sohd AND h.makh=s.makh
                 WHERE s.sohd=@id AND s.makh=@customer FOR UPDATE OF h
                 """,("id",order),("customer",customer)))
             await using(var r=await invoice.ExecuteReaderAsync(ct)) {
@@ -44,10 +44,10 @@ public sealed class OnlinePaymentService(DatabaseMode mode,PaymentGatewaySetting
             if(!settings.Ready(method))throw new CustomerRequestException(503,"Phương thức thanh toán chưa được cấu hình tại cửa hàng.");
             PaymentGatewaySettings.Amount(amount);
             if(method=="PAYOS") {
-                await using var payos=Sql(c,tx,"SELECT to_regclass('webstore.payos_payment_number') IS NOT NULL");
+                await using var payos=Sql(c,tx,"SELECT to_regclass('public.payos_payment_number') IS NOT NULL");
                 if(!Convert.ToBoolean(await payos.ExecuteScalarAsync(ct)))throw new CustomerRequestException(503,"Cửa hàng chưa cập nhật thanh toán QR payOS.");
             }
-            await using(var previous=Sql(c,tx,"SELECT payment_url,expires_at,status FROM webstore.gateway_attempt WHERE sohd=@id ORDER BY created_at DESC,id DESC LIMIT 1",("id",order)))
+            await using(var previous=Sql(c,tx,"SELECT payment_url,expires_at,status FROM public.gateway_attempt WHERE sohd=@id ORDER BY created_at DESC,id DESC LIMIT 1",("id",order)))
             await using(var r=await previous.ExecuteReaderAsync(ct)) {
                 if(await r.ReadAsync(ct)) {
                     if(r.GetString(2) is "PAID" or "REVIEW")throw new CustomerRequestException(409,"Giao dịch đã được tiếp nhận. Vui lòng xem trạng thái đơn hàng.");
@@ -58,9 +58,9 @@ public sealed class OnlinePaymentService(DatabaseMode mode,PaymentGatewaySetting
                 }
             }
             attempt=created.ToOffset(TimeSpan.FromHours(7)).ToString("yyMMdd")+"_"+Guid.NewGuid().ToString("N");
-            if(method=="PAYOS") {await using var number=Sql(c,tx,"SELECT nextval('webstore.payos_payment_number')");attempt=Convert.ToInt64(await number.ExecuteScalarAsync(ct)).ToString(System.Globalization.CultureInfo.InvariantCulture);}
+            if(method=="PAYOS") {await using var number=Sql(c,tx,"SELECT nextval('public.payos_payment_number')");attempt=Convert.ToInt64(await number.ExecuteScalarAsync(ct)).ToString(System.Globalization.CultureInfo.InvariantCulture);}
             await using var insert=Sql(c,tx,"""
-                INSERT INTO webstore.gateway_attempt(id,sohd,provider,method,merchant,amount,created_at,expires_at)
+                INSERT INTO public.gateway_attempt(id,sohd,provider,method,merchant,amount,created_at,expires_at)
                 VALUES(@attempt,@order,@provider,@method,@merchant,@amount,@created,@expires)
                 """,("attempt",attempt),("order",order),("provider",method=="PAYOS"?"PAYOS":method=="ZALOPAY"?"ZALOPAY":"VNPAY"),("method",method),
                 ("merchant",settings.Merchant(method)),("amount",amount),("created",created.UtcDateTime),("expires",created.AddMinutes(15).UtcDateTime));
@@ -69,27 +69,27 @@ public sealed class OnlinePaymentService(DatabaseMode mode,PaymentGatewaySetting
         // The attempt is durable before an external request; a timeout cannot create an unknown duplicate payment.
         var url=await gateway.Create(method,attempt,amount,ip,created,ct);
         await using(var save=method=="PAYOS"?
-            Sql(c,null,"UPDATE webstore.gateway_attempt SET payment_url=@url,provider_link_id=@link WHERE id=@id",("url",url),("link",new Uri(url).Segments.Last()),("id",attempt)):
-            Sql(c,null,"UPDATE webstore.gateway_attempt SET payment_url=@url WHERE id=@id",("url",url),("id",attempt)))await save.ExecuteNonQueryAsync(ct);
+            Sql(c,null,"UPDATE public.gateway_attempt SET payment_url=@url,provider_link_id=@link WHERE id=@id",("url",url),("link",new Uri(url).Segments.Last()),("id",attempt)):
+            Sql(c,null,"UPDATE public.gateway_attempt SET payment_url=@url WHERE id=@id",("url",url),("id",attempt)))await save.ExecuteNonQueryAsync(ct);
         return new(url,order);
     }
     public async Task<string> Receive(GatewayEvent payment,CancellationToken ct)
     {
         await using var c=Connection();await c.OpenAsync(ct);await Installed(c,null,ct);
         if(payment.Provider=="PAYOS") {
-            await using var match=Sql(c,null,"SELECT EXISTS(SELECT 1 FROM webstore.gateway_attempt WHERE id=@id AND provider='PAYOS' AND merchant=@merchant AND provider_link_id=@link)",
+            await using var match=Sql(c,null,"SELECT EXISTS(SELECT 1 FROM public.gateway_attempt WHERE id=@id AND provider='PAYOS' AND merchant=@merchant AND provider_link_id=@link)",
                 ("id",payment.AttemptId),("merchant",payment.Merchant),("link",(object?)payment.PaymentLinkId??DBNull.Value));
             if(!Convert.ToBoolean(await match.ExecuteScalarAsync(ct)))throw new CustomerRequestException(400,"Giao dịch QR không khớp đơn hàng.");
         }
         if(!payment.Paid) {
             // A browser cancel/failure does not prove that a later asynchronous payment cannot succeed.
-            await using var check=Sql(c,null,"SELECT count(*) FROM webstore.gateway_attempt WHERE id=@id AND provider=@provider AND merchant=@merchant AND amount=@amount",
+            await using var check=Sql(c,null,"SELECT count(*) FROM public.gateway_attempt WHERE id=@id AND provider=@provider AND merchant=@merchant AND amount=@amount",
                 ("id",payment.AttemptId),("provider",payment.Provider),("merchant",payment.Merchant),("amount",payment.Amount));
             if(Convert.ToInt32(await check.ExecuteScalarAsync(ct))!=1)throw new CustomerRequestException(400,"Giao dịch không khớp.");
             return "PENDING";
         }
         try {
-            await using var cmd=Sql(c,null,"SELECT webstore.settle_gateway_payment(@id,@provider,@merchant,@amount,@transaction)",
+            await using var cmd=Sql(c,null,"SELECT public.settle_gateway_payment(@id,@provider,@merchant,@amount,@transaction)",
                 ("id",payment.AttemptId),("provider",payment.Provider),("merchant",payment.Merchant),("amount",payment.Amount),("transaction",payment.TransactionId));
             return (string)(await cmd.ExecuteScalarAsync(ct))!;
         }catch(PostgresException e) when(e.SqlState=="P0001") {throw new CustomerRequestException(400,"Giao dịch không khớp đơn hàng.");}
@@ -97,7 +97,7 @@ public sealed class OnlinePaymentService(DatabaseMode mode,PaymentGatewaySetting
     public async Task PayosNotify(GatewayEvent payment,CancellationToken ct)
     {
         await using var c=Connection();await c.OpenAsync(ct);
-        await using var known=Sql(c,null,"SELECT EXISTS(SELECT 1 FROM webstore.gateway_attempt WHERE id=@id AND provider='PAYOS' AND merchant=@merchant AND provider_link_id=@link)",
+        await using var known=Sql(c,null,"SELECT EXISTS(SELECT 1 FROM public.gateway_attempt WHERE id=@id AND provider='PAYOS' AND merchant=@merchant AND provider_link_id=@link)",
             ("id",payment.AttemptId),("merchant",payment.Merchant),("link",payment.PaymentLinkId!));
         // payOS sends a signed sample when confirming webhook setup. Other channel orders are not website orders.
         if(!Convert.ToBoolean(await known.ExecuteScalarAsync(ct)))return;
@@ -108,7 +108,7 @@ public sealed class OnlinePaymentService(DatabaseMode mode,PaymentGatewaySetting
     {
         if(payment==null)return null;
         await using var c=Connection();await c.OpenAsync(ct);
-        await using var cmd=Sql(c,null,"SELECT sohd FROM webstore.gateway_attempt WHERE id=@id AND provider=@provider AND merchant=@merchant AND amount=@amount",
+        await using var cmd=Sql(c,null,"SELECT sohd FROM public.gateway_attempt WHERE id=@id AND provider=@provider AND merchant=@merchant AND amount=@amount",
             ("id",payment.AttemptId),("provider",payment.Provider),("merchant",payment.Merchant),("amount",payment.Amount));
         return await cmd.ExecuteScalarAsync(ct) as string;
     }
@@ -117,8 +117,8 @@ public sealed class OnlinePaymentService(DatabaseMode mode,PaymentGatewaySetting
         await using var c=Connection();await c.OpenAsync(ct);await Installed(c,null,ct);
         string id,method,merchant,status;DateTime created;
         await using(var cmd=Sql(c,null,"""
-            SELECT a.id,a.method,a.merchant,a.created_at,a.status FROM webstore.order_snapshot s
-            JOIN webstore.gateway_attempt a USING(sohd) WHERE s.sohd=@order AND s.makh=@customer
+            SELECT a.id,a.method,a.merchant,a.created_at,a.status FROM public.order_snapshot s
+            JOIN public.gateway_attempt a USING(sohd) WHERE s.sohd=@order AND s.makh=@customer
             ORDER BY a.created_at DESC,a.id DESC LIMIT 1
             """,("order",order),("customer",customer)))
         await using(var reader=await cmd.ExecuteReaderAsync(ct)) {

@@ -6,7 +6,7 @@
 
 1. **Mã ưu đãi khi thanh toán:** kiểm tra thời gian hoạt động, mức mua tối thiểu, giảm theo phần trăm hoặc số tiền. Chỉ áp dụng một mã; tính trên giá bán hiện tại trong giỏ. Kiểm tra lại giá, tồn và điều kiện mã khi bấm đặt hàng, không lấy số tiền do trình duyệt gửi lên. Chưa nhận đơn miễn phí có tổng bằng 0.
 2. **Lưu đúng số tiền sang WinForms:** `public.hoadon.tongcong` là tiền hàng, `chietkhau` là số tiền giảm, `khachphaitra` là số khách trả, `makm` là mã canonical trong database; COD lấy số tiền sau giảm vào `tiencod`. Không thay cách WinForms trừ kho/cộng điểm. Xác nhận chuyển khoản dùng số tiền sau giảm và cộng điểm một lần, theo quy trình đã có.
-3. **Lưu giá lúc mua:** `webstore.order_pricing` giữ tiền hàng, mức giảm và mã đã dùng. Giá catalog hoặc chương trình thay đổi sau đó không làm thay đổi phần thông tin này trong lịch sử đơn. Retry cùng mã yêu cầu trả lại đơn cũ, kể cả khi ưu đãi sau đó hết hạn.
+3. **Lưu giá lúc mua:** `public.order_pricing` giữ tiền hàng, mức giảm và mã đã dùng. Giá catalog hoặc chương trình thay đổi sau đó không làm thay đổi phần thông tin này trong lịch sử đơn. Retry cùng mã yêu cầu trả lại đơn cũ, kể cả khi ưu đãi sau đó hết hạn.
 4. **Trang Ưu đãi nối tới Checkout:** bấm “Áp dụng mã này” để điền sẵn mã và xem số tiền giảm. Nút “Kiểm tra mã” cũng hoạt động khi chưa nhập xong địa chỉ nhận hàng.
 5. **Sửa địa chỉ đã lưu:** biểu mẫu lấy dữ liệu địa chỉ thuộc tài khoản đang đăng nhập; cập nhật ngay bản ghi cũ, có thể sửa khi đã lưu đủ 20 địa chỉ. Tài khoản khác không thể sửa địa chỉ bằng cách đoán ID.
 6. **Đánh giá từ đơn hàng:** đơn đã giao và thanh toán có liên kết “Viết đánh giá” ở từng sản phẩm. Trang đánh giá điền sẵn mã đơn; backend tiếp tục kiểm tra quyền mua hàng và chống đánh giá trùng.
@@ -28,7 +28,7 @@
 Kiểm tra bằng SELECT:
 
 ```sql
-SELECT to_regclass('webstore.order_pricing') AS bang_luu_gia;
+SELECT to_regclass('public.order_pricing') AS bang_luu_gia;
 
 SELECT makm, tenchuongtrinh, loaikm, giatrigiam, giatridonhangtoithieu,
        ngaybatdau, ngayketthuc

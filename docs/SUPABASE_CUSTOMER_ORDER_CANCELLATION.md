@@ -20,7 +20,7 @@ Trong **Đơn hàng của tôi → Chi tiết đơn hàng**, khách thấy thẻ
 
 ## Database và WinForms
 
-Giữ `public.hoadon`, `public.chitiethoadon` và snapshot. Đổi loại đơn thành **WEB_HUY**, giao hàng **Đã hủy**, số tiền COD cần thu bằng 0; lưu dấu hủy trong `webstore.order_cancellation`. Các hàng đợi giao/COD hiện có trên bản WinForms đã đối chiếu không lấy loại WEB_HUY nữa. Hóa đơn vẫn tra cứu được trong database; nếu partner cần tab đơn hủy, truy vấn loại WEB_HUY. Các báo cáo thu tiền chỉ tính đơn đã thanh toán như quy trình hiện có.
+Giữ `public.hoadon`, `public.chitiethoadon` và snapshot. Đổi loại đơn thành **WEB_HUY**, giao hàng **Đã hủy**, số tiền COD cần thu bằng 0; lưu dấu hủy trong `public.order_cancellation`. Các hàng đợi giao/COD hiện có trên bản WinForms đã đối chiếu không lấy loại WEB_HUY nữa. Hóa đơn vẫn tra cứu được trong database; nếu partner cần tab đơn hủy, truy vấn loại WEB_HUY. Các báo cáo thu tiền chỉ tính đơn đã thanh toán như quy trình hiện có.
 
 Đơn đủ điều kiện chưa từng trừ kho/cộng điểm, nên hủy không hoàn kho hay điều chỉnh điểm. Bấm lặp chỉ ghi một lần. Hàm hủy khóa cùng dòng hóa đơn với xác nhận thanh toán: tiền hoặc hủy thắng trước sẽ quyết định kết quả.
 
@@ -35,6 +35,6 @@ Kiểm tra chỉ đọc:
 ```sql
 SELECT c.sohd,c.cancelledat AT TIME ZONE 'Asia/Ho_Chi_Minh' AS gio_huy_viet_nam,
        h.loaihoadon,h.trangthaigiaohang,h.trangthaithanhtoan
-FROM webstore.order_cancellation c LEFT JOIN public.hoadon h USING(sohd)
+FROM public.order_cancellation c LEFT JOIN public.hoadon h USING(sohd)
 ORDER BY c.cancelledat DESC LIMIT 30;
 ```

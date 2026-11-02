@@ -3,7 +3,7 @@
 ## Bật trên database dùng chung
 
 1. Giữ nguyên các migration tài khoản/giỏ hàng và đơn hàng đã chạy thành công. Nếu dùng chuyển khoản, giữ cả migration thanh toán.
-2. Mở `database/Supabase-Customer-Features.sql`, sao chép toàn bộ vào Supabase SQL Editor rồi Run. File tạo năm bảng riêng trong schema `webstore`; không sửa tồn kho, số dư điểm, giá bán hoặc hoàn tiền. Có thể chạy lại file này.
+2. Mở `database/Supabase-Customer-Features.sql`, sao chép toàn bộ vào Supabase SQL Editor rồi Run. File tạo năm bảng riêng trong schema `public`; không sửa tồn kho, số dư điểm, giá bán hoặc hoàn tiền. Có thể chạy lại file này.
 3. Khởi động lại backend với lệnh đang dùng:
 
 ```powershell
@@ -15,11 +15,11 @@
 Kiểm tra sau khi chạy SQL:
 
 ```sql
-SELECT to_regclass('webstore.address') AS dia_chi,
-       to_regclass('webstore.wishlist') AS yeu_thich,
-       to_regclass('webstore.product_review') AS danh_gia,
-       to_regclass('webstore.return_request') AS yeu_cau_doi_tra,
-       to_regclass('webstore.password_reset') AS khoi_phuc_mat_khau;
+SELECT to_regclass('public.address') AS dia_chi,
+       to_regclass('public.wishlist') AS yeu_thich,
+       to_regclass('public.product_review') AS danh_gia,
+       to_regclass('public.return_request') AS yeu_cau_doi_tra,
+       to_regclass('public.password_reset') AS khoi_phuc_mat_khau;
 ```
 
 Cả năm cột phải có tên bảng, không phải `NULL`. Các bảng bật RLS và thu hồi quyền truy cập trực tiếp của trình duyệt. Backend kết nối bằng tài khoản PostgreSQL phía máy chủ; mọi truy vấn dữ liệu riêng đều giới hạn theo khách hàng đang đăng nhập. Không đưa chuỗi kết nối vào mã giao diện.
@@ -29,7 +29,7 @@ Cả năm cột phải có tên bảng, không phải `NULL`. Các bảng bật 
 - Sổ địa chỉ: thêm/sửa/xóa và chọn địa chỉ đã lưu khi thanh toán, tối đa 20 địa chỉ mỗi khách hàng. Sửa địa chỉ không tạo bản ghi mới và không thay đổi thông tin khách hàng khác.
 - Yêu thích: lưu/bỏ lưu sản phẩm, mỗi sản phẩm xuất hiện một lần dù có nhiều size/màu.
 - Ưu đãi: đọc chương trình đang hoạt động từ `public.khuyenmai`, bao gồm ngày kết thúc. Chạy thêm `database/Supabase-Checkout-Promotions.sql` để bật áp mã lúc thanh toán; hướng dẫn trong `CUSTOMER_FUNCTIONAL_READINESS.md`. Trang sản phẩm khuyến mãi vẫn sử dụng mức giá catalog đã cấu hình trước đó.
-- Điểm & hạng: số dư/hạng dùng hồ sơ khách hàng chung. Lịch sử hiện liệt kê các lần xác nhận chuyển khoản website trong `webstore.payment_confirmation`; đây không phải sổ điểm đầy đủ của POS/COD và không tự cộng điểm lần nữa.
+- Điểm & hạng: số dư/hạng dùng hồ sơ khách hàng chung. Lịch sử hiện liệt kê các lần xác nhận chuyển khoản website trong `public.payment_confirmation`; đây không phải sổ điểm đầy đủ của POS/COD và không tự cộng điểm lần nữa.
 - Tiến trình đơn: hiển thị mốc tạo đơn và mốc giao thành công có thời gian thực từ database; trạng thái hiện tại tiếp tục lấy từ hóa đơn mà WinForms cập nhật. Không tạo thời gian giả cho các bước trung gian.
 - Đánh giá: chỉ người mua sản phẩm trong đơn đã giao thành công và đã thanh toán được gửi một đánh giá cho sản phẩm/đơn. Form chỉ liệt kê đơn đủ điều kiện của tài khoản đang đăng nhập, không yêu cầu tự nhập mã đơn. Backend kiểm tra lại chủ đơn, sản phẩm, giao hàng và thanh toán trong giao dịch khi gửi; đơn đang giao, đơn đã hủy và mã đơn của người khác đều bị từ chối, kể cả gọi API trực tiếp. Gửi đồng thời không tạo đánh giá trùng. Đánh giá mới chờ duyệt; công khai tên chung “Khách hàng”. Phần siết quyền đánh giá này không cần migration SQL mới; khởi động lại backend để cập nhật mã.
 - Đổi/trả: tiếp nhận yêu cầu theo đơn, SKU, số lượng và lý do. Chỉ nhận đơn đã giao và thanh toán, có mốc giao xác thực trong 15 ngày. Kiểm tra số đã yêu cầu và số đã đổi/trả qua WinForms; chống gửi trùng/vượt số lượng. Chưa tự động hoàn tiền, giữ hàng đổi, cộng/trừ tồn hay điều chỉnh điểm.
@@ -37,18 +37,18 @@ Cả năm cột phải có tên bảng, không phải `NULL`. Các bảng bật 
 
 ## Nhân viên tiếp nhận yêu cầu và duyệt đánh giá
 
-**WinForms hiện chưa có màn hình đọc `webstore.return_request` hoặc duyệt `webstore.product_review`.** Các chức năng ghi nhận này đã có trên website, nhưng không tự xuất hiện trong danh sách đổi/trả cũ của WinForms. Không chèn một phiếu hoàn tất vào `public.phieudoitra` chỉ vì khách vừa gửi yêu cầu.
+**WinForms hiện chưa có màn hình đọc `public.return_request` hoặc duyệt `public.product_review`.** Các chức năng ghi nhận này đã có trên website, nhưng không tự xuất hiện trong danh sách đổi/trả cũ của WinForms. Không chèn một phiếu hoàn tất vào `public.phieudoitra` chỉ vì khách vừa gửi yêu cầu.
 
 Người có quyền database có thể đọc danh sách chờ từ SQL Editor:
 
 ```sql
 SELECT sophieudt, sohd, makh, masku, quantity, kind, newsku, reason, createdat, status
-FROM webstore.return_request
+FROM public.return_request
 WHERE status IN ('CHO_DUYET','DA_DUYET')
 ORDER BY createdat;
 
 SELECT id, masp, sohd, stars, body, createdat
-FROM webstore.product_review
+FROM public.product_review
 WHERE status='CHO_DUYET'
 ORDER BY createdat;
 ```

@@ -44,12 +44,12 @@ internal static class CheckoutVoucherScenarios
         }
         await Cart();
         Assert.True((await alice.GetFromJsonAsync<CartResponse>("/api/cart"))!.SupportsVouchers);
-        var beforeQuote=await Scalar<long>("SELECT count(*) FROM webstore.order_snapshot");
+        var beforeQuote=await Scalar<long>("SELECT count(*) FROM public.order_snapshot");
         var quote=(await alice.GetFromJsonAsync<CheckoutQuote>("/api/orders/quote?voucher=%20voucher10%20"))!;
         Assert.Equal(200000,quote.Subtotal);Assert.Equal(10000,quote.MemberDiscount);
         Assert.Equal("VOUCHER10",quote.Voucher);Assert.Equal(19000,quote.VoucherDiscount);
         Assert.Equal(29000,quote.Discount);Assert.Equal(171000,quote.Total);
-        Assert.Equal(beforeQuote,await Scalar<long>("SELECT count(*) FROM webstore.order_snapshot"));
+        Assert.Equal(beforeQuote,await Scalar<long>("SELECT count(*) FROM public.order_snapshot"));
         var fixedQuote=(await alice.GetFromJsonAsync<CheckoutQuote>("/api/orders/quote?voucher=TIEN20000"))!;
         Assert.Equal(20000,fixedQuote.VoucherDiscount);Assert.Equal(170000,fixedQuote.Total);
         Assert.Equal(171000,(await alice.GetFromJsonAsync<CheckoutQuote>("/api/orders/quote?voucher=MIN200"))!.Total);
@@ -57,7 +57,7 @@ internal static class CheckoutVoucherScenarios
         foreach(var invalid in new[]{"MISSING","BIGMIN","VOFF","VFUTURE","VEXPIRED","VUNKNOWN","VFREE","VTOOBIG","DUP","SPKM-A"}) {
             await Status(HttpStatusCode.Conflict,alice.GetAsync("/api/orders/quote?voucher="+invalid));
             await Status(HttpStatusCode.Conflict,alice.PostAsJsonAsync("/api/orders",request with{RequestId=Guid.NewGuid(),Voucher=invalid}));
-            Assert.Equal(beforeQuote,await Scalar<long>("SELECT count(*) FROM webstore.order_snapshot"));
+            Assert.Equal(beforeQuote,await Scalar<long>("SELECT count(*) FROM public.order_snapshot"));
             Assert.Single((await alice.GetFromJsonAsync<CartResponse>("/api/cart"))!.Items);
         }
         var noCode=(await alice.GetFromJsonAsync<CheckoutQuote>("/api/orders/quote"))!;
@@ -69,7 +69,7 @@ internal static class CheckoutVoucherScenarios
         Assert.Equal(171000,placed.Total);
         Assert.Equal(29000,await Scalar<decimal>($"SELECT chietkhau FROM public.hoadon WHERE sohd='{placed.OrderId}'"));
         Assert.Equal("VOUCHER10",await Scalar<string>($"SELECT makm FROM public.hoadon WHERE sohd='{placed.OrderId}'"));
-        Assert.Equal(19000,await Scalar<decimal>($"SELECT voucher_discount FROM webstore.order_pricing WHERE sohd='{placed.OrderId}'"));
+        Assert.Equal(19000,await Scalar<decimal>($"SELECT voucher_discount FROM public.order_pricing WHERE sohd='{placed.OrderId}'"));
         await Exec("UPDATE public.khuyenmai SET giatrigiam=50,trangthai=false WHERE makm='VOUCHER10'");
         var saved=(await alice.GetFromJsonAsync<OrderDetails>("/api/orders/"+placed.OrderId))!;
         Assert.Equal(10000,saved.MemberDiscount);Assert.Equal(19000,saved.VoucherDiscount);Assert.Equal(171000,saved.Total);
@@ -96,8 +96,8 @@ internal static class CheckoutVoucherScenarios
         Assert.True(bankResponse.IsSuccessStatusCode,await bankResponse.Content.ReadAsStringAsync());
         var bank=(await bankResponse.Content.ReadFromJsonAsync<PlaceOrderResponse>())!;
         Assert.Equal(171000,bank.Total);
-        await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT webstore.confirm_bank_payment('{bank.OrderId}','NV01',200000,'VOUCHER-BANK')"));
-        Assert.Equal("CONFIRMED",await Scalar<string>($"SELECT webstore.confirm_bank_payment('{bank.OrderId}','NV01',171000,'VOUCHER-BANK')"));
+        await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT public.confirm_bank_payment('{bank.OrderId}','NV01',200000,'VOUCHER-BANK')"));
+        Assert.Equal("CONFIRMED",await Scalar<string>($"SELECT public.confirm_bank_payment('{bank.OrderId}','NV01',171000,'VOUCHER-BANK')"));
         // Leave the rest of the shared integration fixture's native-sale state unchanged.
         await Exec("UPDATE public.khuyenmai SET trangthai=false WHERE makm='SPKM-A'");
     }

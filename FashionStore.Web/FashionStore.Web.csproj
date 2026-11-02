@@ -126,6 +126,8 @@
     <Compile Include="Models\CatalogModels.cs" />
     <Compile Include="Services\CatalogRepository.cs" />
     <Compile Include="Helpers\CatalogViewHelper.cs" />
+    <Compile Include="Helpers\ProductDescriptionHelper.cs" />
+    <Compile Include="Helpers\ProductMaterialHelper.cs" />
     <Compile Include="Helpers\WishlistLoginIntent.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -317,6 +319,7 @@
     <Content Include="Scripts\product-cards.js" />
     <Content Include="Scripts\product-gallery.js" />
     <Content Include="Views\Shared\_ProductGallery.cshtml" />
+    <Content Include="Views\Shared\_ProductDescription.cshtml" />
     <Content Include="Content\images\brand\yody-logo-source.png" />
     <Content Include="Content\images\brand\yody-logo.svg" />
     <Content Include="Content\images\brand\yody-favicon.svg" />

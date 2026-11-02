@@ -2,7 +2,7 @@
 
 ## Kết nối khuyến mãi WinForms
 
-Chạy `database/Supabase-Product-Promotions.sql` sau `Supabase-Storefront-Enhancements.sql`. File tạo view chỉ đọc `webstore.sku_price`, không sửa giá trong `public.sanpham`.
+Chạy `database/Supabase-Product-Promotions.sql` sau `Supabase-Storefront-Enhancements.sql`. File tạo view chỉ đọc `public.sku_price`, không sửa giá trong `public.sanpham`.
 
 Nguồn dữ liệu đã đối chiếu với ảnh nhóm cung cấp:
 
@@ -17,7 +17,7 @@ Kiểm tra:
 
 ```sql
 SELECT p.masku,p.tensanpham,s.base_price AS gia_goc,s.sale_price AS gia_ban,s.native_percent AS giam_phan_tram
-FROM webstore.sku_price s JOIN public.sanpham p USING(masku)
+FROM public.sku_price s JOIN public.sanpham p USING(masku)
 WHERE s.native_percent IS NOT NULL ORDER BY p.masku;
 ```
 
@@ -68,7 +68,7 @@ Nếu đã nhận tiền mà kho/hóa đơn không còn hợp lệ, lưu biên n
 
 ```sql
 SELECT a.sohd,a.method,r.transaction_id,r.amount,r.outcome,r.received_at
-FROM webstore.gateway_receipt r JOIN webstore.gateway_attempt a ON a.id=r.attempt_id
+FROM public.gateway_receipt r JOIN public.gateway_attempt a ON a.id=r.attempt_id
 ORDER BY r.received_at DESC LIMIT 30;
 ```
 

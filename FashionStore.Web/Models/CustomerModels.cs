@@ -12,6 +12,7 @@ namespace FashionStore.Web.Models
     }
     public class RegisterViewModel
     {
+        public string ReturnUrl { get; set; }
         [Required(ErrorMessage="Vui lòng nhập tên đăng nhập."), RegularExpression(@"^[A-Za-z0-9._-]{3,100}$", ErrorMessage="Tên đăng nhập gồm 3–100 ký tự không dấu, số, dấu chấm, gạch dưới hoặc gạch ngang."), Display(Name="Tên đăng nhập")]
         public string UserName { get; set; }
         [Required(ErrorMessage="Vui lòng nhập mật khẩu."), StringLength(128, MinimumLength=12, ErrorMessage="Mật khẩu phải có từ 12 đến 128 ký tự."), RegularExpression(@"^(?=.*[A-Za-z])(?=.*[0-9]).{12,128}$", ErrorMessage="Mật khẩu cần có ít nhất một chữ cái và một chữ số."), DataType(DataType.Password), Display(Name="Mật khẩu")]

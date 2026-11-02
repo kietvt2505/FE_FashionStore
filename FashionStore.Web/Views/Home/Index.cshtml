@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="@Url.Content("~/Content/home.css")?v=@System.IO.File.GetLastWriteTimeUtc(Server.MapPath("~/Content/home.css")).Ticks" />
 }
 <main class="yody-home-refresh">
+    <div class="mn-container">@Html.Partial("_CustomerMessages")</div>
     <section class="hp-hero" aria-labelledby="hp-hero-title">
         <div class="hp-hero-photo"><img src="@Url.Content("~/Content/images/home-men.png")" alt="Gợi ý phối áo khoác màu be cho phong cách hằng ngày" fetchpriority="high" width="1140" height="1540" /></div>
         <div class="mn-container hp-hero-inner">

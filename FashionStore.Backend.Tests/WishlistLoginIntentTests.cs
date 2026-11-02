@@ -8,6 +8,15 @@ public sealed class WishlistLoginIntentTests
     private static readonly DateTimeOffset Now=new(2026,10,31,3,0,0,TimeSpan.Zero);
 
     [Fact]
+    public void OriginKeepsFiltersPaginationAndFragmentDuringAuthentication()
+    {
+        const string origin="/Product?audience=NAM&color=%C4%90%E1%BB%8F&page=3#products";
+        var intent=WishlistLoginIntent.Create("SP-002",Now,origin)!;
+        Assert.Equal(origin,intent.ReturnUrl);
+        Assert.Equal("SP-002",intent.ProductId);
+    }
+
+    [Fact]
     public void ValidProductSurvivesLoginRetryWithinTheSameVisit()
     {
         var intent=WishlistLoginIntent.Create(" SP-002 ",Now)!;

@@ -29,7 +29,7 @@ Migration chỉ thêm thông tin lưu tại thời điểm đặt hàng; giữ h
 
 - `hoadon.tongcong`: tiền hàng trước ưu đãi; `chietkhau`: số tiền giảm theo hạng.
 - `khachphaitra`: tiền sau giảm; `tiencod`: tiền sau giảm với COD; `makm`: NULL cho đơn web mới.
-- `webstore.order_pricing`: lưu hạng, tỷ lệ, điểm hiện có và tiền giảm tại thời điểm đặt. Không tính lại ưu đãi đơn cũ theo hạng mới.
+- `public.order_pricing`: lưu hạng, tỷ lệ, điểm hiện có và tiền giảm tại thời điểm đặt. Không tính lại ưu đãi đơn cũ theo hạng mới.
 - Backend kiểm tra lại thông tin tài khoản/giá/tồn trong giao dịch tạo đơn. Dữ liệu tiền, hạng hoặc điểm gửi giả từ trình duyệt không ảnh hưởng kết quả.
 - WinForms tiếp nhận số tiền đã chốt từ hóa đơn; không áp hạng lần hai cho đơn web. Không thay mã WinForms bên ngoài workspace trong đợt này.
 

@@ -5,6 +5,8 @@ Bước tiếp theo cho đơn COD có trong [hướng dẫn đơn website](SUPAB
 Code đã hỗ trợ bước này, nhưng cần chạy SQL bên dưới trước khi bật tính năng.
 Đây là tài khoản website do backend quản lý, không phải Supabase Auth hay tài khoản nhân viên WinForms.
 
+Với database đang có schema `webstore`, đọc [hướng dẫn chuyển sang public](PUBLIC_SCHEMA_MIGRATION.md) trước. Không chạy lại seed hoặc tạo bản sao dữ liệu.
+
 ## 1. Chuẩn bị database dùng chung
 
 Mở `database/Supabase-Customer-Cart.sql`, sao chép toàn bộ nội dung vào SQL Editor của đúng dự án Supabase và chạy bằng role chủ database (`postgres`).
@@ -13,13 +15,13 @@ Script thực hiện trong một transaction:
 
 - Thêm cột `public.khachhang.nhankhuyenmai` với mặc định false.
 - Bổ sung ràng buộc duy nhất cho số điện thoại và email không rỗng (email bỏ khoảng trắng đầu/cuối, không phân biệt hoa thường). Ràng buộc này cũng áp dụng khi WinForms ghi dữ liệu.
-- Tạo ba bảng riêng `webstore.customer_account`, `webstore.cart`, `webstore.cart_line`.
+- Tạo ba bảng riêng `public.customer_account`, `public.cart`, `public.cart_line`.
 - Liên kết khách hàng theo `makh`, sản phẩm theo `masku`; mật khẩu chỉ lưu dạng hash.
 - Bật RLS và thu hồi quyền truy cập các bảng riêng từ PUBLIC, anon và authenticated. Backend truy cập qua kết nối PostgreSQL của chủ database, không đọc chúng trực tiếp từ trình duyệt.
 
 Script không xóa khách hàng, sản phẩm, hóa đơn hoặc sửa tồn kho. Nếu dữ liệu trùng email/số điện thoại hoặc schema không phù hợp, transaction dừng; cần xem lỗi và đối chiếu với partner trước khi xử lý dữ liệu. Không tự xóa dữ liệu để chạy tiếp. Nếu SQL Editor còn báo transaction bị hủy, chạy `ROLLBACK;` trước khi thử lại.
 
-Không chạy script trên một schema `webstore` đang phục vụ ứng dụng khác mà chưa đối chiếu quyền và cấu trúc. Script có thể chạy lại trên cấu trúc đúng mà nó tạo ra; không tự sửa các bảng có sẵn khác cấu trúc.
+Các bảng website bổ sung cùng nằm trong `public` với bảng của partner. Chỉ đối chiếu/cập nhật các đối tượng website được nêu trong script; giữ quyền schema public hiện có của partner. Script có thể chạy lại trên cấu trúc đúng mà nó tạo ra; không tự sửa các bảng có sẵn khác cấu trúc.
 
 ## 2. Khởi động backend
 

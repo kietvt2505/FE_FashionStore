@@ -21,7 +21,7 @@ public sealed class SupabaseCustomerMappingTests
     {
         using var db = Create();
         var sql = db.CustomerAccounts.Include(a => a.Customer).Where(a => a.TenDangNhap == "alice").ToQueryString();
-        Assert.Contains("webstore.customer_account", sql);
+        Assert.Contains("public.customer_account", sql);
         Assert.Contains("public.khachhang", sql);
         Assert.Contains("xmin", sql);
         Assert.DoesNotContain("RowVer", sql);
@@ -37,8 +37,8 @@ public sealed class SupabaseCustomerMappingTests
     {
         using var db = Create();
         var sql = new CartService(db, TimeProvider.System).ReadQuery("WEB-OWNER").ToQueryString();
-        Assert.Contains("webstore.cart_line", sql);
-        Assert.Contains("webstore.cart", sql);
+        Assert.Contains("public.cart_line", sql);
+        Assert.Contains("public.cart", sql);
         Assert.Contains("public.sanpham", sql);
         Assert.Contains("masku", sql);
         Assert.Contains("WEB-OWNER", sql);

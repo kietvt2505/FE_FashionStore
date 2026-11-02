@@ -1,26 +1,57 @@
 .customer-site .product-card [hidden],.customer-site .color-product-gallery [hidden] {display:none!important;}
 .customer-site .image-variant-picker .color-option.is-sold-out {border:1px dashed #718198;opacity:.8;}
 
-/* A vertical strip of angles, including deliberately empty slots supplied later by the database. */
-.customer-site .color-product-gallery {display:grid;grid-template-columns:66px minmax(0,1fr);gap:12px;max-width:600px;align-items:start;}
-.customer-site .color-product-gallery .gallery-main {grid-column:2;grid-row:1;position:relative;min-width:0;}
+/* Only render the angles supplied by the database. */
+.customer-site .color-product-gallery {display:grid;grid-template-columns:minmax(0,1fr);gap:12px;max-width:600px;align-items:start;}
+.customer-site .color-product-gallery .gallery-main {grid-column:1;grid-row:1;position:relative;min-width:0;}
 .customer-site .color-product-gallery .yody-product-main-image {aspect-ratio:3/4;max-height:none;border-radius:16px;background:#EFF1F3;}
 .customer-site .color-product-gallery .yody-product-main-image[data-empty="true"] {cursor:default;}
 .customer-site .color-product-gallery .yody-product-main-image img {width:100%;height:100%;object-fit:contain;}
-.customer-site .color-product-gallery .yody-product-thumbnails {grid-column:1;grid-row:1;position:relative;align-self:stretch;min-height:0;display:block;overflow:hidden;margin:0;padding:0;}
-.customer-site .color-product-gallery .gallery-thumb-list {position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;overflow-y:auto;overflow-x:hidden;padding:2px;scrollbar-width:thin;}
-.customer-site .color-product-gallery .detail-thumb {flex:0 0 auto;width:100%;height:auto;aspect-ratio:3/4;border:1px solid #D5DDE6;border-radius:11px;background:#EFF1F3;overflow:hidden;opacity:1;padding:0;}
+.customer-site .color-product-gallery .yody-product-thumbnails {grid-column:1;grid-row:2;min-width:0;width:100%;display:block;overflow:hidden;margin:0;padding:0;}
+.customer-site .color-product-gallery .gallery-thumb-list {position:static;display:flex;flex-direction:row;flex-wrap:nowrap;gap:10px;overflow-x:auto;overflow-y:hidden;padding:3px;scrollbar-width:thin;}
+.customer-site .color-product-gallery .detail-thumb {flex:0 0 76px;width:76px;height:auto;aspect-ratio:3/4;border:1px solid #D5DDE6;border-radius:11px;background:#EFF1F3;overflow:hidden;opacity:1;padding:0;}
 .customer-site .color-product-gallery .detail-thumb[aria-pressed="true"] {border-color:#D99423;box-shadow:0 0 0 1px #D99423;}
 .customer-site .color-product-gallery .detail-thumb:focus-visible {outline:2px solid #142D4E;outline-offset:1px;}
-.customer-site .gallery-empty {display:block;width:100%;height:100%;min-height:100%;background:#EFF1F3;}
 .customer-site .gallery-controls {position:absolute;bottom:16px;right:16px;display:flex;gap:8px;}
 .customer-site .gallery-controls button {display:grid;place-items:center;width:36px;height:36px;border:1px solid #CDD7E3;border-radius:50%;background:rgba(255,255,255,.97);color:#142D4E;font-size:26px;line-height:1;cursor:pointer;}
 .customer-site .gallery-controls button:hover:not(:disabled) {background:#142D4E;color:#FFF;}
 .customer-site .gallery-controls button:disabled {opacity:.45;cursor:default;}
 .customer-site .color-product-gallery .zoom-hint {right:110px;left:12px;width:fit-content;max-width:calc(100% - 122px);font-size:10px;}
+.customer-site .product-media-column {min-width:0;width:100%;max-width:600px;}
+.customer-site .product-description-card {box-sizing:border-box;margin-top:22px;padding:22px;border:1px solid #D5DDE6;border-radius:16px;background:#F6F8FC;color:#142D4E;overflow-wrap:anywhere;}
+.customer-site .product-description-card header {padding-left:12px;border-left:3px solid #D6A34C;}
+.customer-site .product-description-card .product-description-kicker {margin:0 0 5px;font-size:10px;font-weight:600;letter-spacing:.13em;color:#425773;}
+.customer-site .product-description-card h2 {font:600 18px/1.4 var(--yody-font-body);margin:0 0 5px;}
+.customer-site .product-description-card .product-description-name {margin:0;font-size:13px;font-weight:500;line-height:1.6;color:#344862;}
+.customer-site .product-description-card p {font-size:13px;line-height:1.75;color:#344862;}
+.customer-site .product-description-card .product-description-intro {margin:16px 0;white-space:pre-line;}
+.customer-site .product-description-notes {display:grid;grid-template-columns:1fr 1fr;gap:20px;padding-top:15px;border-top:1px solid #D5DDE6;}
+.customer-site .product-description-notes h3 {font:600 13px/1.5 var(--yody-font-body);margin:0 0 6px;}
+.customer-site .product-description-notes p {margin:0;}
+.customer-site .product-material-copy,.customer-site .product-design-copy {margin:0 0 16px;padding-top:14px;border-top:1px solid #D5DDE6;}
+.customer-site .product-material-copy h3,.customer-site .product-design-copy h3 {font:600 13px/1.5 var(--yody-font-body);margin:0;}
+.customer-site .product-material-heading {display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+.customer-site .product-material-heading span {border-radius:20px;background:#E5ECF6;color:#142D4E;padding:3px 10px;font-size:12px;font-weight:600;}
+.customer-site .product-material-copy p {margin:9px 0 0;}
+.customer-site .product-material-copy .product-composition-note {font-size:12px;}
+.customer-site .product-material-copy.is-suggested .product-material-heading span {background:#F3E8D4;color:#664618;}
+.customer-site .product-material-features {padding-left:18px;margin:10px 0;color:#344862;font-size:13px;line-height:1.75;}
+.customer-site .product-material-features li+li {margin-top:5px;}
+.customer-site .product-design-copy ul {padding-left:18px;margin:8px 0 0;color:#344862;font-size:13px;line-height:1.75;}
+.customer-site .product-design-copy li+li {margin-top:5px;}
+.customer-site .product-description-full {margin:0 0 16px;font-size:13px;}
+.customer-site .product-description-full summary {width:fit-content;cursor:pointer;font-weight:600;text-decoration:underline;text-underline-offset:3px;}
+.customer-site .product-description-full summary:focus-visible {outline:2px solid #142D4E;outline-offset:4px;}
+.customer-site .product-description-full p {margin:12px 0 0;white-space:pre-line;}
 @media(max-width:767px){
-    .customer-site .color-product-gallery {grid-template-columns:54px minmax(0,1fr);gap:9px;max-width:460px;}
+    .customer-site .product-media-column {display:contents;}
+    .customer-site .product-media-column .color-product-gallery {grid-row:1;}
+    .customer-site .yody-product-layout .yody-product-purchase {grid-row:2;}
+    .customer-site .product-description-card {grid-row:3;grid-column:1;width:100%;max-width:460px;margin:0 auto;padding:18px;}
+    .customer-site .product-description-notes {grid-template-columns:1fr;gap:14px;}
+    .customer-site .color-product-gallery {gap:10px;max-width:460px;}
     .customer-site .color-product-gallery .gallery-thumb-list {gap:8px;}
+    .customer-site .color-product-gallery .detail-thumb {flex-basis:64px;width:64px;}
     .customer-site .gallery-controls {right:10px;bottom:10px;gap:6px;}
     .customer-site .gallery-controls button {width:32px;height:32px;}
     .customer-site .color-product-gallery .zoom-hint {bottom:10px;left:8px;padding:4px 6px;font-size:9px;max-width:calc(100% - 98px);}

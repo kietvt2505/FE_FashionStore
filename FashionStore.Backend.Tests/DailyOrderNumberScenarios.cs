@@ -15,7 +15,7 @@ internal static class DailyOrderNumberScenarios
         async Task<string> Allocate()
         {
             await using var connection=new NpgsqlConnection(sql.ConnectionString);await connection.OpenAsync();
-            await using var cmd=new NpgsqlCommand("SELECT webstore.allocate_order_number()",connection);
+            await using var cmd=new NpgsqlCommand("SELECT public.allocate_order_number()",connection);
             return (string)(await cmd.ExecuteScalarAsync())!;
         }
         var codes=await Task.WhenAll(Enumerable.Range(0,24).Select(_=>Allocate()));
@@ -25,13 +25,13 @@ internal static class DailyOrderNumberScenarios
             Assert.All(codes,code=>{Assert.StartsWith(prefix,code);Assert.Matches("^HD[0-9]{8}-[0-9]{4}$",code);Assert.DoesNotContain("-0000",code);});
         }
         await Exec("""
-            INSERT INTO webstore.daily_order_number(sohd,order_day,suffix)
+            INSERT INTO public.daily_order_number(sohd,order_day,suffix)
             SELECT 'HD01012099-'||lpad(n::text,4,'0'),DATE '2099-01-01',n FROM generate_series(3,9999) n;
             INSERT INTO public.hoadon(sohd,ngaylap) VALUES('HD01012099-0001',CURRENT_TIMESTAMP);
             """);
-        await using(var last=new NpgsqlCommand("SELECT webstore.allocate_order_number(DATE '2099-01-01')",sql))
+        await using(var last=new NpgsqlCommand("SELECT public.allocate_order_number(DATE '2099-01-01')",sql))
             Assert.Equal("HD01012099-0002",(string)(await last.ExecuteScalarAsync())!);
-        await using(var exhausted=new NpgsqlCommand("SELECT webstore.allocate_order_number(DATE '2099-01-01')",sql))
+        await using(var exhausted=new NpgsqlCommand("SELECT public.allocate_order_number(DATE '2099-01-01')",sql))
             await Assert.ThrowsAsync<PostgresException>(async()=>await exhausted.ExecuteScalarAsync());
         await alice.DeleteAsync("/api/cart");
         await alice.PostAsJsonAsync("/api/cart/items",new CartItemRequest{Sku="SKU-L",Quantity=1});

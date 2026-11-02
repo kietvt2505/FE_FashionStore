@@ -44,7 +44,7 @@ Chưa có nút xác nhận tiền mới trong WinForms. Ở bước tích hợp 
 Ví dụ mẫu, phải thay mã đơn, số tiền và mã giao dịch bằng kết quả đối soát thực tế:
 
 ```sql
-SELECT webstore.confirm_bank_payment(
+SELECT public.confirm_bank_payment(
     'WEB_MA_DON_THUC_TE',
     'NV-001',
     398000,

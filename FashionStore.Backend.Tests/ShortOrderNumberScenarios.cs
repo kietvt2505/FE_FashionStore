@@ -10,7 +10,7 @@ internal static class ShortOrderNumberScenarios
     internal static async Task VerifyAsync(HttpClient alice,HttpClient bob,NpgsqlConnection sql)
     {
         async Task Exec(string command){await using var cmd=new NpgsqlCommand(command,sql);await cmd.ExecuteNonQueryAsync();}
-        async Task<long> Number(){await using var cmd=new NpgsqlCommand("SELECT last_value FROM webstore.web_order_number",sql);return (long)(await cmd.ExecuteScalarAsync())!;}
+        async Task<long> Number(){await using var cmd=new NpgsqlCommand("SELECT last_value FROM public.web_order_number",sql);return (long)(await cmd.ExecuteScalarAsync())!;}
         // The earlier password-reset scenario revoked Bob's old session.
         var login=await bob.PostAsJsonAsync("/api/account/login",new LoginRequest{UserName="bob",Password="Synthetic reset password 123!"});
         Assert.Equal(HttpStatusCode.OK,login.StatusCode);
@@ -36,7 +36,7 @@ internal static class ShortOrderNumberScenarios
         Assert.Equal(first.OrderId,(await retry.Content.ReadFromJsonAsync<PlaceOrderResponse>())!.OrderId);
         Assert.Equal(HttpStatusCode.NotFound,(await bob.GetAsync("/api/orders/"+first.OrderId)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound,(await alice.GetAsync("/api/orders/"+second.OrderId)).StatusCode);
-        await using var count=new NpgsqlCommand("SELECT count(*) FROM webstore.order_snapshot WHERE request_id=@request",sql);
+        await using var count=new NpgsqlCommand("SELECT count(*) FROM public.order_snapshot WHERE request_id=@request",sql);
         count.Parameters.AddWithValue("request",request.RequestId);
         Assert.Equal(2L,(long)(await count.ExecuteScalarAsync())!);
     }

@@ -28,7 +28,7 @@ internal static class PayosScenarios
         var start=await alice.PostAsync("/api/payments/"+order.OrderId+"/start",null);
         Assert.True(start.IsSuccessStatusCode,await start.Content.ReadAsStringAsync());
         Assert.StartsWith("https://pay.payos.vn/web/",(await start.Content.ReadFromJsonAsync<PaymentLink>())!.Url);
-        var attempt=await Scalar<string>($"SELECT id FROM webstore.gateway_attempt WHERE sohd='{order.OrderId}'");
+        var attempt=await Scalar<string>($"SELECT id FROM public.gateway_attempt WHERE sohd='{order.OrderId}'");
         var beforePoints=await Scalar<int>($"SELECT diemtichluy FROM public.khachhang WHERE makh='{profile.Id}'");
         var data=new{orderCode=long.Parse(attempt),amount=order.Total,paymentLinkId=new string('a',32),code="00",currency="VND"};
         var payload=PayosTests.Envelope(data);
@@ -41,7 +41,7 @@ internal static class PayosScenarios
         Assert.Equal("DA_THANH_TOAN",detail.PaymentStatus);Assert.Equal("PAYOS",detail.PaymentMethod);
         Assert.Equal(9,await Scalar<int>("SELECT soluongtonkho FROM public.sanpham WHERE masku='SKU-M'"));
         Assert.Equal(beforePoints+(int)decimal.Floor(order.Total/10000),await Scalar<int>($"SELECT diemtichluy FROM public.khachhang WHERE makh='{profile.Id}'"));
-        Assert.Equal(1L,await Scalar<long>($"SELECT count(*) FROM webstore.gateway_receipt WHERE attempt_id='{attempt}'"));
+        Assert.Equal(1L,await Scalar<long>($"SELECT count(*) FROM public.gateway_receipt WHERE attempt_id='{attempt}'"));
         var checkedAgain=await alice.PostAsync("/api/payments/"+order.OrderId+"/recheck",null);
         Assert.Equal("PAID",(await checkedAgain.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("status").GetString());
     }

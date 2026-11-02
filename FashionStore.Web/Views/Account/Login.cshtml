@@ -23,6 +23,6 @@
         <div class="account-form-actions"><a href="@Url.Action("Forgot", "Account")">Quên mật khẩu?</a></div>
         <button class="mn-btn mn-btn-primary" type="submit">ĐĂNG NHẬP</button>
     }
-    <p class="account-form-footer">Chưa có tài khoản? @Html.ActionLink("Đăng ký ngay", "Register")</p>
+    <p class="account-form-footer">Chưa có tài khoản? @Html.ActionLink("Đăng ký ngay", "Register", new { returnUrl = Model.ReturnUrl })</p>
 </section>
 @section scripts { @Scripts.Render("~/bundles/jqueryval") }

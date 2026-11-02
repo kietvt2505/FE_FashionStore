@@ -4,9 +4,14 @@
     var frame=root.querySelector('[data-gallery-frame]'),image=root.querySelector('#detail-main-image'),hint=root.querySelector('.zoom-hint');
     var all=Array.from(root.querySelectorAll('[data-managed-gallery]')),current=[],index=0;
     var previous=root.querySelector('[data-gallery-prev]'),next=root.querySelector('[data-gallery-next]'),caption=root.querySelector('[data-gallery-caption]');
+    var controls=root.querySelector('.gallery-controls'),thumbnails=root.querySelector('.yody-product-thumbnails');
     function empty(value){image.hidden=value;frame.dataset.empty=String(value);frame.tabIndex=value?-1:0;hint.hidden=value;frame.classList.remove('is-zoomed');}
     function select(position,scroll){
-        if(!current.length)return;
+        if(!current.length){
+            all.forEach(function(button){button.classList.remove('active');button.setAttribute('aria-pressed','false');});
+            empty(true);image.removeAttribute('src');image.alt='';caption.textContent='Chưa có ảnh cho màu này.';
+            previous.disabled=true;next.disabled=true;return;
+        }
         index=Math.max(0,Math.min(position,current.length-1));var selected=current[index];
         all.forEach(function(button){var active=button===selected;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
         empty(true);image.style.transformOrigin='center';image.alt=selected.dataset.galleryAlt;
@@ -19,6 +24,8 @@
     }
     function color(value){
         current=all.filter(function(button){var active=String(button.dataset.galleryColor||'').trim().toLowerCase()===String(value||'').trim().toLowerCase();button.hidden=!active;return active;});
+        controls.hidden=current.length<2;thumbnails.hidden=!current.length;
+        root.classList.toggle('gallery-without-thumbnails',!current.length);
         select(0,false);
     }
     all.forEach(function(button){button.addEventListener('click',function(){select(current.indexOf(button),false);});});

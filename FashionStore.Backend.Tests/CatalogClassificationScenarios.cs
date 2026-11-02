@@ -24,7 +24,7 @@ internal static class CatalogClassificationScenarios
               ('CUR-HAT','CUR-HAT','NEW-HAT','Nón','M','Đen',700,9,true),
               ('CUR-SOCK','CUR-SOCK','NEW-SOCK','Vớ','M','Đen',800,10,true);
             -- Deliberately stale assignments reproduce the partner replacing the old product IDs.
-            INSERT INTO webstore.catalog_product(masp,audience,kind) VALUES
+            INSERT INTO public.catalog_product(masp,audience,kind) VALUES
               ('CUR-TM','UNISEX','kinh-mat'),('CUR-PM','UNISEX','ao-vest'),('CUR-HM','NU','dam-ngan');
             """,sql))await seed.ExecuteNonQueryAsync();
         async Task<ProductListResponse> Search(string query)=>(await client.GetFromJsonAsync<ProductListResponse>("/api/products?q=CUR-&pageSize=100&"+query))!;
@@ -42,7 +42,7 @@ internal static class CatalogClassificationScenarios
         Assert.Equal(5,page.Total);Assert.Equal(new[]{"CUR-SOCK","CUR-TF"},page.Items.Select(p=>p.Id));
         var detail=(await client.GetFromJsonAsync<ProductDetailResponse>("/api/products/CUR-HM"))!;
         Assert.Equal("NAM",detail.Audience);Assert.Equal("ao-hoodie",detail.Kind);
-        await using var original=new NpgsqlCommand("SELECT audience FROM webstore.catalog_product WHERE masp='CUR-HM'",sql);
+        await using var original=new NpgsqlCommand("SELECT audience FROM public.catalog_product WHERE masp='CUR-HM'",sql);
         Assert.Equal("NU",await original.ExecuteScalarAsync()); // Resolution is read-only, preserving partner rows.
     }
 }

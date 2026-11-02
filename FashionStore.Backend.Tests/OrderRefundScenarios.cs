@@ -35,11 +35,11 @@ internal static class OrderRefundScenarios
         async Task Settle(PlaceOrderResponse order)
         {
             if(order.PaymentMethod=="CHUYEN_KHOAN") {
-                Assert.Equal("CONFIRMED",await Scalar<string>($"SELECT webstore.confirm_bank_payment('{order.OrderId}','NV01',{order.Total.ToString(System.Globalization.CultureInfo.InvariantCulture)},'RF-{Guid.NewGuid():N}')"));
+                Assert.Equal("CONFIRMED",await Scalar<string>($"SELECT public.confirm_bank_payment('{order.OrderId}','NV01',{order.Total.ToString(System.Globalization.CultureInfo.InvariantCulture)},'RF-{Guid.NewGuid():N}')"));
                 return;
             }
             Assert.True((await alice.PostAsync("/api/payments/"+order.OrderId+"/start",null)).IsSuccessStatusCode);
-            Assert.Equal("PAID",await Scalar<string>($"SELECT webstore.settle_gateway_payment(id,provider,merchant,amount,'RF-'||id) FROM webstore.gateway_attempt WHERE sohd='{order.OrderId}' ORDER BY created_at DESC LIMIT 1"));
+            Assert.Equal("PAID",await Scalar<string>($"SELECT public.settle_gateway_payment(id,provider,merchant,amount,'RF-'||id) FROM public.gateway_attempt WHERE sohd='{order.OrderId}' ORDER BY created_at DESC LIMIT 1"));
         }
         var input=new CancelOrderRequest("Đặt nhầm sản phẩm, muốn chọn mẫu khác","SYNTHETIC CUSTOMER","1234567890","Ngân hàng kiểm thử");
         string? previousRefundReference=null;
@@ -48,7 +48,7 @@ internal static class OrderRefundScenarios
             Assert.Equal("MOI",order.Status);
             // No reason, or a direct call to the old SQL signature, must not bypass the new form.
             Assert.Equal(HttpStatusCode.BadRequest,(await alice.PostAsync("/api/orders/"+id+"/cancel",null)).StatusCode);
-            var reasonError=await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT webstore.cancel_customer_order('{customer.Id}','{id}')"));
+            var reasonError=await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT public.cancel_customer_order('{customer.Id}','{id}')"));
             Assert.Equal("22023",reasonError.SqlState);
             await Settle(order);
             var paid=await Balance();Assert.Equal(before.Stock-1,paid.Stock);
@@ -67,18 +67,18 @@ internal static class OrderRefundScenarios
             Assert.Equal("CHO_HOAN_TIEN",detail.Refund.Status);Assert.Equal(order.Total,detail.Refund.Amount);
             Assert.Equal("•••• 7890",detail.Refund.MaskedAccountNumber);Assert.Null(detail.Refund.RefundedAt);
             Assert.DoesNotContain(input.AccountNumber!,await alice.GetStringAsync("/api/orders/"+id));
-            Assert.Equal(1L,await Scalar<long>($"SELECT count(*) FROM webstore.order_refund WHERE sohd='{id}'"));
-            Assert.True(await Scalar<bool>($"SELECT stock_restored FROM webstore.order_cancellation WHERE sohd='{id}'"));
-            await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT webstore.complete_customer_refund('{id}','MISSING','REFUND-TEST')"));
+            Assert.Equal(1L,await Scalar<long>($"SELECT count(*) FROM public.order_refund WHERE sohd='{id}'"));
+            Assert.True(await Scalar<bool>($"SELECT stock_restored FROM public.order_cancellation WHERE sohd='{id}'"));
+            await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT public.complete_customer_refund('{id}','MISSING','REFUND-TEST')"));
             if(previousRefundReference!=null) {
-                var duplicate=await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT webstore.complete_customer_refund('{id}','NV01','{previousRefundReference}')"));
+                var duplicate=await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT public.complete_customer_refund('{id}','NV01','{previousRefundReference}')"));
                 Assert.Equal("23505",duplicate.SqlState);
                 Assert.Equal("CHO_HOAN_TIEN",(await alice.GetFromJsonAsync<OrderDetails>("/api/orders/"+id))!.Refund!.Status);
             }
-            Assert.Equal("REFUNDED",await Scalar<string>($"SELECT webstore.complete_customer_refund('{id}','NV01','REFUND-{id}')"));
+            Assert.Equal("REFUNDED",await Scalar<string>($"SELECT public.complete_customer_refund('{id}','NV01','REFUND-{id}')"));
             previousRefundReference="REFUND-"+id;
-            Assert.Equal("ALREADY_REFUNDED",await Scalar<string>($"SELECT webstore.complete_customer_refund('{id}','NV01','REFUND-{id}')"));
-            await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT webstore.complete_customer_refund('{id}','NV01','DIFFERENT-REFERENCE')"));
+            Assert.Equal("ALREADY_REFUNDED",await Scalar<string>($"SELECT public.complete_customer_refund('{id}','NV01','REFUND-{id}')"));
+            await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT public.complete_customer_refund('{id}','NV01','DIFFERENT-REFERENCE')"));
             detail=(await alice.GetFromJsonAsync<OrderDetails>("/api/orders/"+id))!;
             Assert.Equal("HOAN_TIEN",detail.PaymentStatus);Assert.Equal("DA_HOAN_TIEN",detail.Refund!.Status);
             Assert.Equal(DateTimeKind.Utc,detail.Refund.RefundedAt!.Value.Kind);Assert.Equal(before,await Balance());
@@ -92,7 +92,7 @@ internal static class OrderRefundScenarios
             Assert.Equal(paid,await Balance());
         }
         // The earlier race test produced a verified late payment with no inventory/loyalty effects.
-        var late=await Scalar<string>($"SELECT sohd FROM webstore.order_refund WHERE makh='{customer.Id}' AND status='CHO_THONG_TIN' ORDER BY createdat LIMIT 1");
+        var late=await Scalar<string>($"SELECT sohd FROM public.order_refund WHERE makh='{customer.Id}' AND status='CHO_THONG_TIN' ORDER BY createdat LIMIT 1");
         var lateBalance=await Balance();
         Assert.Equal(HttpStatusCode.NotFound,(await bob.PostAsJsonAsync("/api/orders/"+late+"/refund-account",input)).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest,(await alice.PostAsJsonAsync("/api/orders/"+late+"/refund-account",new CancelOrderRequest())).StatusCode);

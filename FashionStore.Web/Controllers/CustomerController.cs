@@ -41,10 +41,12 @@ namespace FashionStore.Web.Controllers
             if(String.IsNullOrWhiteSpace(id)||id.Length>20||orderId!=null&&orderId.Length>30)return HttpNotFound();
             if(page<1||page>100000)return new HttpStatusCodeResult(400);
             ViewBag.ProductId=id;ViewBag.ReviewOrderId=orderId;ViewBag.Page=page;
-            ViewBag.ReviewOrders=new JArray();
+            ViewBag.ReviewOrders=new JArray();ViewBag.MyReviews=new JArray();
             try{
                 var reviews=await api.FeatureListAsync(Token,"reviews/"+Uri.EscapeDataString(id)+"?page="+page);
                 if(User.Identity.IsAuthenticated){
+                    try{ViewBag.MyReviews=await api.FeatureListAsync(Token,"reviews/"+Uri.EscapeDataString(id)+"/mine?page="+page);}
+                    catch(Exception e){if(IsUnauthorized(e))return Error(e);ViewBag.MyReviewsError="Chưa thể tải đánh giá bạn đã gửi. Vui lòng tải lại trang hoặc thử lại sau.";}
                     try{ViewBag.ReviewOrders=await api.FeatureListAsync(Token,"reviews/"+Uri.EscapeDataString(id)+"/eligible-orders");}
                     catch(Exception e){if(IsUnauthorized(e))return Error(e);ViewBag.ReviewEligibilityError="Chưa thể kiểm tra đơn đủ điều kiện đánh giá. Vui lòng thử lại sau.";}
                 }
@@ -58,9 +60,10 @@ namespace FashionStore.Web.Controllers
         // A return URL is opened with GET after login. Keep legacy bookmarks safe and non-mutating.
         [HttpGet,ActionName("SaveWishlist")] public ActionResult WishlistAfterLogin(){return RedirectToAction("Wishlist");}
         [HttpPost,AllowAnonymous,ValidateAntiForgeryToken]
-        public async Task<ActionResult> SaveWishlist(string id)
+        public async Task<ActionResult> SaveWishlist(string id,string returnUrl=null)
         {
-            var intent=WishlistLoginIntent.Create(id,DateTimeOffset.UtcNow);
+            var origin=Url.IsLocalUrl(returnUrl)?returnUrl:Url.Action("Details","Product",new{id});
+            var intent=WishlistLoginIntent.Create(id,DateTimeOffset.UtcNow,origin);
             if(intent==null)return new HttpStatusCodeResult(400);
             if(!User.Identity.IsAuthenticated)return LoginForWishlist(intent);
             Session.Remove(WishlistLoginIntent.SessionKey);
@@ -77,13 +80,13 @@ namespace FashionStore.Web.Controllers
         {
             Session[WishlistLoginIntent.SessionKey]=intent;
             CustomerAuthentication.SignOut();
-            return RedirectToAction("Login","Account",new{returnUrl=Url.Action("Wishlist","Customer")});
+            return RedirectToAction("Login","Account",new{returnUrl=intent.ReturnUrl});
         }
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> RemoveWishlist(string id){return Change("Wishlist",()=>api.FeatureAsync(Token,"wishlist/"+Uri.EscapeDataString(id??""),null,"DELETE"));}
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> SaveAddress(string recipient,string phone,string address,long? id=null){return Change("Addresses",()=>api.FeatureAsync(Token,id.HasValue?"addresses/"+id.Value:"addresses",new{Recipient=recipient,Phone=phone,Address=address},id.HasValue?"PUT":"POST"));}
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> RemoveAddress(long id){return Change("Addresses",()=>api.FeatureAsync(Token,"addresses/"+id,null,"DELETE"));}
         [HttpPost,ValidateAntiForgeryToken] public async Task<ActionResult> Review(string productId,string orderId,int stars,string body){
-            try{await api.FeatureAsync(Token,"reviews",new{ProductId=productId,OrderId=orderId,Stars=stars,Body=body});TempData["CustomerMessage"]="Đã gửi đánh giá, đang chờ cửa hàng duyệt.";}
+            try{await api.FeatureAsync(Token,"reviews",new{ProductId=productId,OrderId=orderId,Stars=stars,Body=body});TempData["CustomerMessage"]="Đã đăng đánh giá của bạn. Nhận xét đã được hiển thị công khai.";}
             catch(Exception e){if(IsUnauthorized(e))return Error(e);TempData["CustomerError"]=Message(e);}
             return RedirectToAction("Reviews",new{id=productId,orderId=orderId});
         }

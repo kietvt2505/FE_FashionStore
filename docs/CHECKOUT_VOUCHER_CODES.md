@@ -33,7 +33,7 @@ Khi xác nhận đặt hàng, backend đọc lại giỏ, hạng và mã dưới
 - `public.hoadon.makm`: mã đúng đã áp dụng.
 - `public.hoadon.chietkhau`: tổng giảm hạng và mã.
 - `public.hoadon.khachphaitra` / `tiencod`: tổng phải trả sau hai loại giảm.
-- `webstore.order_pricing`: tổng tiền, mã, giảm hạng đã chốt. `voucher_discount` tự tính từ `discount - member_discount`, giữ đúng cả đơn cũ.
+- `public.order_pricing`: tổng tiền, mã, giảm hạng đã chốt. `voucher_discount` tự tính từ `discount - member_discount`, giữ đúng cả đơn cũ.
 
 Thanh toán/chuyển khoản/QR sử dụng số tiền đã lưu trên hóa đơn. Sửa hoặc hết hạn mã sau khi đặt không đổi giá đơn cũ. Gửi lại cùng RequestId trả lại đơn cũ, không tạo thêm đơn hoặc áp mã lần hai. Quy trình hủy, hoàn tiền và tích điểm vẫn dựa trên tổng thực trả.
 

@@ -7,6 +7,7 @@
     @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "account-form" }))
     {
         @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ReturnUrl)
         @Html.ValidationSummary(true, "", new { @class = "customer-errors", role = "alert" })
         <div class="account-field">
             @Html.LabelFor(m => m.FullName, "Họ và tên *")
@@ -60,7 +61,7 @@
         </div>
         <button class="mn-btn mn-btn-primary" type="submit" id="register-submit" disabled>ĐĂNG KÝ TÀI KHOẢN</button>
     }
-    <p class="account-form-footer">Đã có tài khoản? @Html.ActionLink("Đăng nhập", "Login")</p>
+    <p class="account-form-footer">Đã có tài khoản? @Html.ActionLink("Đăng nhập", "Login", new { returnUrl = Model.ReturnUrl })</p>
 </section>
 @section scripts {
     @Scripts.Render("~/bundles/jqueryval")

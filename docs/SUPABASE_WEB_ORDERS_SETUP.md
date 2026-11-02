@@ -10,7 +10,7 @@ Website tạo hóa đơn trong `public.hoadon` và các dòng SKU trong `public.
 
 Giao dịch kiểm tra khách hàng, nhân viên đang hoạt động, SKU/danh mục đang bán và tồn kho; lưu hóa đơn, chi tiết, bản chụp thông tin mua hàng và xóa giỏ cùng một transaction. Mã yêu cầu kết hợp khách hàng tạo mã đơn ổn định; gửi lại yêu cầu cũ không tạo đơn mới. Xung đột giao dịch trả 409 để tải lại hoặc thử lại cùng mã yêu cầu.
 
-Hai bảng `webstore.order_snapshot` và `webstore.order_line_snapshot` giữ tên, màu, size, giá và thông tin giao hàng lúc đặt. Lịch sử chỉ hiển thị đơn do phiên bản website này tạo cho đúng tài khoản. Đơn POS hoặc đơn WEB cũ chưa có snapshot chưa được nhập vào danh sách này.
+Hai bảng `public.order_snapshot` và `public.order_line_snapshot` giữ tên, màu, size, giá và thông tin giao hàng lúc đặt. Lịch sử chỉ hiển thị đơn do phiên bản website này tạo cho đúng tài khoản. Đơn POS hoặc đơn WEB cũ chưa có snapshot chưa được nhập vào danh sách này.
 
 Website đọc trạng thái hiện tại từ hóa đơn chung khi tải trang. Không có lịch sử từng lần chuyển trạng thái vì backend Windows chưa ghi nhật ký chung. Nếu Windows xóa hóa đơn COD, website giữ bản chụp và hiển thị “Cần liên hệ cửa hàng”, không suy đoán đã hủy/hoàn tiền và không tạo lại đơn khi retry.
 

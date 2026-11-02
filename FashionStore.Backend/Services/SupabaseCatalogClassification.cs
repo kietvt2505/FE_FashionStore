@@ -16,7 +16,7 @@ internal static class SupabaseCatalogClassification
           max(m.regular_price) AS regular_price
         FROM public.sanpham p
         JOIN public.loaisanpham c ON c.maloai=p.maloai
-        LEFT JOIN webstore.catalog_product m ON m.masp=p.masp
+        LEFT JOIN public.catalog_product m ON m.masp=p.masp
         LEFT JOIN (VALUES {{Rows}}) AS t(name,audience,kind)
           ON t.name=regexp_replace(btrim(lower(replace(translate(c.tenloai,
              'àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ',

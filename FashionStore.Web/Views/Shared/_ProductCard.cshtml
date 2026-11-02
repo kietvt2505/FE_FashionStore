@@ -35,5 +35,5 @@
         }
         <span class="yody-visually-hidden" data-card-stock-note>@(inStock?"Còn hàng":"Màu này tạm hết hàng")</span>
     </div>
-    @using(Html.BeginForm("SaveWishlist","Customer",FormMethod.Post,new{@class="wishlist-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@Model.MaSP"/><button type="submit" title="Lưu yêu thích @Model.TenSanPham" aria-label="Lưu yêu thích @Model.TenSanPham"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 3.8 12A5.2 5.2 0 0 1 12 5.6 5.2 5.2 0 0 1 20.2 12Z" /></svg></button>}
+    @using(Html.BeginForm("SaveWishlist","Customer",FormMethod.Post,new{@class="wishlist-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@Model.MaSP"/><input type="hidden" name="returnUrl" value="@Request.RawUrl"/><button type="submit" title="Lưu yêu thích @Model.TenSanPham" aria-label="Lưu yêu thích @Model.TenSanPham"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20 3.8 12A5.2 5.2 0 0 1 12 5.6 5.2 5.2 0 0 1 20.2 12Z" /></svg></button>}
 </article>

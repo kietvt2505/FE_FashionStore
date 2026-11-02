@@ -8,14 +8,15 @@ namespace FashionStore.Web.Helpers
     {
         public const string SessionKey = "Yody.PendingWishlist";
         public string ProductId { get; private set; }
+        public string ReturnUrl { get; private set; }
         public DateTimeOffset CreatedAtUtc { get; private set; }
 
-        public static WishlistLoginIntent Create(string productId, DateTimeOffset now)
+        public static WishlistLoginIntent Create(string productId, DateTimeOffset now, string returnUrl = null)
         {
             var id = (productId ?? "").Trim();
             if (id.Length == 0 || id.Length > 20 || id.Any(Char.IsControl) || id.IndexOfAny(new[] { '/', '\\' }) >= 0)
                 return null;
-            return new WishlistLoginIntent { ProductId = id, CreatedAtUtc = now };
+            return new WishlistLoginIntent { ProductId = id, CreatedAtUtc = now, ReturnUrl = returnUrl };
         }
 
         public bool IsCurrent(DateTimeOffset now)

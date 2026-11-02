@@ -80,12 +80,20 @@ internal static class SupabaseCustomerFeatureScenarios
         Assert.True(details.SupportsHistory); Assert.True(details.SupportsReturns);
         var review = new ReviewInput { ProductId = "P1", OrderId = orderId, Stars = 5, Body = "Sản phẩm phù hợp, nội dung thử nghiệm." };
         var eligiblePath="reviews/P1/eligible-orders";
+        var minePath="reviews/P1/mine";
+        Assert.Empty(await Rows(alice,minePath));
+        Assert.Empty(await Rows(bob,minePath));
+        await Status(HttpStatusCode.BadRequest,alice.GetAsync("/api/customer/"+minePath+"?page=0"));
+        await Status(HttpStatusCode.BadRequest,alice.GetAsync("/api/customer/"+minePath+"?page=100001"));
         Assert.Equal(orderId,Assert.Single(await Rows(alice,eligiblePath))["SoHD"].GetString());
         Assert.Empty(await Rows(bob,eligiblePath));
         Assert.Empty(await Rows(alice,"reviews/N1/eligible-orders"));
         var authorization=alice.DefaultRequestHeaders.Authorization;
         alice.DefaultRequestHeaders.Authorization=null;
-        try { await Status(HttpStatusCode.Unauthorized,alice.GetAsync("/api/customer/"+eligiblePath)); }
+        try {
+            await Status(HttpStatusCode.Unauthorized,alice.GetAsync("/api/customer/"+eligiblePath));
+            await Status(HttpStatusCode.Unauthorized,alice.GetAsync("/api/customer/"+minePath));
+        }
         finally { alice.DefaultRequestHeaders.Authorization=authorization; }
         string? originalKind;
         await using(var kind=new NpgsqlCommand("SELECT loaihoadon FROM public.hoadon WHERE sohd=@hd",sql))
@@ -112,23 +120,74 @@ internal static class SupabaseCustomerFeatureScenarios
         await SetReviewState("Hàng giao thành công","DA_THANH_TOAN","WEB_HUY");
         Assert.Empty(await Rows(alice,eligiblePath));
         await Status(HttpStatusCode.Conflict,alice.PostAsJsonAsync("/api/customer/reviews",review));
-        Assert.Equal(0L,await Scalar<long>("SELECT count(*) FROM webstore.product_review"));
+        Assert.Equal(0L,await Scalar<long>("SELECT count(*) FROM public.product_review"));
         await SetReviewState("Hàng giao thành công","DA_THANH_TOAN");
         await Status(HttpStatusCode.Conflict,alice.PostAsJsonAsync("/api/customer/reviews",new ReviewInput
             {ProductId="N1",OrderId=orderId,Stars=5,Body="Not purchased"}));
         await Status(HttpStatusCode.Conflict,alice.PostAsJsonAsync("/api/customer/reviews",new ReviewInput
             {ProductId="P1",OrderId="NOT-MY-ORDER",Stars=5,Body="Not purchased"}));
         await Status(HttpStatusCode.Conflict, bob.PostAsJsonAsync("/api/customer/reviews", review));
+        // The application publishes immediately even on an installation with the old default.
+        await Exec("ALTER TABLE public.product_review ALTER COLUMN status SET DEFAULT 'CHO_DUYET'");
         var reviewsRace=await Task.WhenAll(alice.PostAsJsonAsync("/api/customer/reviews",review),alice.PostAsJsonAsync("/api/customer/reviews",review));
         Assert.Single(reviewsRace,r=>r.StatusCode==HttpStatusCode.NoContent);
         Assert.Single(reviewsRace,r=>r.StatusCode==HttpStatusCode.Conflict);
         foreach(var response in reviewsRace)response.Dispose();
-        Assert.Equal(1L,await Scalar<long>("SELECT count(*) FROM webstore.product_review"));
+        Assert.Equal(1L,await Scalar<long>("SELECT count(*) FROM public.product_review"));
+        var ownReview=Assert.Single(await Rows(alice,minePath));
+        Assert.Equal(review.Body,ownReview["NoiDung"].GetString());
+        Assert.Equal(orderId,ownReview["SoHD"].GetString());
+        Assert.Equal("HIEN_THI",ownReview["TrangThai"].GetString());
+        var originalReviewerName=await Scalar<string>("SELECT hoten FROM public.khachhang WHERE makh=(SELECT makh FROM public.product_review LIMIT 1)");
+        Assert.Equal(originalReviewerName,ownReview["TenHienThi"].GetString());
+        async Task SetReviewerName(string name) {
+            await using var cmd=new NpgsqlCommand("UPDATE public.khachhang SET hoten=@name WHERE makh=(SELECT makh FROM public.product_review LIMIT 1)",sql);
+            cmd.Parameters.AddWithValue("name",name);Assert.Equal(1,await cmd.ExecuteNonQueryAsync());
+        }
+        await SetReviewerName("  Nguyễn Minh An  ");
+        var namedReview=Assert.Single(await Rows(bob,"reviews/P1"));
+        Assert.Equal("Nguyễn Minh An",namedReview["TenHienThi"].GetString());
+        Assert.Equal(new[]{"NgayDanhGia","NoiDung","SoSao","TenHienThi"},namedReview.Keys.OrderBy(k=>k).ToArray());
+        Assert.Equal("Nguyễn Minh An",Assert.Single(await Rows(alice,minePath))["TenHienThi"].GetString());
+        await SetReviewerName("   ");
+        Assert.Equal("Khách hàng",Assert.Single(await Rows(bob,"reviews/P1"))["TenHienThi"].GetString());
+        Assert.Equal("Khách hàng",Assert.Single(await Rows(alice,minePath))["TenHienThi"].GetString());
+        await SetReviewerName(originalReviewerName);
+        Assert.Empty(await Rows(bob,minePath)); // The author's order IDs remain private.
+        Assert.Empty(await Rows(alice,"reviews/N1/mine"));
+        Assert.Empty(await Rows(alice,"reviews/"+Uri.EscapeDataString("' OR true --")+"/mine"));
         Assert.Empty(await Rows(alice,eligiblePath));
-        Assert.Empty(await Rows(alice, "reviews/P1")); // Pending reviews are never public.
+        Assert.Equal(review.Body,Assert.Single(await Rows(bob,"reviews/P1"))["NoiDung"].GetString());
+        var customerAuth=alice.DefaultRequestHeaders.Authorization;
+        alice.DefaultRequestHeaders.Authorization=null;
+        try {
+            var anonymousReview=Assert.Single(await Rows(alice,"reviews/P1"));
+            Assert.Equal(review.Body,anonymousReview["NoiDung"].GetString());
+            Assert.Equal(originalReviewerName,anonymousReview["TenHienThi"].GetString());
+        }
+        finally { alice.DefaultRequestHeaders.Authorization=customerAuth; }
         await Status(HttpStatusCode.Conflict, alice.PostAsJsonAsync("/api/customer/reviews", review));
-        await Exec("UPDATE webstore.product_review SET status='HIEN_THI'");
+        var autoPublish=await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,"Supabase-Reviews-Auto-Publish.sql"));
+        await Exec("UPDATE public.product_review SET status='TU_CHOI'");
+        await Exec(autoPublish);
+        Assert.Equal("TU_CHOI",Assert.Single(await Rows(alice,minePath))["TrangThai"].GetString());
+        Assert.Empty(await Rows(bob,"reviews/P1"));
+        Assert.Empty(await Rows(bob,minePath));
+        // Backfill only verified purchases, never canceled, undelivered or unpaid orders.
+        await Exec("UPDATE public.product_review SET status='CHO_DUYET'");
+        foreach(var state in new[]{("Chờ xác nhận","DA_THANH_TOAN",originalKind),("Hàng giao thành công","CHUA_THANH_TOAN",originalKind),("Hàng giao thành công","DA_THANH_TOAN","WEB_HUY")}) {
+            await SetReviewState(state.Item1,state.Item2,state.Item3);await Exec(autoPublish);
+            Assert.Equal("CHO_DUYET",Assert.Single(await Rows(alice,minePath))["TrangThai"].GetString());
+            Assert.Empty(await Rows(bob,"reviews/P1"));
+        }
+        await SetReviewState("Hàng giao thành công","DA_THANH_TOAN");
+        await Exec(autoPublish);await Exec(autoPublish);
+        Assert.Equal(1L,await Scalar<long>("SELECT count(*) FROM public.product_review"));
+        Assert.Equal(review.Body,Assert.Single(await Rows(alice,minePath))["NoiDung"].GetString());
+        Assert.Equal(ownReview["NgayDanhGia"].GetDateTime(),Assert.Single(await Rows(alice,minePath))["NgayDanhGia"].GetDateTime());
+        Assert.True(await Scalar<bool>("SELECT EXISTS(SELECT 1 FROM pg_attrdef d JOIN pg_attribute a ON a.attrelid=d.adrelid AND a.attnum=d.adnum WHERE d.adrelid='public.product_review'::regclass AND a.attname='status' AND pg_get_expr(d.adbin,d.adrelid) LIKE '%HIEN_THI%')"));
         Assert.Equal(review.Body, Assert.Single(await Rows(bob, "reviews/P1"))["NoiDung"].GetString());
+        Assert.Equal("HIEN_THI",Assert.Single(await Rows(alice,minePath))["TrangThai"].GetString());
         await Status(HttpStatusCode.Conflict, alice.PostAsJsonAsync("/api/customer/reviews", new ReviewInput
             { ProductId = "N1", OrderId = orderId, Stars = 5, Body = "Not purchased" }));
         var request = new ReturnInput { RequestId = Guid.NewGuid(), OrderId = orderId, Sku = "SKU-L", Quantity = 1, Kind = "TRA", Reason = "Sản phẩm không phù hợp kích cỡ." };
@@ -152,28 +211,28 @@ internal static class SupabaseCustomerFeatureScenarios
             { RequestId = Guid.NewGuid(), OrderId = orderId, Sku = "SKU-L", Quantity = 1, Kind = "TRA", Reason = "Concurrent request" }));
         Assert.Single(returnsRace, r => r.StatusCode == HttpStatusCode.NoContent);
         Assert.Single(returnsRace, r => r.StatusCode == HttpStatusCode.Conflict);
-        Assert.Equal(2L, await Scalar<long>("SELECT sum(quantity)::bigint FROM webstore.return_request"));
+        Assert.Equal(2L, await Scalar<long>("SELECT sum(quantity)::bigint FROM public.return_request"));
         Assert.Equal(8, await Scalar<int>("SELECT soluongtonkho FROM public.sanpham WHERE masku='SKU-L'"));
         Assert.Equal(39, await Scalar<int>("SELECT diemtichluy FROM public.khachhang WHERE sodienthoai='0900000001'"));
         // A completed return from the shared WinForms tables also consumes the purchased quantity.
-        await Exec($"UPDATE webstore.return_request SET status='TU_CHOI'; INSERT INTO public.phieudoitra VALUES('SHARED','{orderId}','HOAN_TAT'); INSERT INTO public.chitietdoitra VALUES('SHARED','SKU-L',2)");
+        await Exec($"UPDATE public.return_request SET status='TU_CHOI'; INSERT INTO public.phieudoitra VALUES('SHARED','{orderId}','HOAN_TAT'); INSERT INTO public.chitietdoitra VALUES('SHARED','SKU-L',2)");
         request.RequestId = Guid.NewGuid();
         await Status(HttpStatusCode.Conflict, alice.PostAsJsonAsync("/api/customer/returns", request));
-        Assert.Equal(5L, await Scalar<long>("SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='webstore' AND c.relname IN ('address','wishlist','product_review','return_request','password_reset') AND c.relrowsecurity"));
+        Assert.Equal(5L, await Scalar<long>("SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname IN ('address','wishlist','product_review','return_request','password_reset') AND c.relrowsecurity"));
         // Test reset without sending email: seed only a synthetic token hash, never return a raw token from the API.
         await Status(HttpStatusCode.ServiceUnavailable, bob.PostAsJsonAsync("/api/account/recovery", new { Email = "bob@example.test" }));
         const string token = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
         var tokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
-        var passwordHash = await Scalar<string>("SELECT matkhauhash FROM webstore.customer_account WHERE tendangnhap='bob'");
-        await using (var seed = new NpgsqlCommand("INSERT INTO webstore.password_reset SELECT @hash,makh,@version,CURRENT_TIMESTAMP-INTERVAL '1 minute',NULL FROM webstore.customer_account WHERE tendangnhap='bob'", sql))
+        var passwordHash = await Scalar<string>("SELECT matkhauhash FROM public.customer_account WHERE tendangnhap='bob'");
+        await using (var seed = new NpgsqlCommand("INSERT INTO public.password_reset SELECT @hash,makh,@version,CURRENT_TIMESTAMP-INTERVAL '1 minute',NULL FROM public.customer_account WHERE tendangnhap='bob'", sql))
         {
             seed.Parameters.AddWithValue("hash", tokenHash); seed.Parameters.AddWithValue("version", CustomerSessions.Version(passwordHash)); await seed.ExecuteNonQueryAsync();
         }
         var reset = new { Token = token, Password = "Synthetic reset password 123!" };
         await Status(HttpStatusCode.BadRequest, bob.PostAsJsonAsync("/api/account/recovery/reset", reset));
-        await Exec("UPDATE webstore.password_reset SET expiresatutc=CURRENT_TIMESTAMP+INTERVAL '20 minutes',passwordversion='stale'");
+        await Exec("UPDATE public.password_reset SET expiresatutc=CURRENT_TIMESTAMP+INTERVAL '20 minutes',passwordversion='stale'");
         await Status(HttpStatusCode.BadRequest, bob.PostAsJsonAsync("/api/account/recovery/reset", reset));
-        await using (var fix = new NpgsqlCommand("UPDATE webstore.password_reset SET passwordversion=@version", sql))
+        await using (var fix = new NpgsqlCommand("UPDATE public.password_reset SET passwordversion=@version", sql))
         { fix.Parameters.AddWithValue("version", CustomerSessions.Version(passwordHash)); await fix.ExecuteNonQueryAsync(); }
         await Status(HttpStatusCode.NoContent, bob.PostAsJsonAsync("/api/account/recovery/reset", reset));
         await Status(HttpStatusCode.Unauthorized, bob.GetAsync("/api/account/me"));

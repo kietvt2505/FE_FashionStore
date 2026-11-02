@@ -18,6 +18,8 @@
     <Compile Include="../FashionStore.Web/Models/CustomerModels.cs" Link="MvcClient/CustomerModels.cs" />
     <Compile Include="../FashionStore.Web/Services/CustomerApiClient.cs" Link="MvcClient/CustomerApiClient.cs" />
     <Compile Include="../FashionStore.Web/Helpers/CatalogViewHelper.cs" Link="MvcClient/CatalogViewHelper.cs" />
+    <Compile Include="../FashionStore.Web/Helpers/ProductMaterialHelper.cs" Link="MvcClient/ProductMaterialHelper.cs" />
+    <Compile Include="../FashionStore.Web/Helpers/ProductDescriptionHelper.cs" Link="MvcClient/ProductDescriptionHelper.cs" />
     <Compile Include="../FashionStore.Web/Helpers/WishlistLoginIntent.cs" Link="MvcClient/WishlistLoginIntent.cs" />
     <Compile Include="../FashionStore.Web/Helpers/CustomerViewHelper.cs" Link="MvcClient/CustomerViewHelper.cs" />
     <Compile Include="../FashionStore.Web/Models/CatalogModels.cs" Link="MvcClient/CatalogModels.cs" />
@@ -25,6 +27,10 @@
 	<Compile Include="../FashionStore.Web/Models/OrderModels.cs" Link="MvcClient/OrderModels.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="../database/Supabase-Move-Webstore-To-Public.sql" Link="Supabase-Move-Webstore-To-Public.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Move-Webstore-To-Public-Rollback.sql" Link="Supabase-Move-Webstore-To-Public-Rollback.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Product-Descriptions.sql" Link="Supabase-Product-Descriptions.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../database/Supabase-Reviews-Auto-Publish.sql" Link="Supabase-Reviews-Auto-Publish.sql" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../database/Supabase-Customer-Order-Cancellation.sql" Link="Supabase-Customer-Order-Cancellation.sql" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../database/Supabase-Order-Cancellation-Policy.sql" Link="Supabase-Order-Cancellation-Policy.sql" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../database/Supabase-Order-Cancellation-Refunds.sql" Link="Supabase-Order-Cancellation-Refunds.sql" CopyToOutputDirectory="PreserveNewest" />
