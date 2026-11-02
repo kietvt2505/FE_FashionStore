@@ -32,7 +32,7 @@
                             <img class="yody-order-product-image" width="56" height="72" loading="lazy" decoding="async" src="@Url.Content(CatalogViewHelper.ImagePath(item.ImageUrl))" alt="@item.Name - @item.Color" />
                             <div class="yody-order-product-text"><strong>@item.Name</strong><small class="yody-table-detail">@item.Sku · @item.Size · @item.Color</small>
                             @if (CustomerViewHelper.CanReviewOrder(Model) && !String.IsNullOrWhiteSpace(item.ProductId)) {
-                                <a class="yody-text-link" href="@Url.Action("Reviews","Customer",new{id=item.ProductId,orderId=Model.OrderId})">Viết đánh giá</a>
+                                <a class="yody-text-link" href="@(Url.Action("Details","Product",new{id=item.ProductId,reviewOrderId=Model.OrderId})+"#product-reviews")">Viết đánh giá</a>
                             }
                             </div>
                         </div></td><td data-label="Đơn giá">@CatalogViewHelper.Vnd(item.UnitPrice)</td><td data-label="Số lượng">@item.Quantity</td><td data-label="Thành tiền"><strong>@CatalogViewHelper.Vnd(item.Total)</strong></td></tr>

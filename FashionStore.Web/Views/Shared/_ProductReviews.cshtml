@@ -1,0 +1,117 @@
+@model FashionStore.Web.Models.ProductReviewsViewModel
+@using FashionStore.Web.Helpers
+@{
+    var loginReturnUrl = Request.RawUrl + "#product-reviews";
+}
+<section id="product-reviews" class="product-reviews" aria-labelledby="product-reviews-heading">
+    <header class="product-reviews-heading">
+        <p class="eyebrow">CẢM NHẬN KHÁCH HÀNG</p>
+        <h2 id="product-reviews-heading">Đánh giá sản phẩm</h2>
+        <p>Chỉ khách đã mua, nhận hàng thành công và thanh toán mới được viết đánh giá.</p>
+    </header>
+    @if (!String.IsNullOrEmpty(Model.Message))
+    {
+        <p class="customer-message" role="status">@Model.Message</p>
+    }
+    @if (!String.IsNullOrEmpty(Model.Draft.Error))
+    {
+        <p class="customer-errors" role="alert">@Model.Draft.Error</p>
+    }
+    <div class="yody-review-layout">
+        <div class="yody-review-list">
+            @if (!Model.RequiresLogin && Model.MyReviewsError != null)
+            {
+                <p class="customer-errors" role="alert">@Model.MyReviewsError</p>
+            }
+            @if (!Model.RequiresLogin && Model.MyReviews.Count > 0)
+            {
+                <section class="yody-my-reviews" aria-labelledby="my-reviews-heading">
+                    <h3 id="my-reviews-heading" class="yody-section-subtitle">Đánh giá của bạn</h3>
+                    @foreach (var review in Model.MyReviews)
+                    {
+                        var reviewStatus = (string)review["TrangThai"];
+                        var statusText = reviewStatus == "HIEN_THI" ? "Đã hiển thị" : reviewStatus == "TU_CHOI" ? "Đã ẩn" : "Chưa hiển thị";
+                        var statusClass = reviewStatus == "HIEN_THI" ? "is-published" : reviewStatus == "TU_CHOI" ? "is-rejected" : "is-pending";
+                        <article class="yody-surface-card yody-review-card yody-own-review">
+                            <div class="yody-review-status-row"><p class="review-stars" aria-label="@review["SoSao"] trên 5 sao">@review["SoSao"] / 5 ★</p><span class="yody-review-status @statusClass">@statusText</span></div>
+                            <p class="review-author"><strong>@((string)review["TenHienThi"] ?? "Bạn")</strong></p>
+                            <p class="yody-muted">Đơn <a href="@Url.Action("Details", "Orders", new { id = (string)review["SoHD"] })">@review["SoHD"]</a> · @CustomerViewHelper.VietnamDate((DateTime)review["NgayDanhGia"], "dd/MM/yyyy HH:mm")</p>
+                            <p class="review-body">@review["NoiDung"]</p>
+                        </article>
+                    }
+                </section>
+            }
+            <h3 id="review-list-heading" class="yody-section-subtitle">Đánh giá từ khách hàng</h3>
+            @if (Model.PublicError != null)
+            {
+                <p class="customer-errors" role="alert">@Model.PublicError</p>
+            }
+            else if (Model.PublicReviews.Count == 0)
+            {
+                <div class="yody-empty-state"><h3>@(Model.Page == 1 ? "Chưa có đánh giá công khai" : "Không có thêm đánh giá")</h3><p>Hãy chia sẻ trải nghiệm của bạn sau khi nhận sản phẩm.</p></div>
+            }
+            @foreach (var review in Model.PublicReviews)
+            {
+                <article class="yody-surface-card yody-review-card">
+                    <p class="review-stars" aria-label="@review["SoSao"] trên 5 sao">@review["SoSao"] / 5 ★</p>
+                    <p class="review-author"><strong>@review["TenHienThi"]</strong><span class="yody-muted"> · @CustomerViewHelper.VietnamDate((DateTime)review["NgayDanhGia"], "dd/MM/yyyy")</span></p>
+                    <p class="review-body">@review["NoiDung"]</p>
+                </article>
+            }
+            @if (Model.Page > 1 || Model.PublicReviews.Count >= 10 || Model.MyReviews.Count >= 10)
+            {
+                <nav class="catalog-pagination" aria-label="Phân trang đánh giá">
+                    @if (Model.Page > 1)
+                    {
+                        <a href="@(Url.Action("Details", "Product", new { id = Model.ProductId, color = Model.Color, returnUrl = Model.ReturnUrl, reviewOrderId = Model.Draft.OrderId, reviewPage = Model.Page - 1 }) + "#product-reviews")">← Trước</a>
+                    }
+                    <span aria-current="page">Trang @Model.Page</span>
+                    @if (Model.Page < 100000 && (Model.PublicReviews.Count >= 10 || Model.MyReviews.Count >= 10))
+                    {
+                        <a href="@(Url.Action("Details", "Product", new { id = Model.ProductId, color = Model.Color, returnUrl = Model.ReturnUrl, reviewOrderId = Model.Draft.OrderId, reviewPage = Model.Page + 1 }) + "#product-reviews")">Tiếp →</a>
+                    }
+                </nav>
+            }
+        </div>
+        <aside class="yody-review-side" aria-label="Viết đánh giá">
+            @if (Model.RequiresLogin)
+            {
+                <div class="yody-surface-card"><h3>Muốn chia sẻ trải nghiệm?</h3><p>Hãy đăng nhập để viết đánh giá từ đơn hàng đã nhận của bạn.</p><a class="mn-btn mn-btn-primary" href="@Url.Action("Login", "Account", new { returnUrl = loginReturnUrl })">ĐĂNG NHẬP</a></div>
+            }
+            else if (Model.EligibleOrders.Count > 0)
+            {
+                <section class="yody-surface-card yody-review-form" aria-labelledby="review-form-heading">
+                    <h3 id="review-form-heading">Chia sẻ trải nghiệm</h3>
+                    <p>Chọn đơn đã giao hàng thành công của bạn. Mỗi sản phẩm trong một đơn chỉ được đánh giá một lần.</p>
+                    @using (Html.BeginForm("Review", "Customer", FormMethod.Post, new { @class = "yody-account-form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="productId" value="@Model.ProductId" />
+                        <input type="hidden" name="color" value="@Model.Color" />
+                        <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                        <div class="yody-field"><label for="review-order">Đơn đã giao hàng thành công</label><select class="filter-input" id="review-order" name="orderId" required>
+                            <option value="">Chọn đơn đã nhận sản phẩm</option>
+                            @foreach (var order in Model.EligibleOrders)
+                            {
+                                var eligibleId = (string)order["SoHD"];
+                                <option value="@eligibleId" selected="@(String.Equals(eligibleId, Model.Draft.OrderId, StringComparison.Ordinal) || Model.EligibleOrders.Count == 1 ? "selected" : null)">@eligibleId</option>
+                            }
+                        </select><small><a href="@Url.Action("Index", "Orders")">Xem đơn hàng của tôi →</a></small></div>
+                        <div class="yody-field"><label for="review-stars">Đánh giá sao</label><select class="filter-input" id="review-stars" name="stars" required>
+                            @for (var i = 5; i >= 1; i--)
+                            {
+                                <option value="@i" selected="@(i == Model.Draft.Stars ? "selected" : null)">@i sao</option>
+                            }
+                        </select></div>
+                        <div class="yody-field"><label for="review-body">Nhận xét của bạn</label><textarea class="filter-input" id="review-body" name="body" required maxlength="2000" rows="5">@Model.Draft.Body</textarea></div>
+                        <button type="submit" class="mn-btn mn-btn-primary">GỬI ĐÁNH GIÁ</button>
+                    }
+                </section>
+            }
+            else
+            {
+                <div class="yody-surface-card"><h3>@(Model.EligibilityError != null ? "Chưa thể kiểm tra đơn hàng" : Model.MyReviews.Count > 0 ? "Bạn đã gửi đánh giá" : "Chưa có đơn đủ điều kiện")</h3><p>@(Model.EligibilityError ?? (Model.MyReviews.Count > 0 ? "Mỗi sản phẩm trong một đơn chỉ được đánh giá một lần. Nội dung đã gửi được hiển thị tại mục Đánh giá của bạn." : "Bạn chỉ được đánh giá sản phẩm thuộc đơn của mình sau khi giao hàng thành công và thanh toán. Đơn chờ xác nhận, đang giao hoặc đã hủy chưa đủ điều kiện; đơn đã đánh giá sẽ không hiện lại."))</p><a class="mn-btn mn-btn-outline" href="@Url.Action("Index", "Orders")">XEM ĐƠN HÀNG CỦA TÔI</a></div>
+            }
+        </aside>
+    </div>
+</section>

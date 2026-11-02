@@ -337,7 +337,8 @@
     <Content Include="Views\Customer\Returns.cshtml" />
     <Content Include="Views\Customer\Points.cshtml" />
     <Content Include="Views\Customer\Promotions.cshtml" />
-    <Content Include="Views\Customer\Reviews.cshtml" />
+    <Content Include="Views\Shared\_ProductReviews.cshtml" />
+    <Compile Include="Services\ProductReviewsService.cs" />
     <Content Include="Views\Customer\Return.cshtml" />
     <Content Include="Views\Account\Reset.cshtml" />
     <Content Include="Views\Account\Forgot.cshtml" />

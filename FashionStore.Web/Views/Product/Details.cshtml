@@ -79,7 +79,7 @@
                 <div class="yody-product-divider"></div>
                 <div class="yody-product-description"><h2>Thông tin sản phẩm</h2><dl class="product-specs"><dt>Danh mục</dt><dd>@Model.Product.TenLoai</dd><dt>Kiểu sản phẩm</dt><dd>@CatalogViewHelper.KindLabel(Model.Product.Kind)</dd><dt>Màu hiện có</dt><dd>@String.Join(", ",colors)</dd><dt>Kích cỡ</dt><dd>@String.Join(", ",sizes)</dd></dl></div>
                 <div class="yody-product-secondary-actions">
-                    <a class="mn-btn mn-btn-outline" href="@Url.Action("Reviews", "Customer", new { id = Model.Product.MaSP })">Xem và viết đánh giá</a>
+                    <a class="mn-btn mn-btn-outline" href="#product-reviews">Xem và viết đánh giá</a>
                     @using (Html.BeginForm("SaveWishlist", "Customer", FormMethod.Post, new { data_wishlist_return = "true" }))
                     {
                         @Html.AntiForgeryToken()
@@ -90,6 +90,7 @@
                 </div>
             </section>
         </div>
+        @Html.Partial("_ProductReviews", Model.Reviews)
         <section class="product-size-guide"><h2>Bảng size tham khảo</h2><p>Số đo cơ thể tham khảo, đơn vị cm. Form dáng từng sản phẩm có thể khác; hãy đối chiếu số đo thực tế trước khi chọn.</p><div class="size-guide-grid"><div><h3>Áo</h3><table><thead><tr><th>Size</th><th>Vòng ngực</th><th>Chiều cao</th></tr></thead><tbody><tr><td>S</td><td>86–92</td><td>155–165</td></tr><tr><td>M</td><td>92–98</td><td>160–170</td></tr><tr><td>L</td><td>98–104</td><td>165–175</td></tr><tr><td>XL</td><td>104–110</td><td>170–180</td></tr></tbody></table></div><div><h3>Quần</h3><table><thead><tr><th>Size</th><th>Vòng eo</th><th>Vòng hông</th></tr></thead><tbody><tr><td>28</td><td>70–74</td><td>88–92</td></tr><tr><td>30</td><td>75–79</td><td>93–97</td></tr><tr><td>32</td><td>80–84</td><td>98–102</td></tr><tr><td>34</td><td>85–89</td><td>103–107</td></tr></tbody></table></div></div></section>
         if(colors.Count>1){<section class="product-more-colors"><h2>Khám phá thêm màu sắc</h2><div class="more-color-options">@foreach(var color in colors){var photo=CatalogViewHelper.ColorPhotos(Model,color).FirstOrDefault();var path=photo==null?null:CatalogViewHelper.PhotoPath(photo.DuongDan);<button type="button" data-suggest-color="@color">@if(path!=null){<img loading="lazy" data-managed-image src="@Url.Content(path)" alt="@Model.Product.TenSanPham - @color"/>}<span>@color</span></button>}</div></section>}
         if (Model.Related.Count > 0)

@@ -97,6 +97,7 @@ namespace FashionStore.Web.Models
 
     public class ProductDetailViewModel
     {
+        public ProductReviewsViewModel Reviews { get; set; } = new ProductReviewsViewModel();
         public string SelectedColor {get;set;}
         public ProductDetailViewModel()
         {
@@ -109,5 +110,31 @@ namespace FashionStore.Web.Models
         public IList<ProductVariant> Variants { get; set; }
         public IList<ProductImage> Images { get; set; }
         public string CatalogError { get; set; }
+    }
+
+    public class ProductReviewsViewModel
+    {
+        public string ProductId { get; set; }
+        public int Page { get; set; } = 1;
+        public string Color { get; set; }
+        public string ReturnUrl { get; set; }
+        public bool RequiresLogin { get; set; }
+        public Newtonsoft.Json.Linq.JArray PublicReviews { get; set; } = new Newtonsoft.Json.Linq.JArray();
+        public Newtonsoft.Json.Linq.JArray MyReviews { get; set; } = new Newtonsoft.Json.Linq.JArray();
+        public Newtonsoft.Json.Linq.JArray EligibleOrders { get; set; } = new Newtonsoft.Json.Linq.JArray();
+        public string PublicError { get; set; }
+        public string MyReviewsError { get; set; }
+        public string EligibilityError { get; set; }
+        public string Message { get; set; }
+        public ProductReviewDraft Draft { get; set; } = new ProductReviewDraft();
+    }
+
+    public class ProductReviewDraft
+    {
+        public string ProductId { get; set; }
+        public string OrderId { get; set; }
+        public int Stars { get; set; } = 5;
+        public string Body { get; set; }
+        public string Error { get; set; }
     }
 }

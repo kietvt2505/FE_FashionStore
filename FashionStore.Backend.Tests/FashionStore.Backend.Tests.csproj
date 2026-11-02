@@ -17,6 +17,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <Compile Include="../FashionStore.Web/Models/CustomerModels.cs" Link="MvcClient/CustomerModels.cs" />
     <Compile Include="../FashionStore.Web/Services/CustomerApiClient.cs" Link="MvcClient/CustomerApiClient.cs" />
+    <Compile Include="../FashionStore.Web/Services/ProductReviewsService.cs" Link="MvcClient/ProductReviewsService.cs" />
     <Compile Include="../FashionStore.Web/Helpers/CatalogViewHelper.cs" Link="MvcClient/CatalogViewHelper.cs" />
     <Compile Include="../FashionStore.Web/Helpers/ProductMaterialHelper.cs" Link="MvcClient/ProductMaterialHelper.cs" />
     <Compile Include="../FashionStore.Web/Helpers/ProductDescriptionHelper.cs" Link="MvcClient/ProductDescriptionHelper.cs" />

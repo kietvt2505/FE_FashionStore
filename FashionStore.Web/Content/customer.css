@@ -775,9 +775,13 @@
 .customer-site .yody-order-timeline {border-color:var(--yody-accent);margin:14px 0 0;}
 .customer-site .yody-order-timeline time {display:block;font-size:11px;color:var(--yody-secondary);margin-bottom:5px;}
 .customer-site .yody-order-timeline strong {font-size:13px;}
+.customer-site .product-reviews {margin:48px 0;padding-top:32px;border-top:1px solid var(--yody-border);scroll-margin-top:110px;}
+.customer-site .product-reviews-heading {margin-bottom:24px;}
+.customer-site .product-reviews-heading h2 {margin:8px 0 12px;font-size:28px;}
+.customer-site .product-reviews-heading > p:last-child {color:var(--yody-secondary);font-size:14px;line-height:1.8;}
 .customer-site .yody-review-layout {display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.85fr);gap:24px;align-items:start;}
 .customer-site .yody-review-list {display:grid;align-content:start;gap:16px;min-width:0;}
-.customer-site .yody-review-list h2 {margin:0 0 5px;}
+.customer-site .yody-review-list h3 {margin:0 0 5px;}
 .customer-site .yody-review-card {padding:24px 28px;}
 .customer-site .yody-review-card .review-stars {font-size:15px;color:var(--yody-accent);margin:0 0 10px;}
 .customer-site .yody-review-card .review-body {margin:13px 0 0;color:var(--yody-primary);font-size:13px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;}
@@ -793,7 +797,8 @@
 .customer-site .yody-review-status.is-published {background:#E4F1E9;color:#24563A;}
 .customer-site .yody-review-status.is-rejected {background:#F8E7E7;color:#803535;}
 .customer-site .yody-review-side {min-width:0;}
-.customer-site .yody-review-form h2 {font-size:22px;}
+.customer-site .yody-review-side h3 {margin-top:0;font-size:22px;}
+.customer-site .yody-review-side > .yody-surface-card > p {color:var(--yody-secondary);font-size:13px;line-height:1.8;}
 .customer-site .yody-review-form > p {color:var(--yody-secondary);font-size:13px;line-height:1.8;}
 .customer-site .yody-review-form .mn-btn {width:100%;margin:8px 0 0;}
 .customer-site .yody-info-hero {padding:62px 0 40px;max-width:780px;}
@@ -818,6 +823,7 @@
     .customer-site .yody-account-shortcuts {grid-template-columns:repeat(2,minmax(0,1fr));}
     .customer-site .yody-order-detail-layout,
     .customer-site .yody-review-layout {grid-template-columns:1fr;}
+    .customer-site .product-reviews .yody-review-side {grid-row:1;}
 }
 @media (max-width:767px) {
     .customer-site .yody-account-shell,

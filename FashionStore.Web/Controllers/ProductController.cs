@@ -58,17 +58,27 @@ namespace FashionStore.Web.Controllers
             return PartialView("_CatalogNavigation", categories);
         }
 
-        [HttpGet]
-        public async Task<ActionResult> Details(string id,string returnUrl=null,string color=null)
+        [HttpGet, OutputCache(NoStore=true, Duration=0, VaryByParam="*")]
+        public async Task<ActionResult> Details(string id,string returnUrl=null,string color=null,int reviewPage=1,string reviewOrderId=null)
         {
             if(Url.IsLocalUrl(returnUrl)&&returnUrl.StartsWith("/Product",StringComparison.OrdinalIgnoreCase))Session["ShoppingReturnUrl"]=returnUrl;
             ViewBag.ShoppingReturnUrl=Session["ShoppingReturnUrl"] as string??Url.Action("Index","Product");
             if (String.IsNullOrWhiteSpace(id) || id.Length > 20) return HttpNotFound();
+            if (reviewPage < 1 || reviewPage > 100000 || reviewOrderId != null && reviewOrderId.Length > 30)
+                return new HttpStatusCodeResult(400);
             try
             {
                 var model = await new CatalogRepository().GetDetailAsync(id);
                 if (model.Product == null) return HttpNotFound();
                 model.SelectedColor=FashionStore.Web.Helpers.CatalogViewHelper.InitialColor(model.Variants,color);
+                model.Reviews = await new ProductReviewsService().LoadAsync(id,
+                    User.Identity.IsAuthenticated ? FashionStore.Web.Helpers.CustomerAuthentication.Token(Request) : null, reviewPage);
+                model.Reviews.Color = model.SelectedColor;
+                model.Reviews.ReturnUrl = ViewBag.ShoppingReturnUrl;
+                model.Reviews.Draft.OrderId = reviewOrderId;
+                var draft = TempData["ProductReviewDraft"] as ProductReviewDraft;
+                if (draft != null && draft.ProductId == id) model.Reviews.Draft = draft;
+                model.Reviews.Message = TempData["ProductReviewMessage"] as string;
                 try {
                     var related = await new CatalogRepository().SearchAsync(null,null,model.Product.MaLoai,"new",1,5);
                     model.Related = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Take(System.Linq.Enumerable.Where(related.Products, p => p.MaSP != id),4));

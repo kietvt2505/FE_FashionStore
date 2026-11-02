@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using FashionStore.Web.Helpers;
 using FashionStore.Web.Services;
+using FashionStore.Web.Models;
 using Newtonsoft.Json.Linq;
 namespace FashionStore.Web.Controllers
 {
@@ -37,21 +38,10 @@ namespace FashionStore.Web.Controllers
             }catch(Exception e){return Error(e);}
         }
         public Task<ActionResult> Returns(int page=1){return List("Returns","returns",page);}
-        [AllowAnonymous] public async Task<ActionResult> Reviews(string id,int page=1,string orderId=null){
+        [AllowAnonymous,HttpGet] public ActionResult Reviews(string id,int page=1,string orderId=null){
             if(String.IsNullOrWhiteSpace(id)||id.Length>20||orderId!=null&&orderId.Length>30)return HttpNotFound();
             if(page<1||page>100000)return new HttpStatusCodeResult(400);
-            ViewBag.ProductId=id;ViewBag.ReviewOrderId=orderId;ViewBag.Page=page;
-            ViewBag.ReviewOrders=new JArray();ViewBag.MyReviews=new JArray();
-            try{
-                var reviews=await api.FeatureListAsync(Token,"reviews/"+Uri.EscapeDataString(id)+"?page="+page);
-                if(User.Identity.IsAuthenticated){
-                    try{ViewBag.MyReviews=await api.FeatureListAsync(Token,"reviews/"+Uri.EscapeDataString(id)+"/mine?page="+page);}
-                    catch(Exception e){if(IsUnauthorized(e))return Error(e);ViewBag.MyReviewsError="Chưa thể tải đánh giá bạn đã gửi. Vui lòng tải lại trang hoặc thử lại sau.";}
-                    try{ViewBag.ReviewOrders=await api.FeatureListAsync(Token,"reviews/"+Uri.EscapeDataString(id)+"/eligible-orders");}
-                    catch(Exception e){if(IsUnauthorized(e))return Error(e);ViewBag.ReviewEligibilityError="Chưa thể kiểm tra đơn đủ điều kiện đánh giá. Vui lòng thử lại sau.";}
-                }
-                return View("Reviews",reviews);
-            }catch(Exception e){return Error(e);}
+            return Redirect(ProductReviewUrl(id,orderId,page,null,null));
         }
         public async Task<ActionResult> Return(string id) {
             if(String.IsNullOrWhiteSpace(id)||id.Length>30)return HttpNotFound();
@@ -85,10 +75,33 @@ namespace FashionStore.Web.Controllers
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> RemoveWishlist(string id){return Change("Wishlist",()=>api.FeatureAsync(Token,"wishlist/"+Uri.EscapeDataString(id??""),null,"DELETE"));}
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> SaveAddress(string recipient,string phone,string address,long? id=null){return Change("Addresses",()=>api.FeatureAsync(Token,id.HasValue?"addresses/"+id.Value:"addresses",new{Recipient=recipient,Phone=phone,Address=address},id.HasValue?"PUT":"POST"));}
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> RemoveAddress(long id){return Change("Addresses",()=>api.FeatureAsync(Token,"addresses/"+id,null,"DELETE"));}
-        [HttpPost,ValidateAntiForgeryToken] public async Task<ActionResult> Review(string productId,string orderId,int stars,string body){
-            try{await api.FeatureAsync(Token,"reviews",new{ProductId=productId,OrderId=orderId,Stars=stars,Body=body});TempData["CustomerMessage"]="Đã đăng đánh giá của bạn. Nhận xét đã được hiển thị công khai.";}
-            catch(Exception e){if(IsUnauthorized(e))return Error(e);TempData["CustomerError"]=Message(e);}
-            return RedirectToAction("Reviews",new{id=productId,orderId=orderId});
+        [HttpPost,AllowAnonymous,ValidateAntiForgeryToken] public async Task<ActionResult> Review(string productId,string orderId,int stars,string body,string color=null,string returnUrl=null){
+            if(String.IsNullOrWhiteSpace(productId)||productId.Length>20)return HttpNotFound();
+            var draft=new ProductReviewDraft{ProductId=productId,OrderId=orderId,Stars=stars,Body=body};
+            var destination=ProductReviewUrl(productId,orderId,1,color,returnUrl);
+            if(!User.Identity.IsAuthenticated){
+                draft.Error="Vui lòng đăng nhập để gửi đánh giá.";TempData["ProductReviewDraft"]=draft;
+                return RedirectToAction("Login","Account",new{returnUrl=destination});
+            }
+            try{
+                if(!ModelState.IsValid||String.IsNullOrWhiteSpace(orderId)||orderId.Length>30||stars<1||stars>5||String.IsNullOrWhiteSpace(body)||body.Length>2000)
+                    throw new CustomerApiException(400,"Vui lòng chọn đơn đã nhận, số sao từ 1 đến 5 và nhập nhận xét tối đa 2.000 ký tự.");
+                await api.FeatureAsync(Token,"reviews",new{ProductId=productId,OrderId=orderId,Stars=stars,Body=body});
+                TempData["ProductReviewMessage"]="Đã đăng đánh giá của bạn. Nhận xét đã được hiển thị công khai.";
+            }
+            catch(Exception e){
+                draft.Error=Message(e);TempData["ProductReviewDraft"]=draft;
+                if(IsUnauthorized(e)){
+                    CustomerAuthentication.SignOut();
+                    return RedirectToAction("Login","Account",new{returnUrl=destination});
+                }
+            }
+            return Redirect(destination);
+        }
+        private string ProductReviewUrl(string productId,string orderId,int page,string color,string returnUrl){
+            return Url.Action("Details","Product",new{id=productId,reviewOrderId=orderId!=null&&orderId.Length<=30?orderId:null,
+                reviewPage=page>1?(int?)page:null,color=color,
+                returnUrl=Url.IsLocalUrl(returnUrl)&&returnUrl.StartsWith("/Product",StringComparison.OrdinalIgnoreCase)?returnUrl:null})+"#product-reviews";
         }
         [HttpPost,ValidateAntiForgeryToken] public async Task<ActionResult> SendReturn(string orderId,string sku,int quantity,string kind,string newSku,string reason,Guid requestId){
             try{await api.FeatureAsync(Token,"returns",new{OrderId=orderId,Sku=sku,Quantity=quantity,Kind=kind,NewSku=newSku,Reason=reason,RequestId=requestId});TempData["CustomerMessage"]="Đã gửi yêu cầu. Cửa hàng sẽ kiểm tra trước khi duyệt.";return RedirectToAction("Returns");}
