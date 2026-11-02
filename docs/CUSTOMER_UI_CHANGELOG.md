@@ -1,5 +1,12 @@
 # Changelog Task 3
 
+## 03/11/2026 — Mở chi tiết từ sản phẩm đã chọn/đã mua
+
+- Vùng ảnh, tên và phân loại trong giỏ hàng/chi tiết đơn hàng dùng liên kết thật, hiện con trỏ bàn tay khi hover và mở đúng mã sản phẩm, giữ màu đã mua. Áp dụng cùng cách cho đơn mới, đơn đã nhận và đơn đã hủy.
+- Sản phẩm tại phần tóm tắt thanh toán và tên sản phẩm yêu thích cũng dẫn tới chi tiết. Nút cập nhật số lượng, xóa, viết đánh giá và bỏ yêu thích là thao tác riêng. Liên kết hỗ trợ Tab/Enter và có viền focus; sản phẩm thiếu mã không tạo đường dẫn rỗng, sản phẩm yêu thích ngừng kinh doanh giữ thông báo hiện có.
+- Build MVC với `MvcBuildViews=true`: thành công. Kiểm tra HTTP trên IIS Express riêng bằng hai sản phẩm giả lập (SP-002, SP-086): giỏ, thanh toán, ba trạng thái đơn và yêu thích đều mở đúng chi tiết; lịch sử đơn và bộ lọc đơn hủy giữ liên kết chi tiết đơn. Không tạo đơn hay thay đổi dữ liệu cửa hàng. Kết quả cục bộ: `evidence/product-links-runtime/results.json`.
+- Chưa kiểm tra trực quan hover/viewport lần này vì browser automation bị tắt trong Work settings.
+
 ## Phase 1 — Foundation
 
 Audit và plan đã lập trước thay đổi source. Giữ layout Mộc Nhiên; thêm navigation tài khoản, login/logout theo phiên, badge giỏ, stylesheet scope .customer-site, responsive và focus states; khai báo customer.css và file mới trong csproj. Chưa nghiệm thu viewport runtime.

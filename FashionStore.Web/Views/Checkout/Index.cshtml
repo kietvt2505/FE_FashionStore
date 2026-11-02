@@ -50,7 +50,7 @@
             {
                 foreach (var item in Model.Cart.Items)
                 {
-                    <div class="checkout-line yody-checkout-line"><div><strong>@item.ProductName</strong><small>@item.Size · @item.Color · SL: @item.Quantity</small></div><span>@CatalogViewHelper.Vnd(item.LineTotal)</span></div>
+                    <a class="checkout-line yody-checkout-line product-entry-link" href="@(String.IsNullOrWhiteSpace(item.ProductId)?null:Url.Action("Details", "Product", new { id = item.ProductId, color = item.Color }))" aria-label="Xem chi tiết @item.ProductName - @item.Color"><div><strong class="product-entry-name">@item.ProductName</strong><small>@item.Size · @item.Color · SL: @item.Quantity</small></div><span>@CatalogViewHelper.Vnd(item.LineTotal)</span></a>
                 }
                 <div class="yody-checkout-totals"><div class="yody-summary-row"><span>Tạm tính</span><strong>@CatalogViewHelper.Vnd(Model.Cart.Subtotal)</strong></div><div class="yody-summary-row"><span>Phí vận chuyển áp dụng</span><strong>0đ</strong></div>
                 @if (Model.QuotedTotal.HasValue)

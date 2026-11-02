@@ -28,14 +28,14 @@
                 <div class="customer-table-wrap"><table class="customer-cart-table yody-data-table"><thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th>Số lượng</th><th>Thành tiền</th></tr></thead><tbody>
                     @foreach (var item in Model.Items)
                     {
-                        <tr><td data-label="Sản phẩm"><div class="yody-order-product">
+                        <tr><td data-label="Sản phẩm"><a class="yody-order-product product-entry-link" href="@(String.IsNullOrWhiteSpace(item.ProductId)?null:Url.Action("Details", "Product", new { id = item.ProductId, color = item.Color }))" aria-label="Xem chi tiết @item.Name - @item.Color">
                             <img class="yody-order-product-image" width="56" height="72" loading="lazy" decoding="async" src="@Url.Content(CatalogViewHelper.ImagePath(item.ImageUrl))" alt="@item.Name - @item.Color" />
-                            <div class="yody-order-product-text"><strong>@item.Name</strong><small class="yody-table-detail">@item.Sku · @item.Size · @item.Color</small>
+                            <span class="yody-order-product-text"><strong class="product-entry-name">@item.Name</strong><small class="yody-table-detail">@item.Sku · @item.Size · @item.Color</small></span>
+                        </a>
                             @if (CustomerViewHelper.CanReviewOrder(Model) && !String.IsNullOrWhiteSpace(item.ProductId)) {
-                                <a class="yody-text-link" href="@(Url.Action("Details","Product",new{id=item.ProductId,reviewOrderId=Model.OrderId})+"#product-reviews")">Viết đánh giá</a>
+                                <a class="yody-text-link yody-order-review-link" href="@(Url.Action("Details","Product",new{id=item.ProductId,color=item.Color,reviewOrderId=Model.OrderId})+"#product-reviews")">Viết đánh giá</a>
                             }
-                            </div>
-                        </div></td><td data-label="Đơn giá">@CatalogViewHelper.Vnd(item.UnitPrice)</td><td data-label="Số lượng">@item.Quantity</td><td data-label="Thành tiền"><strong>@CatalogViewHelper.Vnd(item.Total)</strong></td></tr>
+                        </td><td data-label="Đơn giá">@CatalogViewHelper.Vnd(item.UnitPrice)</td><td data-label="Số lượng">@item.Quantity</td><td data-label="Thành tiền"><strong>@CatalogViewHelper.Vnd(item.Total)</strong></td></tr>
                     }
                 </tbody></table></div>
             </section>

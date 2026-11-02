@@ -24,7 +24,7 @@
                         <div class="product-image"><img data-card-image data-managed-image src="@(image==null?null:Url.Content(image))" hidden="@(image==null?"hidden":null)" alt="@p["TenSanPham"]" loading="lazy" width="600" height="800" /></div>
                     }
                     <div class="product-detail wishlist-product-detail">
-                    <h2 title="@p["TenSanPham"]">@p["TenSanPham"]</h2>
+                    <h2 title="@p["TenSanPham"]">@if(active){<a class="product-entry-link" href="@detailUrl"><span class="product-entry-name">@p["TenSanPham"]</span></a>}else{@p["TenSanPham"]}</h2>
                     @if (active)
                     {
                         <a class="yody-text-link" href="@detailUrl">Chọn kích cỡ, màu sắc và mua sắm →</a>
