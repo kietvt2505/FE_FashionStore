@@ -43,11 +43,7 @@
                                     {
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="sku" value="@item.Sku" />
-                                        <div class="cart-quantity-stepper" role="group" aria-label="Điều chỉnh số lượng @item.ProductName">
-                                            <button class="cart-quantity-step" type="button" data-quantity-step="-1" aria-label="Giảm số lượng @item.ProductName" disabled>−</button>
-                                            <input class="filter-input cart-quantity" type="text" inputmode="numeric" pattern="[0-9]+" name="quantity" value="@(invalidSku==item.Sku?invalidValue:item.Quantity.ToString())" data-max="@item.Stock" data-focus-quantity="@(invalidSku==item.Sku?"true":"false")" aria-label="Số lượng @item.ProductName" required />
-                                            <button class="cart-quantity-step" type="button" data-quantity-step="1" aria-label="Tăng số lượng @item.ProductName" disabled>+</button>
-                                        </div>
+                                        <input class="filter-input cart-quantity" type="number" inputmode="numeric" min="1" max="@item.Stock" step="1" name="quantity" value="@(invalidSku==item.Sku?invalidValue:item.Quantity.ToString())" data-max="@item.Stock" data-focus-quantity="@(invalidSku==item.Sku?"true":"false")" aria-label="Số lượng @item.ProductName" required />
                                         <button class="mn-btn mn-btn-outline" type="submit">Cập nhật</button>
                                     }
                                     <small class="yody-cart-stock">Tồn hiện tại: @item.Stock</small>

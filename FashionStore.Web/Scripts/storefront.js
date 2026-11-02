@@ -12,18 +12,7 @@
  }
  document.querySelectorAll('.yody-cart-update').forEach(function(form){
   var input=form.querySelector('[name="quantity"]');
-  var steps=form.querySelectorAll('[data-quantity-step]');
-  function validQuantity(){var value=Number(input.value);return /^\d+$/.test(input.value)&&Number.isSafeInteger(value)?value:0;}
-  function refreshSteps(){var value=validQuantity(),max=Number(input.dataset.max);
-   steps.forEach(function(button){button.disabled=max<1||(Number(button.dataset.quantityStep)<0?value<=1:value>=max);});
-  }
-  function clearError(){input.removeAttribute('aria-invalid');var error=form.querySelector('.quantity-error');if(error)error.remove();refreshSteps();}
-  steps.forEach(function(button){button.addEventListener('click',function(){
-   var max=Number(input.dataset.max);if(max<1)return;
-   input.value=String(Math.max(1,Math.min(max,validQuantity()+Number(button.dataset.quantityStep))));
-   clearError();input.dispatchEvent(new Event('change',{bubbles:true}));
-  });});
-  refreshSteps();
+  function clearError(){input.removeAttribute('aria-invalid');var error=form.querySelector('.quantity-error');if(error)error.remove();}
   function highlight(){input.focus();input.select();input.setAttribute('aria-invalid','true');}
   if(input.dataset.focusQuantity==='true')highlight();
   form.addEventListener('submit',function(event){var quantity=Number(input.value),max=Number(input.dataset.max);
