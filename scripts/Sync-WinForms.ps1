@@ -15,9 +15,14 @@ if([string]::IsNullOrWhiteSpace($syncValue)){
 $syncPrevious=$env:FASHIONSTORE_SCHEMA_SETUP_CONNECTION
 try {
     $env:FASHIONSTORE_SCHEMA_SETUP_CONNECTION=$syncValue
-    & dotnet (Join-Path $syncRoot 'tools/SupabaseSchemaSetup/bin/Debug/net8.0/SupabaseSchemaSetup.dll') --winforms `
-        (Join-Path $syncRoot 'database/Supabase-DongBoWinForms.sql') (Join-Path $syncRoot 'evidence/winforms-sync-live-result.json')
-    if($LASTEXITCODE -ne 0){throw 'Chua ap dung dong bo; giu backend hien tai.'}
+    while($true){
+        & dotnet (Join-Path $syncRoot 'tools/SupabaseSchemaSetup/bin/Debug/net8.0/SupabaseSchemaSetup.dll') --winforms `
+            (Join-Path $syncRoot 'database/Supabase-DongBoWinForms.sql') (Join-Path $syncRoot 'evidence/winforms-sync-live-result.json')
+        if($LASTEXITCODE -eq 0){break}
+        Write-Host 'Giao dich da hoan tac. Da luu metadata trigger de kiem tra, khong co mat khau trong bao cao.'
+        $syncRetry=Read-Host 'Sau khi sua ban dong bo, nhap R de thu lai; nhap Q de dong va xoa ket noi khoi phien'
+        if($syncRetry -ne 'R'){throw 'Chua ap dung dong bo; giu backend hien tai.'}
+    }
     if($StartBackend){
         $syncBackends=@(Get-Process -Name FashionStore.Backend -ErrorAction SilentlyContinue | Where-Object {
             $_.Path -and ([IO.Path]::GetFullPath($_.Path)).StartsWith([IO.Path]::GetFullPath($syncRoot)+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)

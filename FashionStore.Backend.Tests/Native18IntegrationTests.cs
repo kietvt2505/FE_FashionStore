@@ -85,10 +85,34 @@ public sealed class Native18IntegrationTests
             await Assert.ThrowsAsync<InvalidOperationException>(()=>FashionStore.SchemaSetup.ColumnSchemaInstaller.ApplyAsync(settings.ConnectionString,tamperPath,contractPath,reportPath,true));
             Assert.Equal(originals.OrderBy(p=>p.Key),(await Checksums()).OrderBy(p=>p.Key));
             await using var factory=new WebApplicationFactory<Program>().WithWebHostBuilder(builder=>{builder.UseEnvironment("Development");builder.ConfigureAppConfiguration((_,c)=>c.AddInMemoryCollection(new Dictionary<string,string?>{["Database:Provider"]="Supabase",["Database:EnableSupabaseCustomerFeatures"]="true",["Database:EnableSupabaseOrders"]="true",["Orders:EnableBankTransfer"]="true",["Orders:EmployeeId"]="NV01",["ConnectionStrings:Supabase"]=settings.ConnectionString}));});
+            // Reproduce the real database: dropped supplemental tables can leave PL/pgSQL
+            // trigger functions behind because their SQL dependencies were not recorded.
+            var legacyCancellation=await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,"Supabase-Customer-Order-Cancellation.sql"));
+            var guardStart=legacyCancellation.IndexOf("CREATE OR REPLACE FUNCTION public.guard_cancelled_web_order()",StringComparison.Ordinal);
+            var guardEnd=legacyCancellation.IndexOf("REVOKE ALL",guardStart,StringComparison.Ordinal);
+            await Exec(legacyCancellation[guardStart..guardEnd]);
+            var legacyRefund=await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,"Supabase-Order-Cancellation-Refunds.sql"));
+            var captureStart=legacyRefund.IndexOf("CREATE OR REPLACE FUNCTION public.capture_cancelled_order_payment()",StringComparison.Ordinal);
+            var captureEnd=legacyRefund.IndexOf("CREATE OR REPLACE VIEW",captureStart,StringComparison.Ordinal);
+            await Exec(legacyRefund[captureStart..captureEnd]);
+            await Exec("""
+                INSERT INTO public.hoadon(sohd,makh,nguondon,loaihoadon,phuongthucthanhtoan,trangthaigiaohang,trangthaithanhtoan,tongcong,khachphaitra,tienkhachdua,manv)
+                VALUES('LEGACY-CANCELLED','KH-POS','WEB','WEB_HUY','COD','Đã hủy','DA_THANH_TOAN',250000,250000,250000,'NV01');
+                """);
+            var blockedLegacy=await Assert.ThrowsAsync<PostgresException>(()=>Exec("UPDATE public.hoadon SET loaihoadon='COD' WHERE sohd='LEGACY-CANCELLED'"));
+            Assert.Equal("P0001",blockedLegacy.SqlState);Assert.Equal("Website order was cancelled; refresh its status",blockedLegacy.MessageText);
             var syncPath=Path.Combine(AppContext.BaseDirectory,"Supabase-DongBoWinForms.sql");
             var syncReport=Path.Combine(Path.GetTempPath(),database+"-sync.json");
             await FashionStore.SchemaSetup.WinFormsSyncInstaller.ApplyAsync(settings.ConnectionString,syncPath,syncReport,true);
             await FashionStore.SchemaSetup.WinFormsSyncInstaller.ApplyAsync(settings.ConnectionString,syncPath,syncReport,true);
+            Assert.Equal("COD",await Scalar<string>("SELECT loaihoadon FROM public.hoadon WHERE sohd='LEGACY-CANCELLED'"));
+            Assert.Equal("Đã hủy",await Scalar<string>("SELECT trangthaigiaohang FROM public.hoadon WHERE sohd='LEGACY-CANCELLED'"));
+            Assert.Equal(250000m,await Scalar<decimal>("SELECT tienkhachdua FROM public.hoadon WHERE sohd='LEGACY-CANCELLED'"));
+            Assert.Equal(0L,await Scalar<long>("SELECT count(*) FROM pg_trigger WHERE tgrelid='public.hoadon'::regclass AND tgname='capture_cancelled_order_payment'"));
+            await Assert.ThrowsAsync<PostgresException>(()=>Exec("UPDATE public.hoadon SET trangthaigiaohang='Vừa xác nhận đơn' WHERE sohd='LEGACY-CANCELLED'"));
+            await Assert.ThrowsAsync<PostgresException>(()=>Exec("UPDATE public.hoadon SET trangthaigiaohang=NULL WHERE sohd='LEGACY-CANCELLED'"));
+            await Assert.ThrowsAsync<PostgresException>(()=>Exec("UPDATE public.hoadon SET loaihoadon='GIAO_HANG' WHERE sohd='LEGACY-CANCELLED'"));
+            await Assert.ThrowsAsync<PostgresException>(()=>Exec("DELETE FROM public.hoadon WHERE sohd='LEGACY-CANCELLED'"));
             var syncTamper=Path.Combine(Path.GetTempPath(),database+"-sync-tamper.sql");
             await File.WriteAllTextAsync(syncTamper,(await File.ReadAllTextAsync(syncPath))+"\nUPDATE public.sanpham SET soluongtonkho=0;");
             await Assert.ThrowsAsync<InvalidOperationException>(()=>FashionStore.SchemaSetup.WinFormsSyncInstaller.ApplyAsync(settings.ConnectionString,syncTamper,syncReport,true));

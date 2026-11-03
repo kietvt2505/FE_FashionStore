@@ -33,6 +33,8 @@ Web tiếp tục tạo mật khẩu Identity V3. Chế độ Supabase chỉ chuy
 
 Đơn COD web cũ còn chờ, chưa thu tiền và chưa có QR được đưa về trạng thái đầu của form. Cờ tồn lịch sử không xác định ở các trường hợp khác tiếp tục để NULL cho nhân viên đối chiếu; không đoán đã xuất kho. Chạy lặp không đặt lại cờ đã xử lý. Script chỉ sửa các trường trạng thái/cờ đã nêu; dữ liệu khác thay đổi thì rollback.
 
+Database có thể còn trigger từ bộ bảng bổ sung đã xóa. Bản đồng bộ cập nhật `guard_cancelled_web_order` để chỉ cho phép đổi loại `WEB_HUY` sang loại giao hàng phù hợp khi toàn bộ trường khác giữ nguyên; vẫn chặn mở lại/xóa đơn đã hủy, kể cả trạng thái bị đổi thành NULL. Trigger `capture_cancelled_order_payment` cũ chỉ được gỡ khỏi `hoadon` nếu đúng hàm cũ và thiếu bảng phụ thuộc; không xóa chứng từ, tiền hay chức năng hoàn tiền native-18 trên `phieudoitra`. Các trigger khác giữ nguyên. Script lưu riêng metadata trigger trước khi áp dụng để đối chiếu khi lỗi; báo cáo này không chứa dữ liệu khách hàng. Nếu lỗi, cửa sổ chờ R để thử lại sau khi sửa SQL hoặc Q để đóng; kết nối không lưu xuống file.
+
 ## Quên mật khẩu
 
 Đã kiểm thử liên kết gửi qua lớp email, đặt lại mật khẩu, đăng nhập bằng mật khẩu mới, hết hạn/dùng một lần và vô hiệu phiên cũ. Không gửi thư ra ngoài trong kiểm thử. Cửa hàng hiện chưa có email gửi nên chưa bật gửi thư thật; API trả thông báo chưa cấu hình cho mọi địa chỉ. Khi có email, cấu hình SMTP TLS và `Recovery:ResetUrl` HTTPS trỏ tới website `/Account/Reset` (máy này: `https://localhost:44360/Account/Reset`), không phải API. Không đưa mật khẩu SMTP vào Git.

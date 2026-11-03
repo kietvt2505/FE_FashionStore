@@ -24,6 +24,14 @@ public static class WinFormsSyncInstaller
         var expected=new[]{"baocaodoanhthu","bienbanxulyhangloi","chitietbaocaodoanhthu","chitietdoitra","chitiethoadon","chitietnhapkho","giaodichthanhtoanqr","hoadon","khachhang","khuyenmai","khuyenmaisanpham","loaisanpham","nhanvien","nhasanxuat","phanquyen","phieudoitra","phieunhapkho","sanpham"};
         if(!tables.Order().SequenceEqual(expected.Order()))throw new InvalidOperationException("Can dung 18 bang goc da thong nhat.");
         await Exec("LOCK TABLE "+string.Join(',',tables.Select(t=>"public.\""+t+"\""))+" IN SHARE ROW EXCLUSIVE MODE");
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(reportFile))!);
+        var triggers=await Scalar<string>("""
+            SELECT COALESCE(jsonb_agg(jsonb_build_object('name',t.tgname,'enabled',t.tgenabled,
+                'definition',pg_get_triggerdef(t.oid),'function',pg_get_functiondef(t.tgfoid)) ORDER BY t.tgname),'[]'::jsonb)::text
+            FROM pg_trigger t WHERE t.tgrelid='public.hoadon'::regclass AND NOT t.tgisinternal
+            """);
+        // Metadata only, never invoice/customer rows or connection credentials.
+        await File.WriteAllTextAsync(Path.ChangeExtension(reportFile,"preflight.json"),triggers);
         async Task<Dictionary<string,string>> Fingerprints()
         {
             var result=new Dictionary<string,string>();
