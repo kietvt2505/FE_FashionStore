@@ -21,7 +21,7 @@ Cấu trúc đối chiếu: `database/schema-reference/Supabase_public_metadata_
 | Giỏ hàng, sản phẩm yêu thích | Không có bảng/cột tương ứng | Có thể giữ tạm trên trình duyệt nếu người dùng chấp nhận, không đồng bộ qua thiết bị |
 | Nhiều địa chỉ đã lưu | khachhang chỉ có diachi mặc định | Giữ một địa chỉ mặc định, nhập địa chỉ cho từng hóa đơn |
 | Đánh giá sao/nội dung/người đánh giá | Không có bảng/cột tương ứng | Chưa thể lưu và đọc đánh giá lâu dài bằng cấu trúc đã chốt |
-| Token email khôi phục mật khẩu | Không có bảng/cột tương ứng | Cần chốt việc ngưng chức năng hoặc thay đổi yêu cầu; đổi mật khẩu khi đang đăng nhập vẫn có dữ liệu phù hợp |
+| Token email khôi phục mật khẩu | Không có bảng/cột tương ứng | Có thể giữ token băm tạm thời trong bộ nhớ backend, có hạn dùng và mất hiệu lực khi khởi động lại; không cần thêm nơi lưu lâu dài. Đổi mật khẩu vẫn ghi vào matkhau hiện có |
 | Lịch sử đối soát/hoàn tiền/điểm chi tiết | Chỉ một phần có trong hoadon, phieudoitra, giaodichthanhtoanqr | Không giả định có thể giữ toàn bộ lịch sử đã lưu ở các bảng bổ sung |
 
 ## Trạng thái chuyển đổi
