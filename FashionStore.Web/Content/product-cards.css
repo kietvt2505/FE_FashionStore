@@ -27,6 +27,9 @@
 .customer-site .product-card.catalog-product-card .wishlist-form svg {display:block;width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.5;}
 .customer-site .product-card.catalog-product-card .wishlist-form button:hover {background:#FFF;color:#B4232B;text-decoration:none;}
 .customer-site .product-card.catalog-product-card .wishlist-form button:focus-visible {outline:2px solid #142D4E;outline-offset:2px;}
+.customer-site .product-card.catalog-product-card .wishlist-form button[aria-pressed="true"] {color:#B4232B;background:#FFF;}
+.customer-site .product-card.catalog-product-card .wishlist-form button[aria-pressed="true"] svg {fill:currentColor;}
+.yody-wishlist-notice {position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:1100;max-width:calc(100% - 32px);padding:14px 20px;border-radius:8px;background:#142D4E;color:#FFF;box-shadow:0 4px 20px #142D4E33;}
 .customer-site .product-card.catalog-product-card .product-discount-tag {top:12px;left:12px;right:auto;border-radius:4px;padding:4px 7px;background:#B4232B;font-size:11px;}
 /* Saved products use the same photo frame while retaining their account actions. */
 .customer-site .yody-wishlist-grid {grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;}

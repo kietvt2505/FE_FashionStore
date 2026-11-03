@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.WebUtilities;
 namespace FashionStore.Backend.Services;
 
 public sealed class SupabasePasswordRecoveryService(SupabaseCustomerFeaturesService data,IConfiguration config,
-    IPasswordHasher<TaiKhoanKhachHang> hasher,ILogger<SupabasePasswordRecoveryService> logger)
+    IPasswordHasher<TaiKhoanKhachHang> hasher,ILogger<SupabasePasswordRecoveryService> logger,IRecoveryEmailSender? emailSender=null)
 {
     private static string Hash(string value)=>Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
     public async Task Request(string email,CancellationToken ct)
@@ -41,13 +41,8 @@ public sealed class SupabasePasswordRecoveryService(SupabaseCustomerFeaturesServ
             if(await save.ExecuteNonQueryAsync(ct)!=1)return;
         try
         {
-            using var smtp=new SmtpClient(host,config.GetValue<int?>("Recovery:SmtpPort")??587){EnableSsl=true};
-            if(!string.IsNullOrWhiteSpace(config["Recovery:SmtpUser"]))
-                smtp.Credentials=new NetworkCredential(config["Recovery:SmtpUser"],config["Recovery:SmtpPassword"]);
             var link=resetUrl+(string.IsNullOrEmpty(uri.Query)?"?":"&")+"token="+Uri.EscapeDataString(token);
-            using var message=new MailMessage(from!,email.Trim(),"YODY — khôi phục mật khẩu",
-                "Liên kết có hiệu lực 20 phút, dùng một lần:\n"+link+"\nNếu bạn không yêu cầu, hãy bỏ qua email này.");
-            await smtp.SendMailAsync(message,ct);
+            await (emailSender??new SmtpRecoveryEmailSender(config)).SendAsync(from!,email.Trim(),link,ct);
         }
         catch(SmtpException){logger.LogWarning("Password recovery delivery failed; check SMTP configuration.");}
     }

@@ -7,7 +7,15 @@ using FashionStore.Web.Models;
 using FashionStore.Web.Services;
 namespace FashionStore.Web.Helpers
 {
-    public static class BrowserWishlistStore { public static string Read(string name){try{var value=HttpContext.Current.Items[name] as string??HttpContext.Current.Request.Cookies[name]?.Value;return String.IsNullOrEmpty(value)?null:System.Text.Encoding.UTF8.GetString(System.Web.Security.MachineKey.Unprotect(Convert.FromBase64String(value),name));}catch{return null;}} public static void Write(string name,string value){var data=Convert.ToBase64String(System.Web.Security.MachineKey.Protect(System.Text.Encoding.UTF8.GetBytes(value),name));if(data.Length>3700)throw new InvalidOperationException("Danh sách trên trình duyệt đã đầy. Vui lòng bớt sản phẩm.");HttpContext.Current.Items[name]=data;HttpContext.Current.Response.Cookies.Set(new HttpCookie(name,data){HttpOnly=true,Secure=HttpContext.Current.Request.IsSecureConnection,SameSite=SameSiteMode.Lax,Path="/",Expires=DateTime.UtcNow.AddDays(30)});} public static List<string> Items(){try{return Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(Read("fs-wishlist")??"[]")??new List<string>();}catch{return new List<string>();}} public static void Save(string id,bool remove=false){var items=Items();items.Remove(id);if(!remove)items.Add(id);Write("fs-wishlist",Newtonsoft.Json.JsonConvert.SerializeObject(items));}}
+    public static class BrowserWishlistStore
+    {
+        public static string Read(string name){try{var value=HttpContext.Current.Items[name] as string??HttpContext.Current.Request.Cookies[name]?.Value;return String.IsNullOrEmpty(value)?null:System.Text.Encoding.UTF8.GetString(System.Web.Security.MachineKey.Unprotect(Convert.FromBase64String(value),name));}catch{return null;}}
+        public static void Write(string name,string value){var data=Convert.ToBase64String(System.Web.Security.MachineKey.Protect(System.Text.Encoding.UTF8.GetBytes(value),name));if(data.Length>3700)throw new InvalidOperationException("Danh sách trên trình duyệt đã đầy. Vui lòng bớt sản phẩm.");HttpContext.Current.Items[name]=data;HttpContext.Current.Response.Cookies.Set(new HttpCookie(name,data){HttpOnly=true,Secure=HttpContext.Current.Request.IsSecureConnection,SameSite=SameSiteMode.Lax,Path="/",Expires=DateTime.UtcNow.AddDays(30)});}
+        public static List<string> Items(){try{return Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(Read("fs-wishlist")??"[]")??new List<string>();}catch{return new List<string>();}}
+        public static bool Contains(string id){return Items().Contains(id);}
+        // Explicit selection makes login retries idempotent and preserves the original order.
+        public static void Save(string id,bool remove=false){var items=Items();WishlistSelection.Set(items,id,!remove);Write("fs-wishlist",Newtonsoft.Json.JsonConvert.SerializeObject(items));}
+    }
     public static class GuestCartStore
     {
         public static List<GuestCartEntry> Items(HttpSessionStateBase session){var raw=BrowserWishlistStore.Read("fs-cart"); try{return String.IsNullOrEmpty(raw)?new List<GuestCartEntry>():Newtonsoft.Json.JsonConvert.DeserializeObject<List<GuestCartEntry>>(raw)??new List<GuestCartEntry>();}catch{return new List<GuestCartEntry>();}}

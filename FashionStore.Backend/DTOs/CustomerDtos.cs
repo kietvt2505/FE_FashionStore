@@ -23,7 +23,7 @@ public sealed class RegisterRequest
 public sealed class LoginRequest
 {
     [Required, StringLength(100)] public string UserName { get; set; } = "";
-    [Required, StringLength(128)] public string Password { get; set; } = "";
+    [Required, StringLength(200)] public string Password { get; set; } = "";
 }
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class ProfileRequest

@@ -26,8 +26,8 @@ public sealed partial class SupabaseCustomerFeaturesService(DatabaseMode mode){
  // The schema stores current points, not a points ledger.
  public Task<List<Dictionary<string,object?>>> Points(string kh,int page,CancellationToken ct)=>Task.FromResult(new List<Dictionary<string,object?>>());
  public Task<List<Dictionary<string,object?>>> History(string kh,string id,CancellationToken ct)=>Query("""
- SELECT 'DON_HANG' AS "LoaiTrangThai",'MOI' AS "TrangThaiMoi",h.ngaylap AS "ThoiDiem",'Đơn hàng đã được ghi nhận' AS "GhiChu" FROM public.hoadon h WHERE h.makh=@kh AND h.sohd=@id AND h.nguondon='WEB'
- UNION ALL SELECT 'GIAO_HANG','DA_GIAO',h.ngaygiaothanhcong,'Cửa hàng ghi nhận giao hàng thành công' FROM public.hoadon h WHERE h.makh=@kh AND h.sohd=@id AND h.nguondon='WEB' AND h.ngaygiaothanhcong IS NOT NULL ORDER BY "ThoiDiem"
+ SELECT 'DON_HANG' AS "LoaiTrangThai",'MOI' AS "TrangThaiMoi",h.ngaylap AS "ThoiDiem",'Đơn hàng đã được ghi nhận' AS "GhiChu" FROM public.hoadon h WHERE h.makh=@kh AND h.sohd=@id
+ UNION ALL SELECT 'GIAO_HANG','DA_GIAO',h.ngaygiaothanhcong,'Cửa hàng ghi nhận giao hàng thành công' FROM public.hoadon h WHERE h.makh=@kh AND h.sohd=@id AND h.ngaygiaothanhcong IS NOT NULL ORDER BY "ThoiDiem"
  """,ct,("kh",kh),("id",id));
  public Task<List<Dictionary<string,object?>>> Returns(string kh,int page,CancellationToken ct)=>Query("""
  SELECT p.sophieudt AS "SoPhieuDT",p.sohd AS "SoHD",p.ngaylap AS "NgayLap",p.hinhthucxuly AS "HinhThucXuLy",p.trangthai AS "TrangThai",

@@ -66,7 +66,7 @@ Status: 400 dữ liệu sai/trường thừa; 401 chưa đăng nhập, sai mật
 
 ## Phiên và mật khẩu
 
-- Hash dùng ASP.NET Core PasswordHasher (Identity V3, PBKDF2, 210.000 iterations). Hash Identity cũ hợp lệ được nâng khi đăng nhập nếu cần; không có fallback plaintext/MD5 hoặc tự nhận định dạng WinForms chưa biết.
+- Web tạo/đổi mật khẩu bằng ASP.NET Core PasswordHasher (Identity V3, PBKDF2, 210.000 iterations). Riêng Supabase native-18 có bước chuyển đổi mật khẩu chữ thường do form hiện tại ghi: chỉ khi đăng nhập đúng mới thay bằng hash Identity. Giá trị có dạng hash Identity/MD5 hoặc định dạng mã hóa khác không được dùng như mật khẩu chữ thường. SQL Server không bật bước tương thích này. Chi tiết và giới hạn tại `WINFORMS_WEB_SYNC.md`.
 - API phát token ngẫu nhiên 256 bit, chỉ giữ digest SHA-256 trong IMemoryCache cùng MaKH, phiên bản hash và hạn tuyệt đối 60 phút. Mỗi request được bảo vệ kiểm tra trạng thái account/customer và phiên bản mật khẩu trong SQL. Logout hủy một phiên; đổi mật khẩu vô hiệu tất cả phiên cũ.
 - Đây là cấu hình một backend DEV: restart backend sẽ đăng xuất các phiên; chưa dùng distributed/persistent session store. Không có JWT signing secret cần nhập. Chọn store dùng chung là bước triển khai nhiều instance sau này.
 - MVC lưu token bên trong FormsAuthenticationTicket đã mã hóa/xác thực bởi MachineKey, cookie HttpOnly/SameSite=Lax và Secure khi request HTTPS. Không dùng localStorage, không gắn bearer vào SharedHttp.DefaultRequestHeaders. Tất cả POST MVC có anti-forgery. ReturnUrl chỉ chấp nhận URL local.

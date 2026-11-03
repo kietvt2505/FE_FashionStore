@@ -1,3 +1,11 @@
+# 2026-11-04: Đồng bộ website với WinForms 6d11b10
+
+- Giữ nguyên source form; website chuyển đổi mật khẩu chữ thường cũ sau đăng nhập đúng, tiếp tục lưu hash Identity.
+- COD dùng trạng thái đầu của form và cờ giữ tồn để không trừ kho hai lần; đơn hủy dùng loại giao hàng form đọc được.
+- Lịch sử mua hàng hiển thị cả hóa đơn POS thuộc đúng khách; quyền sửa/hủy đơn POS không mở trên web.
+- Tim yêu thích thêm/bỏ tại chỗ, giữ URL sau đăng nhập và ngăn bấm lặp. Khôi phục qua email đã kiểm thử; chờ email gửi của cửa hàng để bật thật.
+- Bản đồng bộ database giữ 18 bảng; kiểm thử gọi nguyên repository form trên database tạm. Xem `docs/WINFORMS_WEB_SYNC.md`.
+
 # Task 1 (2026-10-18): Admin Authentication + Dashboard
 
 - Admin Bearer API with role allowlist and independent hashed sessions; password storage via Identity PBKDF2.

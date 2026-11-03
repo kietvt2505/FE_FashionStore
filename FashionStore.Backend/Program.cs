@@ -73,6 +73,7 @@ builder.Services.AddScoped<CustomerFeaturesService>();
 builder.Services.AddScoped<SupabaseCustomerFeaturesService>();
 builder.Services.AddScoped<PasswordRecoveryService>();
 builder.Services.AddScoped<SupabasePasswordRecoveryService>();
+builder.Services.AddSingleton<IRecoveryEmailSender,SmtpRecoveryEmailSender>();
 builder.Services.Configure<AdminRoleOptions>(builder.Configuration.GetSection("Admin"));
 builder.Services.AddSingleton<IPasswordHasher<NhanVien>, PasswordHasher<NhanVien>>();
 builder.Services.AddSingleton<AdminSessions>();

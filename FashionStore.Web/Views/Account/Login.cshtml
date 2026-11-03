@@ -12,12 +12,12 @@
         @Html.ValidationSummary(true, "", new { @class = "customer-errors", role = "alert" })
         <div class="account-field">
             @Html.LabelFor(m => m.UserName)
-            @Html.TextBoxFor(m => m.UserName, new { @class = "filter-input", autocomplete = "username", minlength = "3", maxlength = "100", required = "required", pattern = "[A-Za-z0-9._-]{3,100}", placeholder = "Nhập tên đăng nhập" })
+            @Html.TextBoxFor(m => m.UserName, new { @class = "filter-input", autocomplete = "username", maxlength = "100", required = "required", placeholder = "Nhập tên đăng nhập" })
             @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "field-validation-error" })
         </div>
         <div class="account-field">
             @Html.LabelFor(m => m.Password)
-            @Html.PasswordFor(m => m.Password, new { @class = "filter-input", autocomplete = "current-password", maxlength = "128", required = "required", placeholder = "Nhập mật khẩu" })
+            @Html.PasswordFor(m => m.Password, new { @class = "filter-input", autocomplete = "current-password", maxlength = "200", required = "required", placeholder = "Nhập mật khẩu" })
             @Html.ValidationMessageFor(m => m.Password, "", new { @class = "field-validation-error" })
         </div>
         <div class="account-form-actions"><a href="@Url.Action("Forgot", "Account")">Quên mật khẩu?</a></div>

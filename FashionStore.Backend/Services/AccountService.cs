@@ -36,7 +36,7 @@ public sealed class AccountService(FashionStoreDbContext db, IPasswordHasher<Tai
         var name = request.UserName.Trim().ToLowerInvariant();
         var account = await db.CustomerAccounts.AsTracking().Include(a => a.Customer)
             .SingleOrDefaultAsync(a => a.TenDangNhap.Trim().ToLower() == name, ct);
-        var verified = verifier.Verify(account, request.Password);
+        var verified = verifier.Verify(account, request.Password, allowLegacyPlaintext:db.Database.IsNpgsql());
         if (account == null || !account.TrangThai || !account.Customer.TrangThai || verified == PasswordVerificationResult.Failed)
             throw new CustomerRequestException(401, "Tên đăng nhập hoặc mật khẩu không đúng.");
         if (verified == PasswordVerificationResult.SuccessRehashNeeded)

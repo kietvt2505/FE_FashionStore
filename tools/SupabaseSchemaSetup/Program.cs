@@ -86,6 +86,11 @@ public static class SchemaSetupProgram
                 await ColumnSchemaInstaller.ApplyAsync(connection,args[1],args[2],args[3]);
                 Console.WriteLine("DA BO SUNG COT TIENG VIET. Khong tao/xoa bang; du lieu cot goc giu nguyen.");return 0;
             }
+            if(args.Length==3 && args[0]=="--winforms")
+            {
+                await WinFormsSyncInstaller.ApplyAsync(connection,args[1],args[2]);
+                Console.WriteLine("DA DONG BO WINFORMS. Giu nguyen 18 bang, khong thay doi tai khoan/mat khau/tien/ton kho.");return 0;
+            }
             if(args.Length!=3)throw new InvalidOperationException("Tham so khong hop le.");
             await SchemaInstaller.ApplyAsync(connection,args[0],args[1],args[2]);
             Console.WriteLine("DA CAI BANG TIENG VIET. Du lieu 18 bang goc duoc giu nguyen.");return 0;

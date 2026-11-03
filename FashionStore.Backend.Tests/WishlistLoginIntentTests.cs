@@ -5,6 +5,17 @@ namespace FashionStore.Backend.Tests;
 
 public sealed class WishlistLoginIntentTests
 {
+    [Fact]
+    public void RepeatedLoginSavePreservesOrderAndDeselectRemovesTheProduct()
+    {
+        var items=new List<string>{"SP-001","SP-002"};
+        WishlistSelection.Set(items,"SP-001",true);
+        Assert.Equal(new[]{"SP-001","SP-002"},items);
+        WishlistSelection.Set(items,"SP-001",false);
+        Assert.Equal(new[]{"SP-002"},items);
+        WishlistSelection.Set(items,"SP-001",false);
+        Assert.Equal(new[]{"SP-002"},items);
+    }
     private static readonly DateTimeOffset Now=new(2026,10,31,3,0,0,TimeSpan.Zero);
 
     [Fact]

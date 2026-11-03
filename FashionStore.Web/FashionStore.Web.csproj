@@ -129,6 +129,7 @@
     <Compile Include="Helpers\ProductDescriptionHelper.cs" />
     <Compile Include="Helpers\ProductMaterialHelper.cs" />
     <Compile Include="Helpers\WishlistLoginIntent.cs" />
+    <Compile Include="Helpers\WishlistSelection.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

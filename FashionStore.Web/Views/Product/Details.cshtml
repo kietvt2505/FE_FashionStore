@@ -85,7 +85,7 @@
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="id" value="@Model.Product.MaSP" />
                         <input type="hidden" name="returnUrl" value="@Request.RawUrl" />
-                        <button class="mn-btn mn-btn-outline" type="submit">♡ Lưu yêu thích</button>
+                        <button class="mn-btn mn-btn-outline" type="submit" aria-pressed="@(FashionStore.Web.Helpers.BrowserWishlistStore.Contains(Model.Product.MaSP)?"true":"false")" data-wishlist-label>@(FashionStore.Web.Helpers.BrowserWishlistStore.Contains(Model.Product.MaSP)?"♥ Đã yêu thích":"♡ Lưu yêu thích")</button>
                     }
                 </div>
             </section>

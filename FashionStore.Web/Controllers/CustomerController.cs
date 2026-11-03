@@ -58,18 +58,23 @@ namespace FashionStore.Web.Controllers
             if(!User.Identity.IsAuthenticated)return LoginForWishlist(intent);
             Session.Remove(WishlistLoginIntent.SessionKey);
             try{
-                BrowserWishlistStore.Save(intent.ProductId);
-                TempData["CustomerMessage"]="Đã thêm sản phẩm vào danh sách yêu thích.";
+                var saved=!BrowserWishlistStore.Contains(intent.ProductId);
+                BrowserWishlistStore.Save(intent.ProductId,!saved);
+                var message=saved?"Đã thêm sản phẩm vào danh sách yêu thích.":"Đã bỏ sản phẩm khỏi danh sách yêu thích.";
+                if(Request.IsAjaxRequest())return Json(new{productId=intent.ProductId,saved,message});
+                TempData["CustomerMessage"]=message;
             }catch(Exception error){
                 if(IsUnauthorized(error))return LoginForWishlist(intent);
+                if(Request.IsAjaxRequest()){Response.StatusCode=503;Response.TrySkipIisCustomErrors=true;return Json(new{error=Message(error)});}
                 TempData["CustomerError"]=Message(error);
             }
-            return RedirectToAction("Wishlist");
+            return Redirect(intent.ReturnUrl);
         }
         private ActionResult LoginForWishlist(WishlistLoginIntent intent)
         {
             Session[WishlistLoginIntent.SessionKey]=intent;
             CustomerAuthentication.SignOut();
+            if(Request.IsAjaxRequest())return Json(new{loginUrl=Url.Action("Login","Account",new{returnUrl=intent.ReturnUrl})});
             return RedirectToAction("Login","Account",new{returnUrl=intent.ReturnUrl});
         }
         [HttpPost,ValidateAntiForgeryToken] public ActionResult RemoveWishlist(string id){BrowserWishlistStore.Save(id,true);return RedirectToAction("Wishlist");}

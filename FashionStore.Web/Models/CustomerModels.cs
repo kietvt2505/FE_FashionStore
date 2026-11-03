@@ -6,8 +6,8 @@ namespace FashionStore.Web.Models
 {
     public class LoginViewModel
     {
-        [Required(ErrorMessage="Vui lòng nhập tên đăng nhập."), RegularExpression(@"^[A-Za-z0-9._-]{3,100}$", ErrorMessage="Tên đăng nhập gồm 3–100 ký tự không dấu, số, dấu chấm, gạch dưới hoặc gạch ngang."), Display(Name="Tên đăng nhập")] public string UserName { get; set; }
-        [Required(ErrorMessage="Vui lòng nhập mật khẩu."), StringLength(128, ErrorMessage="Mật khẩu không được vượt quá 128 ký tự."), DataType(DataType.Password), Display(Name="Mật khẩu")] public string Password { get; set; }
+        [Required(ErrorMessage="Vui lòng nhập tên đăng nhập."), StringLength(100, ErrorMessage="Tên đăng nhập tối đa 100 ký tự."), Display(Name="Tên đăng nhập")] public string UserName { get; set; }
+        [Required(ErrorMessage="Vui lòng nhập mật khẩu."), StringLength(200, ErrorMessage="Mật khẩu không được vượt quá 200 ký tự."), DataType(DataType.Password), Display(Name="Mật khẩu")] public string Password { get; set; }
         public string ReturnUrl { get; set; }
     }
     public class RegisterViewModel

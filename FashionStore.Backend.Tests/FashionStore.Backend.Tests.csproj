@@ -7,6 +7,8 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="../database/Supabase-DongBoWinForms.sql" Link="Supabase-DongBoWinForms.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../FashionStore.Web/Helpers/WishlistSelection.cs" Link="MvcClient/WishlistSelection.cs" />
     <Content Include="../database/Supabase-BoSungCot-ChucNang.sql" Link="Supabase-BoSungCot-ChucNang.sql" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../database/Supabase-Website-TenViet.sql" Link="Supabase-Website-TenViet.sql" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../database/schema-reference/Supabase_public_metadata_20261103.json" Link="Supabase_public_metadata_20261103.json" CopyToOutputDirectory="PreserveNewest" />
@@ -55,5 +57,16 @@
     <Content Include="../database/Supabase-Web-Orders.sql" Link="Supabase-Web-Orders.sql" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../database/Supabase-Short-Order-Numbers.sql" Link="Supabase-Short-Order-Numbers.sql" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../database/Supabase-Customer-Cart.sql" Link="Supabase-Customer-Cart.sql" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <!-- Optional: compile the partner's unchanged repository for real cross-system tests. -->
+  <PropertyGroup Condition="'$(PartnerSourceRoot)' != ''">
+    <DefineConstants>$(DefineConstants);PARTNER_WINFORMS</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(PartnerSourceRoot)' != ''">
+    <Compile Include="$(PartnerSourceRoot)/api/QLIShopThoiTrang.Api/Data/StoreRepository*.cs" Link="Partner/%(Filename).cs" />
+    <Compile Include="$(PartnerSourceRoot)/api/QLIShopThoiTrang.Api/Data/SqlServerConnectionFactory.cs" Link="Partner/SqlServerConnectionFactory.cs" />
+    <Compile Include="$(PartnerSourceRoot)/api/QLIShopThoiTrang.Api/Models/StoreModels.cs" Link="Partner/StoreModels.cs" />
+    <Using Include="Microsoft.Extensions.Configuration" />
+    <Using Include="System.Configuration.ConfigurationManager" Alias="ConfigurationManager" />
   </ItemGroup>
 </Project>
