@@ -32,15 +32,14 @@ try {
     $env:Orders__EmployeeId = $OrderEmployeeId
     $env:Orders__EnableBankTransfer = $EnableBankTransfer.IsPresent.ToString()
     Write-Host "Starting Supabase backend at http://127.0.0.1:$Port"
+    Write-Host 'Website tables use Vietnamese names. Current shared schema setup: database/Supabase-Website-TenViet.sql.'
     if ($EnableCustomerFeatures -or $EnableOrders) {
-        Write-Host 'Customer accounts and carts enabled. Apply database/Supabase-Customer-Cart.sql first.'
+        Write-Host 'Customer accounts, carts and account pages enabled. Apply the Vietnamese schema setup once before using these features.'
     } else { Write-Host 'Read-only catalog mode. Customer accounts and carts are disabled.' }
-    if ($EnableOrders) { Write-Host "COD orders enabled for employee $OrderEmployeeId. Apply database/Supabase-Web-Orders.sql first." }
+    if ($EnableOrders) { Write-Host "Orders enabled for employee $OrderEmployeeId. The Vietnamese setup includes pricing, cancellation and daily order numbers." }
     else { Write-Host 'Checkout is disabled.' }
-    if ($EnableBankTransfer) { Write-Host 'Bank transfers enabled. Apply database/Supabase-Web-Payments.sql first; payments require staff verification.' }
-    if ($EnableOrders) { Write-Host 'Automatic member discounts: apply database/Supabase-Membership-Pricing.sql. Website promotion codes are disabled.' }
-    if ($EnableOrders) { Write-Host 'Short order numbers: apply database/Supabase-Short-Order-Numbers.sql for WEB-000001 style codes.' }
-    if ($EnableCustomerFeatures -or $EnableOrders) { Write-Host 'Account pages: apply database/Supabase-Customer-Features.sql after the web orders migration. Email recovery also requires SMTP and an HTTPS reset URL.' }
+    if ($EnableBankTransfer) { Write-Host 'Bank transfers enabled; payments require staff verification.' }
+    if ($EnableCustomerFeatures -or $EnableOrders) { Write-Host 'Email recovery also requires SMTP and an HTTPS reset URL.' }
     Write-Host 'Admin endpoints are not yet migrated.'
     dotnet run --project $projectPath --no-launch-profile --urls "http://127.0.0.1:$Port"
     if ($LASTEXITCODE -ne 0) { throw 'Backend failed. Check the build/startup output above.' }

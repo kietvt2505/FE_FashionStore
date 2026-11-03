@@ -39,14 +39,14 @@ public sealed class OrderInformationIntegrationTests
                 CREATE TABLE public.hoadon(sohd varchar(30) PRIMARY KEY,makh varchar(20),loaihoadon text,nguondon text,
                     phuongthucthanhtoan text,trangthaigiaohang text,trangthaithanhtoan text,khachphaitra numeric(18,2),
                     tienkhachdua numeric(18,2),ngaygiaothanhcong timestamp,tennguoinhan text,sodienthoai_kh text,diachigiao text,tiencod numeric(18,2));
-                CREATE TABLE public.order_snapshot(sohd varchar(30) PRIMARY KEY,makh varchar(20),ngaylap timestamp,
+                CREATE TABLE public.thongtindonhang(sohd varchar(30) PRIMARY KEY,makh varchar(20),ngaylap timestamp,
                     recipient text,phone text,address text,note text,total numeric(18,2),paymentmethod text);
-                CREATE TABLE public.order_line_snapshot(sohd varchar(30),masku text,name text,size text,color text,quantity int,price numeric(18,2));
+                CREATE TABLE public.chitietdonhanglucmua(sohd varchar(30),masku text,name text,size text,color text,quantity int,price numeric(18,2));
                 CREATE TABLE public.sanpham(masku text,masp text,mausac text,hinhanh text,soluongtonkho int);
-                CREATE TABLE public.gateway_attempt(id text,sohd varchar(30));
+                CREATE TABLE public.yeucauthanhtoantructuyen(id text,sohd varchar(30));
                 INSERT INTO public.hoadon VALUES('HD-1','ALICE','COD','WEB','COD','Chờ xác nhận','CHUA_THANH_TOAN',498000,0,NULL,'Alice','0900000001','Địa chỉ trước cập nhật',498000);
-                INSERT INTO public.order_snapshot VALUES('HD-1','ALICE',CURRENT_TIMESTAMP,'Alice','0900000001','Địa chỉ trước cập nhật','Ghi chú ban đầu',498000,'COD');
-                INSERT INTO public.order_line_snapshot VALUES('HD-1','SKU-M','Áo thun trơn nam','M','Đen',2,249000);
+                INSERT INTO public.thongtindonhang VALUES('HD-1','ALICE',CURRENT_TIMESTAMP,'Alice','0900000001','Địa chỉ trước cập nhật','Ghi chú ban đầu',498000,'COD');
+                INSERT INTO public.chitietdonhanglucmua VALUES('HD-1','SKU-M','Áo thun trơn nam','M','Đen',2,249000);
                 INSERT INTO public.sanpham VALUES('SKU-M','SP-002','Đen',NULL,20);
                 """);
             DatabaseMode Mode(bool bank=true)=>new(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{
@@ -95,14 +95,14 @@ public sealed class OrderInformationIntegrationTests
             Assert.Equal("DA_THANH_TOAN",(await Read()).PaymentStatus);
             await Exec("UPDATE public.hoadon SET loaihoadon='WEB_HUY',trangthaigiaohang='Đã hủy'");
             Assert.False((await Read()).CanUpdateDelivery);
-            await Exec("UPDATE public.hoadon SET loaihoadon='WEB_CHO_THANH_TOAN',trangthaigiaohang='Chờ xác nhận thanh toán',trangthaithanhtoan='CHUA_THANH_TOAN',tienkhachdua=0,phuongthucthanhtoan='VNPAY'; UPDATE public.order_snapshot SET paymentmethod='VNPAY'");
+            await Exec("UPDATE public.hoadon SET loaihoadon='WEB_CHO_THANH_TOAN',trangthaigiaohang='Chờ xác nhận thanh toán',trangthaithanhtoan='CHUA_THANH_TOAN',tienkhachdua=0,phuongthucthanhtoan='VNPAY'; UPDATE public.thongtindonhang SET paymentmethod='VNPAY'");
             var beforeAttempt=await Read();Assert.True(beforeAttempt.CanUpdatePayment);
             // Mimic gateway Start: it owns the invoice lock and inserts an attempt without updating the invoice row.
             await using(var paymentConnection=new NpgsqlConnection(settings.ConnectionString))
             {
                 await paymentConnection.OpenAsync();await using var paymentTx=await paymentConnection.BeginTransactionAsync();
                 await using(var lockInvoice=new NpgsqlCommand("SELECT sohd FROM public.hoadon WHERE sohd='HD-1' FOR UPDATE",paymentConnection,paymentTx))await lockInvoice.ExecuteScalarAsync();
-                await using(var insert=new NpgsqlCommand("INSERT INTO public.gateway_attempt VALUES('attempt-1','HD-1')",paymentConnection,paymentTx))await insert.ExecuteNonQueryAsync();
+                await using(var insert=new NpgsqlCommand("INSERT INTO public.yeucauthanhtoantructuyen VALUES('attempt-1','HD-1')",paymentConnection,paymentTx))await insert.ExecuteNonQueryAsync();
                 var changing=service.UpdateInformationAsync("ALICE","HD-1",new("payment",beforeAttempt.EditVersion!,PaymentMethod:"COD"),default);
                 await Task.Delay(100);Assert.False(changing.IsCompleted);
                 await paymentTx.CommitAsync();
@@ -112,10 +112,10 @@ public sealed class OrderInformationIntegrationTests
             Assert.Contains("giao dịch",withAttempt.PaymentUpdateNotice);
             Assert.Equal("VNPAY",withAttempt.PaymentMethod);
             Assert.Equal(1L,await Scalar<long>("SELECT count(*) FROM public.hoadon"));
-            Assert.Equal(1L,await Scalar<long>("SELECT count(*) FROM public.order_snapshot"));
+            Assert.Equal(1L,await Scalar<long>("SELECT count(*) FROM public.thongtindonhang"));
             Assert.Equal(20,await Scalar<int>("SELECT soluongtonkho FROM public.sanpham"));
-            Assert.Equal(2,await Scalar<int>("SELECT quantity FROM public.order_line_snapshot"));
-            Assert.Equal(498000m,await Scalar<decimal>("SELECT total FROM public.order_snapshot"));
+            Assert.Equal(2,await Scalar<int>("SELECT quantity FROM public.chitietdonhanglucmua"));
+            Assert.Equal(498000m,await Scalar<decimal>("SELECT total FROM public.thongtindonhang"));
         }
         finally
         {

@@ -1,7 +1,7 @@
 -- Apply after Supabase-Short-Order-Numbers.sql. Old invoice codes remain unchanged.
 BEGIN;
 SET LOCAL lock_timeout='5s';
-CREATE TABLE IF NOT EXISTS public.daily_order_number (
+CREATE TABLE IF NOT EXISTS public.sothutudonhangtheongay (
     sohd varchar(30) PRIMARY KEY,
     order_day date NOT NULL,
     suffix integer NOT NULL CHECK(suffix BETWEEN 1 AND 9999),
@@ -17,21 +17,21 @@ DECLARE start_at integer; n integer; candidate varchar; BEGIN
         n=(start_at+i)%9999+1;
         candidate='HD'||to_char(p_day,'DDMMYYYY')||'-'||lpad(n::text,4,'0');
         IF NOT EXISTS(SELECT 1 FROM public.hoadon WHERE sohd=candidate) AND
-           NOT EXISTS(SELECT 1 FROM public.order_snapshot WHERE sohd=candidate) THEN
-            INSERT INTO public.daily_order_number(sohd,order_day,suffix) VALUES(candidate,p_day,n)
+           NOT EXISTS(SELECT 1 FROM public.thongtindonhang WHERE sohd=candidate) THEN
+            INSERT INTO public.sothutudonhangtheongay(sohd,order_day,suffix) VALUES(candidate,p_day,n)
             ON CONFLICT DO NOTHING;
             IF FOUND THEN RETURN candidate; END IF;
         END IF;
     END LOOP;
     RAISE EXCEPTION 'DAILY_ORDER_NUMBER_LIMIT';
 END $$;
-ALTER TABLE public.daily_order_number ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON public.daily_order_number FROM PUBLIC;
+ALTER TABLE public.sothutudonhangtheongay ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.sothutudonhangtheongay FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.allocate_order_number(date) FROM PUBLIC;
 DO $$ DECLARE r text; BEGIN
     FOREACH r IN ARRAY ARRAY['anon','authenticated'] LOOP
         IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname=r) THEN
-            EXECUTE format('REVOKE ALL ON public.daily_order_number FROM %I',r);
+            EXECUTE format('REVOKE ALL ON public.sothutudonhangtheongay FROM %I',r);
             EXECUTE format('REVOKE ALL ON FUNCTION public.allocate_order_number(date) FROM %I',r);
         END IF;
     END LOOP;

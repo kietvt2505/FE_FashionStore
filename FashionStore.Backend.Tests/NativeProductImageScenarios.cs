@@ -38,7 +38,7 @@ internal static class NativeProductImageScenarios
         Assert.Equal(legacy.Price,gallery.Price);Assert.Equal(legacy.Stock,gallery.Stock);
         // Native galleries and website media stay additive, with duplicate URLs removed.
         await Exec("""
-            INSERT INTO public.product_media(masp,color,url,alt,sort_order) VALUES
+            INSERT INTO public.hinhanhsanpham(masp,color,url,alt,sort_order) VALUES
               ('NATIVE-P1','Đen','https://example.test/native-black-side.png','Góc nghiêng',1),
               ('NATIVE-P1','Đen','https://example.test/native-black-detail.png','Cận chất liệu',2);
             UPDATE public.sanpham SET hinhanh=NULL WHERE masku IN ('NI-BLK-M','NI-BLK-L');

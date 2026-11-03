@@ -6,20 +6,20 @@ SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '60s';
 -- Website additions share the partner public schema.
 -- Keep the existing public schema privileges unchanged.
-CREATE TABLE IF NOT EXISTS public.catalog_product (
+CREATE TABLE IF NOT EXISTS public.thongtinsanpham (
     masp varchar(20) PRIMARY KEY,
     audience varchar(20) NULL CHECK(audience IN ('NAM','NU','TRE_EM','UNISEX')),
     kind varchar(40) NULL,
     regular_price numeric(18,2) NULL CHECK(regular_price>0)
 );
 -- Extend the same constraint on databases that already applied this migration.
-ALTER TABLE public.catalog_product DROP CONSTRAINT IF EXISTS catalog_product_kind_check;
-ALTER TABLE public.catalog_product ADD CONSTRAINT catalog_product_kind_check CHECK(kind IN (
+ALTER TABLE public.thongtinsanpham DROP CONSTRAINT IF EXISTS thongtinsanpham_kind_check;
+ALTER TABLE public.thongtinsanpham ADD CONSTRAINT thongtinsanpham_kind_check CHECK(kind IN (
     'ao-thun','ao-polo','ao-so-mi','ao-khoac','ao-hoodie','ao-vest','ao-khac',
     'quan-ngan','quan-dai','quan-jogger','vay-ngan','vay-dai','dam-ngan','dam-dai',
     'giay','dep','kinh-mat','mu','vo','day-nit','balo','tui-xach'));
 -- Classify only explicit names. A generic "Quần" is not enough evidence to choose short/long.
-INSERT INTO public.catalog_product(masp,kind)
+INSERT INTO public.thongtinsanpham(masp,kind)
 SELECT masp, CASE
     WHEN lower(min(tensanpham)) LIKE '%áo thun%' OR lower(min(tensanpham)) LIKE '%áo phông%' THEN 'ao-thun'
     WHEN lower(min(tensanpham)) LIKE '%polo%' THEN 'ao-polo'
@@ -44,17 +44,17 @@ SELECT masp, CASE
     WHEN lower(min(tensanpham)) LIKE '%túi xách%' THEN 'tui-xach'
     END
 FROM public.sanpham GROUP BY masp ON CONFLICT(masp) DO NOTHING;
-CREATE INDEX IF NOT EXISTS ix_catalog_audience_kind ON public.catalog_product(audience,kind);
-ALTER TABLE public.catalog_product ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON public.catalog_product FROM PUBLIC;
+CREATE INDEX IF NOT EXISTS ix_catalog_audience_kind ON public.thongtinsanpham(audience,kind);
+ALTER TABLE public.thongtinsanpham ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.thongtinsanpham FROM PUBLIC;
 DO $$
 BEGIN
-    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN REVOKE ALL ON public.catalog_product FROM anon; END IF;
-    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN REVOKE ALL ON public.catalog_product FROM authenticated; END IF;
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN REVOKE ALL ON public.thongtinsanpham FROM anon; END IF;
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN REVOKE ALL ON public.thongtinsanpham FROM authenticated; END IF;
 END $$;
 COMMIT;
 
 -- Read-only classification checklist. NULL means the team still needs to classify this product.
 SELECT m.masp,min(p.tensanpham) AS name,m.audience,m.kind,m.regular_price,min(p.dongia) AS current_price
-FROM public.catalog_product m JOIN public.sanpham p USING(masp)
+FROM public.thongtinsanpham m JOIN public.sanpham p USING(masp)
 GROUP BY m.masp,m.audience,m.kind,m.regular_price ORDER BY m.masp;

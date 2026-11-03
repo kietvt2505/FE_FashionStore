@@ -27,11 +27,11 @@ internal static class CatalogMerchandisingScenarios
         var unassigned=(await client.GetFromJsonAsync<ProductListResponse>("/api/products?audience=NAM"))!;
         Assert.Empty(unassigned.Items); Assert.NotNull(unassigned.Notice);
         await Exec("""
-            UPDATE public.catalog_product SET audience='NAM',regular_price=600 WHERE masp='N1';
-            UPDATE public.catalog_product SET audience='NAM',regular_price=300 WHERE masp='N2';
-            UPDATE public.catalog_product SET audience='NU',regular_price=120 WHERE masp='F1';
-            UPDATE public.catalog_product SET audience='TRE_EM' WHERE masp='K1';
-            UPDATE public.catalog_product SET audience='UNISEX' WHERE masp='X1';
+            UPDATE public.thongtinsanpham SET audience='NAM',regular_price=600 WHERE masp='N1';
+            UPDATE public.thongtinsanpham SET audience='NAM',regular_price=300 WHERE masp='N2';
+            UPDATE public.thongtinsanpham SET audience='NU',regular_price=120 WHERE masp='F1';
+            UPDATE public.thongtinsanpham SET audience='TRE_EM' WHERE masp='K1';
+            UPDATE public.thongtinsanpham SET audience='UNISEX' WHERE masp='X1';
             """);
         await Exec(migration); // Re-running must preserve assignments and sale annotations.
         var male = (await client.GetFromJsonAsync<ProductListResponse>("/api/products?audience=NAM&kind=quan-dai&sort=price_asc&pageSize=1"))!;
@@ -65,7 +65,7 @@ internal static class CatalogMerchandisingScenarios
               ('FB-S','FB','AO','Túi xách nữ','S','Đen',100,2,true),
               ('KH-S','KH','AO','Mũ trẻ em','S','Đỏ',100,2,true),
               ('PENDING-S','PENDING','AO','Quần ngắn nam chưa được nhóm gán','S','Đen',100,2,true);
-            INSERT INTO public.catalog_product(masp,audience,kind) VALUES
+            INSERT INTO public.thongtinsanpham(masp,audience,kind) VALUES
               ('MS','NAM','quan-ngan'),('FS','NU','quan-ngan'),('KS','TRE_EM','quan-ngan'),
               ('MG','NAM','kinh-mat'),('UG','UNISEX','kinh-mat'),('FB','NU','tui-xach'),('KH','TRE_EM','mu'),
               ('PENDING',NULL,'quan-ngan');
@@ -101,7 +101,7 @@ internal static class CatalogMerchandisingScenarios
             await insert.ExecuteNonQueryAsync();
         }
         await Exec(migration);
-        await Exec("UPDATE public.catalog_product SET regular_price=1200 WHERE masp='SP-001'");
+        await Exec("UPDATE public.thongtinsanpham SET regular_price=1200 WHERE masp='SP-001'");
         var assignments=await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,"Supabase-Catalog-Assignments.sql"));
         await Exec(assignments); await Exec(assignments);
         var seededMale=(await client.GetFromJsonAsync<ProductListResponse>("/api/products?q=SP-&audience=NAM&pageSize=100"))!;
@@ -118,7 +118,7 @@ internal static class CatalogMerchandisingScenarios
         Assert.DoesNotContain((await client.GetFromJsonAsync<List<CategoryResponse>>("/api/categories"))!,c=>c.Id=="TEST123");
         Assert.All(seededMale.Items,p=>{Assert.Equal(999,p.Price);Assert.Equal(7,p.Stock);});
         Assert.Equal(1200,seededMale.Items.Single(p=>p.Id=="SP-001").OriginalPrice);
-        await Exec("UPDATE public.catalog_product SET audience='NAM' WHERE masp='SP-001'");
+        await Exec("UPDATE public.thongtinsanpham SET audience='NAM' WHERE masp='SP-001'");
         await Exec(assignments);
         Assert.Equal("NAM",(await client.GetFromJsonAsync<ProductDetailResponse>("/api/products/SP-001"))!.Audience);
         await Exec("UPDATE public.sanpham SET tensanpham='Different product' WHERE masp='SP-002'");

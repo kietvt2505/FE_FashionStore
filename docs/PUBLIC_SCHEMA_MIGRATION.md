@@ -1,5 +1,7 @@
 # Thống nhất website và partner trong schema public
 
+**Cập nhật 03/11/2026:** sau khi partner xóa các bảng tiếng Anh, source hiện dùng tên bảng tiếng Việt và dùng trực tiếp cấu trúc khách hàng/sản phẩm hiện tại. Xem [VIETNAMESE_SCHEMA_SETUP.md](VIETNAMESE_SCHEMA_SETUP.md). Nội dung dưới đây giữ lịch sử lần chuyển schema ngày 02/11.
+
 ## Phạm vi
 
 Bản source này dùng `public` cho toàn bộ bảng, view, sequence và hàm Supabase

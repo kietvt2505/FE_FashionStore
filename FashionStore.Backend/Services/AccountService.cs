@@ -13,8 +13,9 @@ public sealed class AccountService(FashionStoreDbContext db, IPasswordHasher<Tai
     public async Task<CustomerResponse> RegisterAsync(RegisterRequest request, CancellationToken ct)
     {
         var name = request.UserName.Trim().ToLowerInvariant();
+        if(db.Database.IsNpgsql() && name.Length>50)throw new CustomerRequestException(400,"Tên đăng nhập tối đa 50 ký tự.");
         var email = Optional(request.Email);
-        if (await db.CustomerAccounts.AnyAsync(a => a.TenDangNhap == name, ct) ||
+        if (await db.CustomerAccounts.AnyAsync(a => a.TenDangNhap.Trim().ToLower() == name, ct) ||
             await db.Customers.AnyAsync(c => c.SoDienThoai == request.Phone || (email != null && c.Email == email), ct))
             throw new CustomerRequestException(409, "Tên đăng nhập, số điện thoại hoặc email đã được sử dụng.");
         var now = clock.GetLocalNow().DateTime;
@@ -34,7 +35,7 @@ public sealed class AccountService(FashionStoreDbContext db, IPasswordHasher<Tai
     {
         var name = request.UserName.Trim().ToLowerInvariant();
         var account = await db.CustomerAccounts.AsTracking().Include(a => a.Customer)
-            .SingleOrDefaultAsync(a => a.TenDangNhap == name, ct);
+            .SingleOrDefaultAsync(a => a.TenDangNhap.Trim().ToLower() == name, ct);
         var verified = verifier.Verify(account, request.Password);
         if (account == null || !account.TrangThai || !account.Customer.TrangThai || verified == PasswordVerificationResult.Failed)
             throw new CustomerRequestException(401, "Tên đăng nhập hoặc mật khẩu không đúng.");

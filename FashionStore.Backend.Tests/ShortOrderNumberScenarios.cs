@@ -36,7 +36,7 @@ internal static class ShortOrderNumberScenarios
         Assert.Equal(first.OrderId,(await retry.Content.ReadFromJsonAsync<PlaceOrderResponse>())!.OrderId);
         Assert.Equal(HttpStatusCode.NotFound,(await bob.GetAsync("/api/orders/"+first.OrderId)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound,(await alice.GetAsync("/api/orders/"+second.OrderId)).StatusCode);
-        await using var count=new NpgsqlCommand("SELECT count(*) FROM public.order_snapshot WHERE request_id=@request",sql);
+        await using var count=new NpgsqlCommand("SELECT count(*) FROM public.thongtindonhang WHERE request_id=@request",sql);
         count.Parameters.AddWithValue("request",request.RequestId);
         Assert.Equal(2L,(long)(await count.ExecuteScalarAsync())!);
     }

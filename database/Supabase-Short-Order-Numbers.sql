@@ -4,19 +4,19 @@ BEGIN;
 SET LOCAL lock_timeout='5s';
 SET LOCAL statement_timeout='60s';
 DO $$ BEGIN
-    IF to_regclass('public.order_snapshot') IS NULL THEN
+    IF to_regclass('public.thongtindonhang') IS NULL THEN
         RAISE EXCEPTION 'Apply Supabase-Web-Orders.sql first';
     END IF;
 END $$;
-LOCK TABLE public.hoadon,public.order_snapshot IN SHARE ROW EXCLUSIVE MODE;
-ALTER TABLE public.order_snapshot ADD COLUMN IF NOT EXISTS request_id uuid;
+LOCK TABLE public.hoadon,public.thongtindonhang IN SHARE ROW EXCLUSIVE MODE;
+ALTER TABLE public.thongtindonhang ADD COLUMN IF NOT EXISTS request_id uuid;
 CREATE UNIQUE INDEX IF NOT EXISTS ux_web_order_request
-    ON public.order_snapshot(makh,request_id) WHERE request_id IS NOT NULL;
+    ON public.thongtindonhang(makh,request_id) WHERE request_id IS NOT NULL;
 CREATE SEQUENCE IF NOT EXISTS public.web_order_number AS bigint MINVALUE 1 START WITH 1;
 -- Only advance the sequence, including on re-runs. Never reuse codes from retained snapshots.
 DO $$ DECLARE highest numeric; sequence_last bigint; sequence_called boolean; BEGIN
     SELECT COALESCE(max(substring(sohd FROM 5)::numeric),0) INTO highest FROM (
-        SELECT sohd FROM public.hoadon UNION SELECT sohd FROM public.order_snapshot
+        SELECT sohd FROM public.hoadon UNION SELECT sohd FROM public.thongtindonhang
     ) existing WHERE sohd ~ '^WEB-[0-9]{6,19}$';
     IF highest>=9223372036854775807 THEN RAISE EXCEPTION 'Web order sequence limit reached'; END IF;
     SELECT last_value,is_called INTO sequence_last,sequence_called FROM public.web_order_number;
@@ -34,4 +34,4 @@ COMMIT;
 -- Read-only verification; does not consume a number.
 SELECT to_regclass('public.web_order_number') AS bo_dem_ma_don,
        EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public'
-           AND table_name='order_snapshot' AND column_name='request_id') AS co_khoa_chong_trung;
+           AND table_name='thongtindonhang' AND column_name='request_id') AS co_khoa_chong_trung;

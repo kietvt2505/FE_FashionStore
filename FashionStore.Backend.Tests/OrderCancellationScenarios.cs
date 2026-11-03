@@ -48,7 +48,7 @@ internal static class OrderCancellationScenarios
             Assert.Equal("HUY",detail.Status);Assert.Equal("Đã hủy",detail.ShippingStatus);
             Assert.False(detail.CanCancel);Assert.NotNull(detail.CancelledAt);Assert.Equal(DateTimeKind.Utc,detail.CancelledAt.Value.Kind);
             Assert.Single(detail.Items);Assert.Equal(before,await Balance());
-            Assert.Equal(1L,await Scalar<long>($"SELECT count(*) FROM public.order_cancellation WHERE sohd='{id}'"));
+            Assert.Equal(1L,await Scalar<long>($"SELECT count(*) FROM public.lichsuhuydonhang WHERE sohd='{id}'"));
             Assert.Equal("WEB_HUY",await Scalar<string>($"SELECT loaihoadon FROM public.hoadon WHERE sohd='{id}'"));
             Assert.Equal(0L,await Scalar<long>($"SELECT count(*) FROM public.hoadon WHERE sohd='{id}' AND loaihoadon IN ('COD','WEB_COD','GIAO_HANG','WEB_DA_THANH_TOAN','WEB_THANH_TOAN')"));
             Assert.Contains((await alice.GetFromJsonAsync<List<OrderSummary>>("/api/orders?status=HUY"))!,o=>o.OrderId==id);
@@ -79,7 +79,7 @@ internal static class OrderCancellationScenarios
             var rejection=await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT public.cancel_customer_order('{profile.Id}','{id}')"));
             Assert.Equal("P0001",rejection.SqlState);
             Assert.Equal(shipping,await Scalar<string>($"SELECT trangthaigiaohang FROM public.hoadon WHERE sohd='{id}'"));
-            Assert.Equal(0L,await Scalar<long>($"SELECT count(*) FROM public.order_cancellation WHERE sohd='{id}'"));
+            Assert.Equal(0L,await Scalar<long>($"SELECT count(*) FROM public.lichsuhuydonhang WHERE sohd='{id}'"));
             Assert.Equal(before,await Balance());
         }
         // Protect the API during rollout, even if Supabase still has the old, broader function.
@@ -115,7 +115,7 @@ internal static class OrderCancellationScenarios
         // A signed payment arriving after cancellation is retained for staff review, not fulfilled or silently discarded.
         var late=await Place("VNPAY");var lateId=late.Order.OrderId;
         Assert.True((await alice.PostAsync("/api/payments/"+lateId+"/start",null)).IsSuccessStatusCode);
-        var attempt=await Scalar<string>($"SELECT id FROM public.gateway_attempt WHERE sohd='{lateId}'");
+        var attempt=await Scalar<string>($"SELECT id FROM public.yeucauthanhtoantructuyen WHERE sohd='{lateId}'");
         Assert.Equal(HttpStatusCode.NoContent,(await alice.PostAsJsonAsync("/api/orders/"+lateId+"/cancel",new CancelOrderRequest("Không còn nhu cầu mua"))).StatusCode);
         var beforeLate=await Balance();
         var data=new Dictionary<string,string>{["vnp_TmnCode"]="TESTONLY",["vnp_TxnRef"]=attempt,["vnp_Amount"]=decimal.ToInt64(late.Order.Total*100).ToString(System.Globalization.CultureInfo.InvariantCulture),["vnp_ResponseCode"]="00",["vnp_TransactionStatus"]="00",["vnp_TransactionNo"]="910001"};
@@ -125,7 +125,7 @@ internal static class OrderCancellationScenarios
         var lateDetail=(await alice.GetFromJsonAsync<OrderDetails>("/api/orders/"+lateId))!;
         Assert.Equal("CAN_HO_TRO",lateDetail.Status);Assert.Equal("DA_THANH_TOAN",lateDetail.PaymentStatus);
         Assert.False(lateDetail.CanCancel);Assert.NotNull(lateDetail.CancelledAt);Assert.Equal(beforeLate,await Balance());
-        Assert.Equal("REVIEW",await Scalar<string>($"SELECT outcome FROM public.gateway_receipt WHERE attempt_id='{attempt}'"));
+        Assert.Equal("REVIEW",await Scalar<string>($"SELECT outcome FROM public.biennhanthanhtoantructuyen WHERE attempt_id='{attempt}'"));
         // The guard must not suppress the partner's normal deletion of OTHER pending COD invoices.
         var removable=await Place("COD");
         await Exec($"DELETE FROM public.chitiethoadon WHERE sohd='{removable.Order.OrderId}'; DELETE FROM public.hoadon WHERE sohd='{removable.Order.OrderId}'");

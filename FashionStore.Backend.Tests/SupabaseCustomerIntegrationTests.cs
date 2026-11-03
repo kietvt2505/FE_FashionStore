@@ -106,7 +106,7 @@ public sealed class SupabaseCustomerIntegrationTests
         Assert.Equal(HttpStatusCode.OK, (await alice.PutAsJsonAsync("/api/cart/items/SKU-M", new CartQuantityRequest { Quantity = 1 })).StatusCode);
         await using (var cmd = new NpgsqlCommand("SELECT soluongtonkho FROM public.sanpham WHERE masku='SKU-M'", sql))
             Assert.Equal(1, Convert.ToInt32(await cmd.ExecuteScalarAsync())); // Cart never deducts stock.
-        await using (var cmd = new NpgsqlCommand("SELECT matkhauhash FROM public.customer_account WHERE tendangnhap='alice'", sql))
+        await using (var cmd = new NpgsqlCommand("SELECT matkhau FROM public.khachhang WHERE tendangnhap='alice'", sql))
             Assert.NotEqual(password, (string)(await cmd.ExecuteScalarAsync())!);
         await Execute("UPDATE public.sanpham SET trangthai=false WHERE masku='SKU-M'");
         Assert.False((await alice.GetFromJsonAsync<CartResponse>("/api/cart"))!.Items[0].Available);
@@ -155,7 +155,7 @@ public sealed class SupabaseCustomerIntegrationTests
         var oldRequest=checkout with {RequestId=Guid.NewGuid()};
         var oldId="WEB"+Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(owner+":"+oldRequest.RequestId.ToString("D"))))[..27];
         await using(var seed=new NpgsqlCommand("""
-            INSERT INTO public.order_snapshot(sohd,makh,ngaylap,recipient,phone,address,total,paymentmethod)
+            INSERT INTO public.thongtindonhang(sohd,makh,ngaylap,recipient,phone,address,total,paymentmethod)
             VALUES(@id,@kh,CURRENT_TIMESTAMP,'Legacy','0900000001','Synthetic address',500,'COD'),
               ('WEB-000007',@kh,CURRENT_TIMESTAMP,'Reserved','0900000001','Synthetic address',500,'COD')
             """,sql)) {
@@ -166,7 +166,7 @@ public sealed class SupabaseCustomerIntegrationTests
         var numbersMigration=await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,"Supabase-Short-Order-Numbers.sql"));
         await Execute(numbersMigration);await Execute(numbersMigration);
         Assert.Equal(oldId,(await (await alice.PostAsJsonAsync("/api/orders",oldRequest)).Content.ReadFromJsonAsync<PlaceOrderResponse>())!.OrderId);
-        await using(var remove=new NpgsqlCommand("DELETE FROM public.order_snapshot WHERE sohd=@id OR sohd='WEB-000007'",sql)) {
+        await using(var remove=new NpgsqlCommand("DELETE FROM public.thongtindonhang WHERE sohd=@id OR sohd='WEB-000007'",sql)) {
             remove.Parameters.AddWithValue("id",oldId);await remove.ExecuteNonQueryAsync();
         }
         Assert.Equal(HttpStatusCode.BadRequest, (await alice.PostAsJsonAsync("/api/orders", checkout with { PaymentMethod = "INVALID" })).StatusCode);
@@ -187,7 +187,7 @@ public sealed class SupabaseCustomerIntegrationTests
         var justPlaced=(await alice.GetFromJsonAsync<OrderDetails>("/api/orders/"+placed.OrderId))!;
         Assert.Equal(DateTimeKind.Utc,justPlaced.CreatedAt.Kind);
         Assert.True(Math.Abs((DateTime.UtcNow-justPlaced.CreatedAt).TotalSeconds)<60);
-        await using(var clock=new NpgsqlCommand("UPDATE public.order_snapshot SET ngaylap=TIMESTAMP '2026-10-27 06:24:00' WHERE sohd=@id",sql)){
+        await using(var clock=new NpgsqlCommand("UPDATE public.thongtindonhang SET ngaylap=TIMESTAMP '2026-10-27 06:24:00' WHERE sohd=@id",sql)){
             clock.Parameters.AddWithValue("id",placed.OrderId);await clock.ExecuteNonQueryAsync();
         }
         var timestamped=(await alice.GetFromJsonAsync<OrderDetails>("/api/orders/"+placed.OrderId))!;

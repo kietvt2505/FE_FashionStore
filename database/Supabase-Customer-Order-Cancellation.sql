@@ -3,19 +3,19 @@
 BEGIN;
 SET LOCAL lock_timeout='5s';
 SET LOCAL statement_timeout='60s';
-CREATE TABLE IF NOT EXISTS public.order_cancellation (
-    sohd varchar(30) PRIMARY KEY REFERENCES public.order_snapshot(sohd),
+CREATE TABLE IF NOT EXISTS public.lichsuhuydonhang (
+    sohd varchar(30) PRIMARY KEY REFERENCES public.thongtindonhang(sohd),
     makh varchar(20) NOT NULL REFERENCES public.khachhang(makh),
     cancelledat timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     reason varchar(500) NOT NULL DEFAULT 'Khách hàng hủy đơn từ website'
 );
-ALTER TABLE public.order_cancellation ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON public.order_cancellation FROM PUBLIC;
+ALTER TABLE public.lichsuhuydonhang ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.lichsuhuydonhang FROM PUBLIC;
 
 CREATE OR REPLACE FUNCTION public.can_cancel_order(p_customer varchar,p_order varchar)
 RETURNS boolean LANGUAGE sql STABLE SECURITY INVOKER SET search_path=pg_catalog AS $$
     SELECT EXISTS (
-        SELECT 1 FROM public.hoadon h JOIN public.order_snapshot s ON s.sohd=h.sohd AND s.makh=h.makh
+        SELECT 1 FROM public.hoadon h JOIN public.thongtindonhang s ON s.sohd=h.sohd AND s.makh=h.makh
         WHERE s.sohd=p_order AND s.makh=p_customer AND h.nguondon='WEB'
           AND h.loaihoadon IN ('COD','WEB_COD','WEB_CHO_THANH_TOAN')
           AND h.trangthaithanhtoan='CHUA_THANH_TOAN' AND COALESCE(h.tienkhachdua,0)=0
@@ -29,18 +29,18 @@ CREATE OR REPLACE FUNCTION public.cancel_customer_order(p_customer varchar,p_ord
 RETURNS text LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog AS $$
 DECLARE invoice record;
 BEGIN
-    PERFORM 1 FROM public.order_snapshot WHERE sohd=p_order AND makh=p_customer;
+    PERFORM 1 FROM public.thongtindonhang WHERE sohd=p_order AND makh=p_customer;
     IF NOT FOUND THEN RAISE EXCEPTION 'ORDER_NOT_FOUND' USING ERRCODE='P0002'; END IF;
     -- Same invoice lock as bank confirmation and gateway settlement.
-    SELECT h.* INTO invoice FROM public.hoadon h JOIN public.order_snapshot s ON s.sohd=h.sohd AND s.makh=h.makh
+    SELECT h.* INTO invoice FROM public.hoadon h JOIN public.thongtindonhang s ON s.sohd=h.sohd AND s.makh=h.makh
         WHERE s.sohd=p_order AND s.makh=p_customer FOR UPDATE OF h;
-    IF EXISTS(SELECT 1 FROM public.order_cancellation WHERE sohd=p_order AND makh=p_customer) THEN
+    IF EXISTS(SELECT 1 FROM public.lichsuhuydonhang WHERE sohd=p_order AND makh=p_customer) THEN
         RETURN 'ALREADY_CANCELLED';
     END IF;
     IF invoice.sohd IS NULL OR NOT public.can_cancel_order(p_customer,p_order) THEN
         RAISE EXCEPTION 'ORDER_CANNOT_BE_CANCELLED';
     END IF;
-    INSERT INTO public.order_cancellation(sohd,makh) VALUES(p_order,p_customer);
+    INSERT INTO public.lichsuhuydonhang(sohd,makh) VALUES(p_order,p_customer);
     -- WEB_HUY is excluded from the partner's active COD/delivery queues; retain invoice lines for audit.
     UPDATE public.hoadon SET loaihoadon='WEB_HUY',trangthaigiaohang='Đã hủy',tiencod=0 WHERE sohd=p_order;
     RETURN 'CANCELLED';
@@ -70,7 +70,7 @@ REVOKE ALL ON FUNCTION public.can_cancel_order(varchar,varchar),public.cancel_cu
 DO $$ DECLARE r text; BEGIN
     FOREACH r IN ARRAY ARRAY['anon','authenticated'] LOOP
         IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname=r) THEN
-            EXECUTE format('REVOKE ALL ON public.order_cancellation FROM %I',r);
+            EXECUTE format('REVOKE ALL ON public.lichsuhuydonhang FROM %I',r);
             EXECUTE format('REVOKE ALL ON FUNCTION public.can_cancel_order(varchar,varchar),public.cancel_customer_order(varchar,varchar),public.guard_cancelled_web_order() FROM %I',r);
         END IF;
     END LOOP;

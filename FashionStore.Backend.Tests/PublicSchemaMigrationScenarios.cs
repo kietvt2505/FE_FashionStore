@@ -10,15 +10,15 @@ internal static class PublicSchemaMigrationScenarios
     {
         // Recreate the deployed legacy layout from the complete, populated local test installation.
         // Native partner tables remain public. Exercise the actual migration against every website feature.
-        string[] tables=["address","cart","cart_line","catalog_product","customer_account","daily_order_number",
-            "gateway_attempt","gateway_receipt","guest_cart_merge","order_cancellation","order_line_snapshot",
-            "order_pricing","order_refund","order_snapshot","password_reset","payment_confirmation",
-            "product_discount_price","product_media","product_review","return_request","wishlist"];
-        string[] views=["checkout_voucher","customer_refund_queue","sku_price"];
+        string[] tables=["diachikhachhang","giohang","chitietgiohang","thongtinsanpham","sothutudonhangtheongay",
+            "yeucauthanhtoantructuyen","biennhanthanhtoantructuyen","lichsugopgiohang","lichsuhuydonhang","chitietdonhanglucmua",
+            "uudaidonhang","yeucauhoantien","thongtindonhang","yeucaukhoiphucmatkhau","xacnhanthanhtoanchuyenkhoan",
+            "giakhuyenmaisanpham","hinhanhsanpham","danhgiasanpham","yeucaudoitra","sanphamyeuthich"];
+        string[] views=["makhuyenmaihople","danhsachhoantienkhachhang","giabanthuctesanpham"];
         string[] routines=["allocate_order_number","can_cancel_order","cancel_customer_order","capture_cancelled_order_payment",
             "complete_customer_refund","confirm_bank_payment","guard_cancelled_web_order","is_product_promotion",
             "merge_guest_cart","set_product_discount","settle_gateway_payment","submit_refund_account"];
-        string[] sequences=["address_id_seq","cart_magiohang_seq","payos_payment_number","product_media_id_seq","product_review_id_seq","web_order_number"];
+        string[] sequences=["diachikhachhang_id_seq","giohang_magiohang_seq","payos_payment_number","hinhanhsanpham_id_seq","danhgiasanpham_id_seq","web_order_number"];
         async Task Exec(string text){await using var cmd=new NpgsqlCommand(text,sql){CommandTimeout=120};await cmd.ExecuteNonQueryAsync();}
         async Task<T> Value<T>(string text){await using var cmd=new NpgsqlCommand(text,sql);return (T)(await cmd.ExecuteScalarAsync())!;}
         var definitions=new List<(string Name,string Args,string Definition)>();
@@ -46,7 +46,7 @@ internal static class PublicSchemaMigrationScenarios
         await Exec(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,"Supabase-Move-Webstore-To-Public.sql")));
         Assert.True(await Value<bool>("SELECT to_regnamespace('webstore') IS NULL"));
         Assert.Equal(nativeCount,await Value<long>("SELECT count(*) FROM public.sanpham"));
-        Assert.Equal(21L,await Value<long>("SELECT count(*) FROM public.web_schema_migration_20261102 WHERE row_count IS NOT NULL"));
+        Assert.Equal(20L,await Value<long>("SELECT count(*) FROM public.web_schema_migration_20261102 WHERE row_count IS NOT NULL"));
         foreach(var path in new[]{"/api/account/me","/api/cart","/api/orders","/api/customer/returns","/api/customer/wishlist","/api/customer/addresses","/api/customer/reviews/P1/mine","/api/customer/reviews/P1/eligible-orders","/api/products","/api/customer/promotions"})
         {
             Assert.Equal(HttpStatusCode.OK,(await alice.GetAsync(path)).StatusCode);

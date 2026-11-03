@@ -3,16 +3,16 @@
 BEGIN;
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '60s';
-ALTER TABLE public.order_snapshot ADD COLUMN IF NOT EXISTS paymentmethod varchar(50) NOT NULL DEFAULT 'COD';
-CREATE TABLE IF NOT EXISTS public.payment_confirmation (
-    sohd varchar(30) PRIMARY KEY REFERENCES public.order_snapshot(sohd),
+ALTER TABLE public.thongtindonhang ADD COLUMN IF NOT EXISTS paymentmethod varchar(50) NOT NULL DEFAULT 'COD';
+CREATE TABLE IF NOT EXISTS public.xacnhanthanhtoanchuyenkhoan (
+    sohd varchar(30) PRIMARY KEY REFERENCES public.thongtindonhang(sohd),
     reference varchar(150) NOT NULL UNIQUE CHECK (btrim(reference)<>''),
     amount numeric(18,2) NOT NULL CHECK (amount>0),
     employeeid varchar(20) NOT NULL REFERENCES public.nhanvien(manv),
     confirmedat timestamp without time zone NOT NULL DEFAULT LOCALTIMESTAMP
 );
-ALTER TABLE public.payment_confirmation ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON public.payment_confirmation FROM PUBLIC;
+ALTER TABLE public.xacnhanthanhtoanchuyenkhoan ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.xacnhanthanhtoanchuyenkhoan FROM PUBLIC;
 
 -- Privileged backend/SQL Editor only. A customer selecting bank transfer is NOT evidence of payment.
 -- SECURITY INVOKER preserves the caller's normal table permissions; no browser RPC grant.
@@ -31,10 +31,10 @@ BEGIN
     END IF;
     PERFORM 1 FROM public.nhanvien WHERE manv=p_employee AND trangthai=true FOR SHARE;
     IF NOT FOUND THEN RAISE EXCEPTION 'Active confirming employee is required'; END IF;
-    SELECT h.* INTO invoice FROM public.hoadon h JOIN public.order_snapshot s ON s.sohd=h.sohd AND s.makh=h.makh
+    SELECT h.* INTO invoice FROM public.hoadon h JOIN public.thongtindonhang s ON s.sohd=h.sohd AND s.makh=h.makh
     WHERE h.sohd=p_order AND h.nguondon='WEB' AND s.paymentmethod='CHUYEN_KHOAN' FOR UPDATE OF h;
     IF NOT FOUND THEN RAISE EXCEPTION 'Pending website bank-transfer order not found'; END IF;
-    SELECT * INTO existing FROM public.payment_confirmation WHERE sohd=p_order;
+    SELECT * INTO existing FROM public.xacnhanthanhtoanchuyenkhoan WHERE sohd=p_order;
     IF FOUND THEN
         IF existing.reference=btrim(p_reference) AND existing.amount=p_amount THEN
             RETURN 'ALREADY_CONFIRMED';
@@ -70,7 +70,7 @@ BEGIN
                      WHEN tongchitieu+invoice.khachphaitra>5000000 THEN 'Vàng' ELSE 'Bạc' END
     WHERE makh=invoice.makh;
     IF NOT FOUND THEN RAISE EXCEPTION 'Invoice customer is missing'; END IF;
-    INSERT INTO public.payment_confirmation(sohd,reference,amount,employeeid)
+    INSERT INTO public.xacnhanthanhtoanchuyenkhoan(sohd,reference,amount,employeeid)
     VALUES(p_order,btrim(p_reference),p_amount,p_employee);
     UPDATE public.hoadon SET loaihoadon='GIAO_HANG',trangthaithanhtoan='DA_THANH_TOAN',
         tienkhachdua=p_amount,tienthua=0,tiencod=0,trangthaigiaohang='Vừa xác nhận đơn'
@@ -81,11 +81,11 @@ REVOKE ALL ON FUNCTION public.confirm_bank_payment(varchar,varchar,numeric,varch
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
-        REVOKE ALL ON public.payment_confirmation FROM anon;
+        REVOKE ALL ON public.xacnhanthanhtoanchuyenkhoan FROM anon;
         REVOKE ALL ON FUNCTION public.confirm_bank_payment(varchar,varchar,numeric,varchar) FROM anon;
     END IF;
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
-        REVOKE ALL ON public.payment_confirmation FROM authenticated;
+        REVOKE ALL ON public.xacnhanthanhtoanchuyenkhoan FROM authenticated;
         REVOKE ALL ON FUNCTION public.confirm_bank_payment(varchar,varchar,numeric,varchar) FROM authenticated;
     END IF;
 END $$;

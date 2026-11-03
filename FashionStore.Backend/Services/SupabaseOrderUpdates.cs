@@ -22,15 +22,18 @@ public sealed partial class SupabaseOrderService
 
     private static async Task<UpdateState?> ReadUpdateState(NpgsqlConnection c,NpgsqlTransaction tx,string customer,string id,bool locking,CancellationToken ct)
     {
-        bool attemptsInstalled;
-        await using(var installed=Sql(c,tx,"SELECT to_regclass('public.gateway_attempt') IS NOT NULL"))
+        bool attemptsInstalled,nativeQrInstalled;
+        await using(var installed=Sql(c,tx,"SELECT to_regclass('public.yeucauthanhtoantructuyen') IS NOT NULL"))
             attemptsInstalled=Convert.ToBoolean(await installed.ExecuteScalarAsync(ct));
+        await using(var nativeQr=Sql(c,tx,"SELECT to_regclass('public.giaodichthanhtoanqr') IS NOT NULL"))
+            nativeQrInstalled=Convert.ToBoolean(await nativeQr.ExecuteScalarAsync(ct));
         await using var command=Sql(c,tx,$"""
             SELECT h.loaihoadon,COALESCE(h.trangthaigiaohang,''),COALESCE(h.trangthaithanhtoan,''),s.paymentmethod,
                 COALESCE(h.phuongthucthanhtoan,''),COALESCE(h.tienkhachdua,0),h.ngaygiaothanhcong IS NOT NULL,
                 COALESCE(h.nguondon,''),h.xmin::text,s.xmin::text,
-                {(attemptsInstalled?"EXISTS(SELECT 1 FROM public.gateway_attempt a WHERE a.sohd=h.sohd)":"false")},h.khachphaitra
-            FROM public.hoadon h JOIN public.order_snapshot s ON s.sohd=h.sohd AND s.makh=h.makh
+                ({(attemptsInstalled?"EXISTS(SELECT 1 FROM public.yeucauthanhtoantructuyen a WHERE a.sohd=h.sohd)":"false")}
+                 OR {(nativeQrInstalled?"EXISTS(SELECT 1 FROM public.giaodichthanhtoanqr q WHERE q.sohd=h.sohd)":"false")}),h.khachphaitra
+            FROM public.hoadon h JOIN public.thongtindonhang s ON s.sohd=h.sohd AND s.makh=h.makh
             WHERE s.sohd=@id AND s.makh=@customer
             """+(locking?" FOR UPDATE OF h,s":""),("id",id),("customer",customer));
         await using var r=await command.ExecuteReaderAsync(ct);
@@ -60,7 +63,7 @@ public sealed partial class SupabaseOrderService
         // Acquire the same invoice lock as payment creation/settlement, then read a fresh statement snapshot.
         // A payment attempt committed while waiting for this lock must be visible to eligibility checks.
         await using(var invoiceLock=Sql(c,tx,"""
-            SELECT h.sohd FROM public.hoadon h JOIN public.order_snapshot s ON s.sohd=h.sohd AND s.makh=h.makh
+            SELECT h.sohd FROM public.hoadon h JOIN public.thongtindonhang s ON s.sohd=h.sohd AND s.makh=h.makh
             WHERE s.sohd=@id AND s.makh=@customer FOR UPDATE OF h
             """,("id",id),("customer",customer)))
             if(await invoiceLock.ExecuteScalarAsync(ct)==null)throw new CustomerRequestException(404,"Không tìm thấy đơn hàng.");
@@ -72,7 +75,7 @@ public sealed partial class SupabaseOrderService
             if(!state.CanDelivery)throw new CustomerRequestException(409,"Chỉ được cập nhật địa chỉ trước khi đơn được chuẩn bị hoặc giao hàng.");
             await Execute(c,tx,"""
                 UPDATE public.hoadon SET tennguoinhan=@name,sodienthoai_kh=@phone,diachigiao=@address WHERE sohd=@id;
-                UPDATE public.order_snapshot SET recipient=@name,phone=@phone,address=@address WHERE sohd=@id AND makh=@customer;
+                UPDATE public.thongtindonhang SET recipient=@name,phone=@phone,address=@address WHERE sohd=@id AND makh=@customer;
                 """,ct,("id",id),("customer",customer),("name",input.Recipient!.Trim()),("phone",input.Phone!.Trim()),("address",input.Address!.Trim()));
         }
         else
@@ -96,7 +99,7 @@ public sealed partial class SupabaseOrderService
             await Execute(c,tx,"""
                 UPDATE public.hoadon SET phuongthucthanhtoan=@method,loaihoadon=@kind,trangthaigiaohang=@shipping,tiencod=@cod
                     WHERE sohd=@id;
-                UPDATE public.order_snapshot SET paymentmethod=@method WHERE sohd=@id AND makh=@customer;
+                UPDATE public.thongtindonhang SET paymentmethod=@method WHERE sohd=@id AND makh=@customer;
                 """,ct,("id",id),("customer",customer),("method",method),("kind",method=="COD"?"COD":"WEB_CHO_THANH_TOAN"),
                 ("shipping",method=="COD"?"Chờ xác nhận":"Chờ xác nhận thanh toán"),("cod",method=="COD"?state.Total:0m));
         }

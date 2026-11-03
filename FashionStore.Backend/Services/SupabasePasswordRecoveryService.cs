@@ -24,8 +24,9 @@ public sealed class SupabasePasswordRecoveryService(SupabaseCustomerFeaturesServ
         await using var c = data.Connection(); await c.OpenAsync(ct);
         string customer; string version;
         await using (var cmd = SupabaseCustomerFeaturesService.Command(c, null, """
-            SELECT a.makh,a.matkhauhash FROM public.customer_account a JOIN public.khachhang k USING(makh)
-            WHERE lower(btrim(k.email))=lower(@email) AND a.trangthai AND k.trangthai
+            SELECT a.makh,a.matkhau FROM public.khachhang a
+            WHERE lower(btrim(a.email))=lower(@email) AND a.trangthai
+              AND NULLIF(btrim(a.tendangnhap),'') IS NOT NULL AND NULLIF(btrim(a.matkhau),'') IS NOT NULL
             """, ("email", email.Trim())))
         await using (var r = await cmd.ExecuteReaderAsync(ct))
         {
@@ -35,7 +36,7 @@ public sealed class SupabasePasswordRecoveryService(SupabaseCustomerFeaturesServ
         }
         var token = WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(32));
         await using (var cmd = SupabaseCustomerFeaturesService.Command(c, null, """
-            INSERT INTO public.password_reset(tokenhash,makh,passwordversion,expiresatutc)
+            INSERT INTO public.yeucaukhoiphucmatkhau(tokenhash,makh,passwordversion,expiresatutc)
             VALUES(@hash,@kh,@version,CURRENT_TIMESTAMP+INTERVAL '20 minutes')
             """, ("hash", Hash(token)), ("kh", customer), ("version", version)))
             await cmd.ExecuteNonQueryAsync(ct);
@@ -60,10 +61,11 @@ public sealed class SupabasePasswordRecoveryService(SupabaseCustomerFeaturesServ
         await using var tx = await c.BeginTransactionAsync(IsolationLevel.Serializable, ct);
         string customer; string version; string current;
         await using (var cmd = SupabaseCustomerFeaturesService.Command(c, tx, """
-            SELECT a.makh,r.passwordversion,a.matkhauhash FROM public.password_reset r
-            JOIN public.customer_account a USING(makh) JOIN public.khachhang k USING(makh)
+            SELECT a.makh,r.passwordversion,a.matkhau FROM public.yeucaukhoiphucmatkhau r
+            JOIN public.khachhang a USING(makh)
             WHERE r.tokenhash=@hash AND r.usedatutc IS NULL AND r.expiresatutc>CURRENT_TIMESTAMP
-            AND a.trangthai AND k.trangthai FOR UPDATE OF a,r
+            AND a.trangthai AND NULLIF(btrim(a.tendangnhap),'') IS NOT NULL
+            AND NULLIF(btrim(a.matkhau),'') IS NOT NULL FOR UPDATE OF a,r
             """, ("hash", Hash(token))))
         await using (var r = await cmd.ExecuteReaderAsync(ct))
         {
@@ -73,8 +75,8 @@ public sealed class SupabasePasswordRecoveryService(SupabaseCustomerFeaturesServ
         if (CustomerSessions.Version(current) != version) throw new CustomerRequestException(400, "Liên kết không còn hiệu lực.");
         var nextHash = hasher.HashPassword(new TaiKhoanKhachHang(), password);
         await using (var cmd = SupabaseCustomerFeaturesService.Command(c, tx, """
-            UPDATE public.customer_account SET matkhauhash=@password WHERE makh=@kh;
-            UPDATE public.password_reset SET usedatutc=CURRENT_TIMESTAMP WHERE makh=@kh AND usedatutc IS NULL
+            UPDATE public.khachhang SET matkhau=@password WHERE makh=@kh;
+            UPDATE public.yeucaukhoiphucmatkhau SET usedatutc=CURRENT_TIMESTAMP WHERE makh=@kh AND usedatutc IS NULL
             """, ("password", nextHash), ("kh", customer)))
             await cmd.ExecuteNonQueryAsync(ct);
         await tx.CommitAsync(ct);

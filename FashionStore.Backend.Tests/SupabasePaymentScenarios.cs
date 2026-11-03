@@ -44,7 +44,7 @@ internal static class SupabasePaymentScenarios
         await Assert.ThrowsAsync<PostgresException>(() => Confirm(placed.OrderId, 398000, "BANK-001", "MISSING"));
         await Exec("UPDATE public.sanpham SET soluongtonkho=1 WHERE masku='SKU-L'");
         await Assert.ThrowsAsync<PostgresException>(() => Confirm(placed.OrderId, 398000, "BANK-001"));
-        Assert.Equal(0L, await Scalar<long>("SELECT count(*) FROM public.payment_confirmation"));
+        Assert.Equal(0L, await Scalar<long>("SELECT count(*) FROM public.xacnhanthanhtoanchuyenkhoan"));
         await Exec("UPDATE public.sanpham SET soluongtonkho=10 WHERE masku='SKU-L'");
         async Task<string> ParallelConfirm()
         {
@@ -69,7 +69,7 @@ internal static class SupabasePaymentScenarios
         var second = await Place();
         await Assert.ThrowsAsync<PostgresException>(() => Confirm(second.OrderId, 398000, "BANK-001"));
         Assert.Equal(8, await Scalar<int>("SELECT soluongtonkho FROM public.sanpham WHERE masku='SKU-L'"));
-        Assert.Equal(1L, await Scalar<long>("SELECT count(*) FROM public.payment_confirmation"));
+        Assert.Equal(1L, await Scalar<long>("SELECT count(*) FROM public.xacnhanthanhtoanchuyenkhoan"));
         // Paid non-COD delivery in the partner code only changes shipping state; stock was settled above.
         await Exec($"UPDATE public.hoadon SET trangthaigiaohang='Hàng giao thành công' WHERE sohd='{placed.OrderId}'");
         Assert.Equal("HOAN_TAT", (await alice.GetFromJsonAsync<OrderDetails>("/api/orders/" + placed.OrderId))!.Status);

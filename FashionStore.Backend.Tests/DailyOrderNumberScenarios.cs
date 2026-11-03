@@ -25,7 +25,7 @@ internal static class DailyOrderNumberScenarios
             Assert.All(codes,code=>{Assert.StartsWith(prefix,code);Assert.Matches("^HD[0-9]{8}-[0-9]{4}$",code);Assert.DoesNotContain("-0000",code);});
         }
         await Exec("""
-            INSERT INTO public.daily_order_number(sohd,order_day,suffix)
+            INSERT INTO public.sothutudonhangtheongay(sohd,order_day,suffix)
             SELECT 'HD01012099-'||lpad(n::text,4,'0'),DATE '2099-01-01',n FROM generate_series(3,9999) n;
             INSERT INTO public.hoadon(sohd,ngaylap) VALUES('HD01012099-0001',CURRENT_TIMESTAMP);
             """);

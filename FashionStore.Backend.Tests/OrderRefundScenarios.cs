@@ -39,7 +39,7 @@ internal static class OrderRefundScenarios
                 return;
             }
             Assert.True((await alice.PostAsync("/api/payments/"+order.OrderId+"/start",null)).IsSuccessStatusCode);
-            Assert.Equal("PAID",await Scalar<string>($"SELECT public.settle_gateway_payment(id,provider,merchant,amount,'RF-'||id) FROM public.gateway_attempt WHERE sohd='{order.OrderId}' ORDER BY created_at DESC LIMIT 1"));
+            Assert.Equal("PAID",await Scalar<string>($"SELECT public.settle_gateway_payment(id,provider,merchant,amount,'RF-'||id) FROM public.yeucauthanhtoantructuyen WHERE sohd='{order.OrderId}' ORDER BY created_at DESC LIMIT 1"));
         }
         var input=new CancelOrderRequest("Đặt nhầm sản phẩm, muốn chọn mẫu khác","SYNTHETIC CUSTOMER","1234567890","Ngân hàng kiểm thử");
         string? previousRefundReference=null;
@@ -67,8 +67,8 @@ internal static class OrderRefundScenarios
             Assert.Equal("CHO_HOAN_TIEN",detail.Refund.Status);Assert.Equal(order.Total,detail.Refund.Amount);
             Assert.Equal("•••• 7890",detail.Refund.MaskedAccountNumber);Assert.Null(detail.Refund.RefundedAt);
             Assert.DoesNotContain(input.AccountNumber!,await alice.GetStringAsync("/api/orders/"+id));
-            Assert.Equal(1L,await Scalar<long>($"SELECT count(*) FROM public.order_refund WHERE sohd='{id}'"));
-            Assert.True(await Scalar<bool>($"SELECT stock_restored FROM public.order_cancellation WHERE sohd='{id}'"));
+            Assert.Equal(1L,await Scalar<long>($"SELECT count(*) FROM public.yeucauhoantien WHERE sohd='{id}'"));
+            Assert.True(await Scalar<bool>($"SELECT stock_restored FROM public.lichsuhuydonhang WHERE sohd='{id}'"));
             await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT public.complete_customer_refund('{id}','MISSING','REFUND-TEST')"));
             if(previousRefundReference!=null) {
                 var duplicate=await Assert.ThrowsAsync<PostgresException>(()=>Scalar<string>($"SELECT public.complete_customer_refund('{id}','NV01','{previousRefundReference}')"));
@@ -92,7 +92,7 @@ internal static class OrderRefundScenarios
             Assert.Equal(paid,await Balance());
         }
         // The earlier race test produced a verified late payment with no inventory/loyalty effects.
-        var late=await Scalar<string>($"SELECT sohd FROM public.order_refund WHERE makh='{customer.Id}' AND status='CHO_THONG_TIN' ORDER BY createdat LIMIT 1");
+        var late=await Scalar<string>($"SELECT sohd FROM public.yeucauhoantien WHERE makh='{customer.Id}' AND status='CHO_THONG_TIN' ORDER BY createdat LIMIT 1");
         var lateBalance=await Balance();
         Assert.Equal(HttpStatusCode.NotFound,(await bob.PostAsJsonAsync("/api/orders/"+late+"/refund-account",input)).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest,(await alice.PostAsJsonAsync("/api/orders/"+late+"/refund-account",new CancelOrderRequest())).StatusCode);

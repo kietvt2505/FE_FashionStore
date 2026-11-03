@@ -40,7 +40,7 @@ internal static class StorefrontEnhancementScenarios
         Assert.Equal(80000,await Scalar<decimal>("SELECT dongia FROM public.sanpham WHERE masku='SKU-M'"));
         await Exec("SELECT public.set_product_discount('P1',0)");
         Assert.Equal(200000,await Scalar<decimal>("SELECT dongia FROM public.sanpham WHERE masku='SKU-L'"));
-        Assert.True(await Scalar<bool>("SELECT regular_price IS NULL FROM public.catalog_product WHERE masp='P1'"));
+        Assert.True(await Scalar<bool>("SELECT regular_price IS NULL FROM public.thongtinsanpham WHERE masp='P1'"));
         // A new base price entered at POS must not reuse an obsolete base price.
         await Exec("UPDATE public.sanpham SET dongia=250000 WHERE masku='SKU-L';SELECT public.set_product_discount('P1',10)");
         Assert.Equal(225000,await Scalar<decimal>("SELECT dongia FROM public.sanpham WHERE masku='SKU-L'"));
@@ -49,8 +49,8 @@ internal static class StorefrontEnhancementScenarios
         await Assert.ThrowsAsync<PostgresException>(()=>Exec("SELECT public.set_product_discount('P1',100)"));
         Assert.Equal(250000,await Scalar<decimal>("SELECT dongia FROM public.sanpham WHERE masku='SKU-L'"));
         await Exec("""
-            UPDATE public.catalog_product SET description='Mô tả từ cơ sở dữ liệu <không thực thi HTML>' WHERE masp='P1';
-            INSERT INTO public.product_media(masp,color,url,alt,sort_order) VALUES
+            UPDATE public.thongtinsanpham SET description='Mô tả từ cơ sở dữ liệu <không thực thi HTML>' WHERE masp='P1';
+            INSERT INTO public.hinhanhsanpham(masp,color,url,alt,sort_order) VALUES
               ('P1','Đỏ','https://example.test/red-back.png','Mặt sau màu đỏ',1),
               ('P1','Đỏ','https://example.test/red-side.png','Góc nghiêng màu đỏ',2),
               ('P1','Đỏ','https://example.test/red-side.png','Ảnh trùng',3);

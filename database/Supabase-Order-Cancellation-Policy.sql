@@ -13,7 +13,7 @@ END $$;
 CREATE OR REPLACE FUNCTION public.can_cancel_order(p_customer varchar,p_order varchar)
 RETURNS boolean LANGUAGE sql STABLE SECURITY INVOKER SET search_path=pg_catalog AS $$
     SELECT EXISTS (
-        SELECT 1 FROM public.hoadon h JOIN public.order_snapshot s ON s.sohd=h.sohd AND s.makh=h.makh
+        SELECT 1 FROM public.hoadon h JOIN public.thongtindonhang s ON s.sohd=h.sohd AND s.makh=h.makh
         WHERE s.sohd=p_order AND s.makh=p_customer AND h.nguondon='WEB'
           AND h.loaihoadon IN ('COD','WEB_COD','WEB_CHO_THANH_TOAN')
           AND h.trangthaithanhtoan='CHUA_THANH_TOAN' AND COALESCE(h.tienkhachdua,0)=0

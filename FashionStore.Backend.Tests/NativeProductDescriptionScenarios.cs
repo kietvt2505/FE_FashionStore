@@ -16,7 +16,7 @@ internal static class NativeProductDescriptionScenarios
               ('ND-A','DESC-P1','AO','Áo có mô tả','M','Đen',100000,3,true),
               ('ND-B','DESC-P1','AO','Áo có mô tả','L','Đen',100000,4,true),
               ('ND-HIDDEN','DESC-P1','AO','Áo có mô tả','XL','Đen',100000,9,false);
-            INSERT INTO public.catalog_product(masp,description) VALUES('DESC-P1','Mô tả website đã lưu.');
+            INSERT INTO public.thongtinsanpham(masp,description) VALUES('DESC-P1','Mô tả website đã lưu.');
             """);
         // Old schemas continue serving the existing description before the additive migration.
         var legacy=await Detail();
@@ -34,7 +34,7 @@ internal static class NativeProductDescriptionScenarios
         Assert.Equal(legacy.Price,described.Price);Assert.Equal(legacy.Stock,described.Stock);
         await Exec("UPDATE public.sanpham SET mota=NULL WHERE masku='ND-B'");
         Assert.Equal(legacy.Description,(await Detail()).Description);
-        await Exec("UPDATE public.catalog_product SET description=NULL WHERE masp='DESC-P1'");
+        await Exec("UPDATE public.thongtinsanpham SET description=NULL WHERE masp='DESC-P1'");
         Assert.True(string.IsNullOrWhiteSpace((await Detail()).Description));
     }
 }

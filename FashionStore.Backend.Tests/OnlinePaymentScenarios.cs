@@ -36,8 +36,8 @@ internal static class OnlinePaymentScenarios
             if(method!="ZALOPAY")Assert.Contains("vnp_IpAddr=203.0.113.7",link.Url);
             var repeat=(await (await alice.PostAsync("/api/payments/"+order.OrderId+"/start",null)).Content.ReadFromJsonAsync<PaymentLink>())!;
             Assert.Equal(link.Url,repeat.Url);
-            Assert.Equal(1L,await Scalar<long>($"SELECT count(*) FROM public.gateway_attempt WHERE sohd='{order.OrderId}'"));
-            return (order.OrderId,await Scalar<string>($"SELECT id FROM public.gateway_attempt WHERE sohd='{order.OrderId}'"));
+            Assert.Equal(1L,await Scalar<long>($"SELECT count(*) FROM public.yeucauthanhtoantructuyen WHERE sohd='{order.OrderId}'"));
+            return (order.OrderId,await Scalar<string>($"SELECT id FROM public.yeucauthanhtoantructuyen WHERE sohd='{order.OrderId}'"));
         }
         string Vnp(string attempt,long transaction,decimal amount=200000)
         {
@@ -96,7 +96,7 @@ internal static class OnlinePaymentScenarios
         var review=await Place("VNPAY");
         await Exec("UPDATE public.sanpham SET soluongtonkho=0,soluong=0 WHERE masku='SKU-M'");
         await alice.GetAsync("/api/payments/vnpay/ipn?"+Vnp(review.Attempt,11000));
-        Assert.Equal("REVIEW",await Scalar<string>($"SELECT status FROM public.gateway_attempt WHERE id='{review.Attempt}'"));
+        Assert.Equal("REVIEW",await Scalar<string>($"SELECT status FROM public.yeucauthanhtoantructuyen WHERE id='{review.Attempt}'"));
         Assert.Equal(0,await Scalar<int>("SELECT soluongtonkho FROM public.sanpham WHERE masku='SKU-M'"));
         Assert.Equal("CAN_HO_TRO",(await alice.GetFromJsonAsync<OrderDetails>("/api/orders/"+review.Order))!.Status);
     }

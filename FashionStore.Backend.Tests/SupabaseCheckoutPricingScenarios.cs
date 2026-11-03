@@ -18,8 +18,8 @@ internal static class SupabaseCheckoutPricingScenarios
         }
         Assert.False((await alice.GetFromJsonAsync<CartResponse>("/api/cart"))!.SupportsVouchers);
         await Exec(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,"Supabase-Checkout-Promotions.sql")));
-        var previous=await Scalar<string>("SELECT sohd FROM public.payment_confirmation WHERE reference='BANK-001'");
-        await Exec($"INSERT INTO public.order_pricing(sohd,subtotal,discount,voucher) VALUES('{previous}',398000,0,'LEGACY')");
+        var previous=await Scalar<string>("SELECT sohd FROM public.xacnhanthanhtoanchuyenkhoan WHERE reference='BANK-001'");
+        await Exec($"INSERT INTO public.uudaidonhang(sohd,subtotal,discount,voucher) VALUES('{previous}',398000,0,'LEGACY')");
         await Exec("UPDATE public.sanpham SET dongia=100000,soluongtonkho=20,soluong=20,trangthai=true WHERE masku='SKU-L'; UPDATE public.khachhang SET tongchitieu=5000001,diemtichluy=321,hangthe='Bạc' WHERE sodienthoai='0900000001'");
         await Status(HttpStatusCode.OK,alice.DeleteAsync("/api/cart"));
         await Status(HttpStatusCode.OK,alice.PostAsJsonAsync("/api/cart/items",new CartItemRequest {Sku="SKU-L",Quantity=2}));

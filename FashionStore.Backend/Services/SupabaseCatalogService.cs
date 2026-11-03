@@ -9,15 +9,18 @@ namespace FashionStore.Backend.Services;
 public sealed class SupabaseCatalogService(SupabaseCatalogDbContext db) : ICatalogService
 {
     private bool nativePricing;
+    private bool supplementalMetadata;
     private IQueryable<CatalogMerchandising> Classifications() => db.Database.IsRelational()
-        ? db.Merchandising.FromSqlRaw(SupabaseCatalogClassification.Sql).AsNoTracking() : db.Merchandising.AsNoTracking();
+        ? db.Merchandising.FromSqlRaw(SupabaseCatalogClassification.ForSchema(supplementalMetadata)).AsNoTracking() : db.Merchandising.AsNoTracking();
     private IQueryable<SupabaseProduct> Visible() => (nativePricing ? db.Products.FromSqlRaw(SupabaseProductPricing.ProductSql) : db.Products).AsNoTracking()
         .Where(p => p.trangthai && p.Category.trangthai &&
             p.tensanpham.Trim() != "123" && p.Category.tenloai.Trim() != "123");
 
-    private Task<bool> MetadataAvailable(CancellationToken ct) => db.Database.IsRelational()
-        ? db.Database.SqlQueryRaw<bool>("SELECT to_regclass('public.catalog_product') IS NOT NULL AS \"Value\"").SingleAsync(ct)
-        : Task.FromResult(true);
+    private async Task<bool> MetadataAvailable(CancellationToken ct)
+    {
+        supplementalMetadata=db.Database.IsRelational() && await db.Database.SqlQueryRaw<bool>("SELECT to_regclass('public.thongtinsanpham') IS NOT NULL AS \"Value\"").SingleAsync(ct);
+        return true; // Native sanpham.danhmuc and the explicit category taxonomy work without a supplemental table.
+    }
 
     internal IQueryable<SupabaseProduct> Filter(ProductQuery query, bool metadata = true)
     {
@@ -33,7 +36,7 @@ public sealed class SupabaseCatalogService(SupabaseCatalogDbContext db) : ICatal
                 ? products.Where(p => classifications.Any(m => m.masp == p.masp && CatalogTaxonomy.AccessoryKinds.Contains(m.kind!)))
                 : products.Where(p => classifications.Any(m => m.masp == p.masp && m.kind == query.Kind));
         if (query.SaleOnly)
-            products = nativePricing ? products.Where(p=>db.Database.SqlQueryRaw<SkuPrice>("SELECT masku,base_price FROM public.sku_price").Any(s=>s.masku==p.masku && s.base_price>p.dongia))
+            products = nativePricing ? products.Where(p=>db.Database.SqlQueryRaw<SkuPrice>("SELECT masku,base_price FROM public.giabanthuctesanpham").Any(s=>s.masku==p.masku && s.base_price>p.dongia))
                 : products.Where(p => db.Merchandising.Any(m => m.masp == p.masp && m.regular_price > p.dongia));
         var text = query.Q?.Trim();
         if (!string.IsNullOrEmpty(text))
@@ -60,7 +63,7 @@ public sealed class SupabaseCatalogService(SupabaseCatalogDbContext db) : ICatal
         // matching the existing SQL Server catalog's price/stock semantics.
         var matchingIds = Filter(query, metadata).Select(p => p.masp).Distinct();
         var productRows=Visible().Where(p => matchingIds.Contains(p.masp));
-        if(query.SaleOnly && nativePricing)productRows=productRows.Where(p=>db.Database.SqlQueryRaw<SkuPrice>("SELECT masku,base_price FROM public.sku_price").Any(s=>s.masku==p.masku && s.base_price>p.dongia));
+        if(query.SaleOnly && nativePricing)productRows=productRows.Where(p=>db.Database.SqlQueryRaw<SkuPrice>("SELECT masku,base_price FROM public.giabanthuctesanpham").Any(s=>s.masku==p.masku && s.base_price>p.dongia));
         var products = productRows
             .GroupBy(p => p.masp).Select(g => new ProductGroup
             {
@@ -89,11 +92,11 @@ public sealed class SupabaseCatalogService(SupabaseCatalogDbContext db) : ICatal
         var ids = page.Select(p => p.Id).ToArray();
         var rows = await Visible().Where(p => ids.Contains(p.masp)).Include(p => p.Category).ToListAsync(cancellationToken);
         var annotations = metadata ? await Classifications().Where(m => ids.Contains(m.masp)).ToDictionaryAsync(m => m.masp, cancellationToken) : new Dictionary<string, CatalogMerchandising>();
-        var bases=nativePricing?await db.Database.SqlQueryRaw<SkuPrice>("SELECT masku,base_price FROM public.sku_price WHERE masku=ANY({0})",(object)rows.Select(r=>r.masku).ToArray()).ToDictionaryAsync(p=>p.masku,p=>p.base_price,cancellationToken):null;
+        var bases=nativePricing?await db.Database.SqlQueryRaw<SkuPrice>("SELECT masku,base_price FROM public.giabanthuctesanpham WHERE masku=ANY({0})",(object)rows.Select(r=>r.masku).ToArray()).ToDictionaryAsync(p=>p.masku,p=>p.base_price,cancellationToken):null;
         var nativeImages=await SupabaseNativeProductImages.ReadAsync(db,rows.Select(r=>r.masku).ToArray(),cancellationToken);
         var media=new List<MediaRow>();
-        if(ids.Length>0 && db.Database.IsRelational() && await db.Database.SqlQueryRaw<bool>("SELECT to_regclass('public.product_media') IS NOT NULL AS \"Value\"").SingleAsync(cancellationToken))
-            media=await db.Database.SqlQueryRaw<MediaRow>("SELECT masp,color,url,alt FROM public.product_media WHERE masp=ANY({0}) AND active ORDER BY sort_order,id",(object)ids).ToListAsync(cancellationToken);
+        if(ids.Length>0 && db.Database.IsRelational() && await db.Database.SqlQueryRaw<bool>("SELECT to_regclass('public.hinhanhsanpham') IS NOT NULL AS \"Value\"").SingleAsync(cancellationToken))
+            media=await db.Database.SqlQueryRaw<MediaRow>("SELECT masp,color,url,alt FROM public.hinhanhsanpham WHERE masp=ANY({0}) AND active ORDER BY sort_order,id",(object)ids).ToListAsync(cancellationToken);
         var groups = rows.GroupBy(p => p.masp).ToDictionary(g => g.Key, g => Map(g, annotations.GetValueOrDefault(g.Key),extra:nativeImages.Where(m=>m.masp==g.Key).Select(m=>m.ToResponse()).Concat(media.Where(m=>m.masp==g.Key).Select(m=>new ProductImageResponse(null,m.url){Color=m.color,Alt=m.alt})),bases:bases,saleOnly:query.SaleOnly));
         var items = page.Where(p => groups.ContainsKey(p.Id)).Select(p => (ProductSummaryResponse)groups[p.Id]).ToList();
         string? notice = null;
@@ -124,15 +127,15 @@ public sealed class SupabaseCatalogService(SupabaseCatalogDbContext db) : ICatal
             """,(object)rows.Select(r=>r.masku).ToArray()).SingleOrDefaultAsync(cancellationToken);
         var nativeImages=await SupabaseNativeProductImages.ReadAsync(db,rows.Select(r=>r.masku).ToArray(),cancellationToken);
         extra.AddRange(nativeImages.Select(m=>m.ToResponse()));
-        var enhanced=db.Database.IsRelational() && await db.Database.SqlQueryRaw<bool>("SELECT to_regclass('public.product_media') IS NOT NULL AS \"Value\"").SingleAsync(cancellationToken);
+        var enhanced=db.Database.IsRelational() && await db.Database.SqlQueryRaw<bool>("SELECT to_regclass('public.hinhanhsanpham') IS NOT NULL AS \"Value\"").SingleAsync(cancellationToken);
         if(enhanced) {
-            if(String.IsNullOrWhiteSpace(description))description=await db.Database.SqlQueryRaw<string>("SELECT COALESCE(description,'') AS \"Value\" FROM public.catalog_product WHERE masp={0}",id).SingleOrDefaultAsync(cancellationToken);
-            var media=await db.Database.SqlQueryRaw<MediaRow>("SELECT masp,color,url,alt FROM public.product_media WHERE masp={0} AND active ORDER BY sort_order,id",id).ToListAsync(cancellationToken);
+            if(String.IsNullOrWhiteSpace(description))description=await db.Database.SqlQueryRaw<string>("SELECT COALESCE(description,'') AS \"Value\" FROM public.thongtinsanpham WHERE masp={0}",id).SingleOrDefaultAsync(cancellationToken);
+            var media=await db.Database.SqlQueryRaw<MediaRow>("SELECT masp,color,url,alt FROM public.hinhanhsanpham WHERE masp={0} AND active ORDER BY sort_order,id",id).ToListAsync(cancellationToken);
             extra.AddRange(media.Select(m=>new ProductImageResponse(null,m.url){Color=m.color,Alt=m.alt}));
-            var prices=await db.Database.SqlQueryRaw<DiscountRow>("SELECT masku,base_price FROM public.product_discount_price WHERE masp={0} AND percent>0",id).ToListAsync(cancellationToken);
+            var prices=await db.Database.SqlQueryRaw<DiscountRow>("SELECT masku,base_price FROM public.giakhuyenmaisanpham WHERE masp={0} AND percent>0",id).ToListAsync(cancellationToken);
             bases=prices.ToDictionary(p=>p.masku,p=>p.base_price);
         }
-        if(nativePricing)bases=await db.Database.SqlQueryRaw<SkuPrice>("SELECT masku,base_price FROM public.sku_price WHERE masku=ANY({0})",(object)rows.Select(r=>r.masku).ToArray()).ToDictionaryAsync(p=>p.masku,p=>p.base_price,cancellationToken);
+        if(nativePricing)bases=await db.Database.SqlQueryRaw<SkuPrice>("SELECT masku,base_price FROM public.giabanthuctesanpham WHERE masku=ANY({0})",(object)rows.Select(r=>r.masku).ToArray()).ToDictionaryAsync(p=>p.masku,p=>p.base_price,cancellationToken);
         return Map(rows, annotation,description,extra,bases);
     }
     private sealed class MediaRow {public string masp{get;set;}="";public string? color{get;set;} public string url{get;set;}="";public string? alt{get;set;}}
