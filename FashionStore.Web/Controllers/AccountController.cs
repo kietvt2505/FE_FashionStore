@@ -70,6 +70,13 @@ namespace FashionStore.Web.Controllers
                     // Deliberately do not reveal whether a Customer or Admin ID exists.
                     ModelState.AddModelError("", "Tên đăng nhập hoặc mật khẩu không đúng.");
                 }
+                catch (AdminApiException adminError) when (adminError.StatusCode == 503 &&
+                    adminError.Message == "Chức năng này chưa được bật trong giai đoạn chuyển sang Supabase.")
+                {
+                    // The customer API already rejected the credentials. A disabled employee feature
+                    // must not turn that result into a customer-login service outage.
+                    ModelState.AddModelError("", e.Message);
+                }
                 catch (AdminApiException)
                 {
                     ModelState.AddModelError("", "Dịch vụ đăng nhập hiện chưa sẵn sàng. Vui lòng thử lại.");

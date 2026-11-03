@@ -67,9 +67,13 @@ public static class SchemaSetupProgram
     {
         try
         {
-            if(args.Length is not (3 or 4))throw new InvalidOperationException("Can duong dan SQL, metadata va ket qua.");
+            if(args.Length is not (3 or 4) && args.FirstOrDefault()!="--audit-logins")throw new InvalidOperationException("Can duong dan SQL, metadata va ket qua.");
             var connection=Environment.GetEnvironmentVariable("FASHIONSTORE_SCHEMA_SETUP_CONNECTION");
             if(string.IsNullOrWhiteSpace(connection))throw new InvalidOperationException("Chua nhap chuoi ket noi Supabase.");
+            if(args.Length>=3 && args[0]=="--audit-logins")
+            {
+                await LoginAccountAudit.ReadAsync(connection,args[1],args.Skip(2).ToArray());return 0;
+            }
             if(args.Length==4 && args[0]=="--columns")
             {
                 await ColumnSchemaInstaller.ApplyAsync(connection,args[1],args[2],args[3]);
