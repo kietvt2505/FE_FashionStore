@@ -17,7 +17,7 @@ public sealed partial class SupabaseOrderService {
  await using var r=await cmd.ExecuteReaderAsync(ct);return await r.ReadAsync(ct)?new(r.GetString(0),r.GetString(1),r.GetString(2),r.GetString(3),r.GetDecimal(4),r.GetBoolean(5),r.GetString(6),r.GetString(7),r.GetBoolean(8),r.GetDecimal(9)):null;
  }
  private async Task<OrderDetails> WithUpdateCapabilities(NpgsqlConnection c,NpgsqlTransaction tx,OrderDetails order,string customer,CancellationToken ct){
- var s=await ReadUpdateState(c,tx,customer,order.OrderId,false,ct);return order with{CanCancel=s?.CanCancel==true,CanUpdateDelivery=s?.CanDelivery==true,CanUpdatePayment=s?.CanPayment==true,EditVersion=s?.Version,SupportsBankTransfer=mode.BankTransferEnabled,CancellationReason=order.Status=="HUY"?order.Note:null,PaymentUpdateNotice=s?.HasAttempt==true?"Đơn đã có giao dịch QR. Vui lòng liên hệ cửa hàng.":null};
+ var s=await ReadUpdateState(c,tx,customer,order.OrderId,false,ct);return order with{CanCancel=s?.CanCancel==true,CanUpdateDelivery=s?.CanDelivery==true,CanUpdatePayment=s?.CanPayment==true,EditVersion=s?.Version,SupportsBankTransfer=mode.BankTransferEnabled,CancellationReason=order.Status=="HUY"?(order.CancellationReason??order.Note):null,PaymentUpdateNotice=s?.HasAttempt==true?"Đơn đã có giao dịch QR. Vui lòng liên hệ cửa hàng.":null};
  }
  public async Task UpdateInformationAsync(string customer,string id,UpdateOrderRequest input,CancellationToken ct){
  if(input.Section is not ("delivery" or "payment"))throw new CustomerRequestException(400,"Yêu cầu không hợp lệ.");

@@ -130,7 +130,7 @@
                     @if(Model.Refund.MaskedAccountNumber!=null) {<dt>Chủ tài khoản</dt><dd>@Model.Refund.AccountHolder</dd><dt>Tài khoản nhận</dt><dd>@Model.Refund.MaskedAccountNumber · @Model.Refund.BankName</dd>}
                     @if(Model.Refund.RefundedAt.HasValue){<dt>Thời gian hoàn tiền</dt><dd>@CustomerViewHelper.VietnamDate(Model.Refund.RefundedAt.Value)</dd>}
                     </dl>
-                    @if(Model.Refund.Status=="CHO_THONG_TIN") {<p>Cửa hàng ghi nhận tiền đến sau khi đơn đã hủy. Bạn vui lòng bổ sung tài khoản để được đối soát hoàn tiền.</p><button type="button" class="mn-btn mn-btn-primary" data-order-cancel-open>BỔ SUNG TÀI KHOẢN</button>}
+                    @if(Model.Refund.Status=="CHO_THONG_TIN") {<p>Bạn vui lòng bổ sung tài khoản nhận tiền cho phiếu đổi trả để cửa hàng kiểm tra và đối soát hoàn tiền.</p><button type="button" class="mn-btn mn-btn-primary" data-order-cancel-open>BỔ SUNG TÀI KHOẢN</button>}
                     else if(Model.Refund.Status=="CHO_HOAN_TIEN") {<p>Cửa hàng đã nhận thông tin. Trạng thái sẽ đổi sang Đã hoàn tiền sau khi nhân viên xác nhận giao dịch chuyển lại.</p>}
                 </section>
             }

@@ -5,7 +5,7 @@ using FashionStore.Backend.Data;
 using FashionStore.Backend.Middleware;
 using Npgsql;
 namespace FashionStore.Backend.Services;
-public sealed class SupabaseCustomerFeaturesService(DatabaseMode mode){
+public sealed partial class SupabaseCustomerFeaturesService(DatabaseMode mode){
  public NpgsqlConnection Connection()=>new(mode.SupabaseConnection);
  internal static NpgsqlCommand Command(NpgsqlConnection c,NpgsqlTransaction? tx,string text,params (string,object?)[] args)=>SupabaseOrderService.Sql(c,tx,text,args);
  private async Task<List<Dictionary<string,object?>>> Query(string text,CancellationToken ct,params (string,object?)[] args){
@@ -14,10 +14,6 @@ public sealed class SupabaseCustomerFeaturesService(DatabaseMode mode){
  private static CustomerRequestException Deferred()=>new(410,"Chức năng này đang tạm ngưng.");
  public Task<List<Dictionary<string,object?>>> Wishlist(string kh,CancellationToken ct)=>throw Deferred();
  public Task SaveWishlist(string kh,string id,bool remove,CancellationToken ct)=>throw Deferred();
- public Task<List<Dictionary<string,object?>>> Reviews(string id,int page,CancellationToken ct)=>throw Deferred();
- public Task<List<Dictionary<string,object?>>> MyReviews(string kh,string product,int page,CancellationToken ct)=>throw Deferred();
- public Task<List<Dictionary<string,object?>>> ReviewOrders(string kh,string product,CancellationToken ct)=>throw Deferred();
- public Task Review(string kh,ReviewInput input,CancellationToken ct)=>throw Deferred();
  public Task<List<Dictionary<string,object?>>> Addresses(string kh,CancellationToken ct)=>Query("SELECT 0::bigint AS \"Id\",hoten AS \"Recipient\",sodienthoai AS \"Phone\",diachi AS \"Address\" FROM public.khachhang WHERE makh=@kh AND diachi IS NOT NULL",ct,("kh",kh));
  public async Task SaveAddress(string kh,AddressInput input,CancellationToken ct){await using var c=Connection();await c.OpenAsync(ct);await using var cmd=Command(c,null,"UPDATE public.khachhang SET diachi=@address WHERE makh=@kh AND trangthai",("kh",kh),("address",input.Address.Trim()));await cmd.ExecuteNonQueryAsync(ct);}
  public Task UpdateAddress(string kh,long id,AddressInput input,CancellationToken ct)=>id==0?SaveAddress(kh,input,ct):throw new CustomerRequestException(404,"Không tìm thấy địa chỉ.");

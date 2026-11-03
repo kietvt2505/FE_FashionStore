@@ -19,7 +19,7 @@ public sealed class Native18PostgresFactAttribute : FactAttribute {public Native
 public sealed class Native18IntegrationTests
 {
     [Native18PostgresFact]
-    public async Task NativeTablesSupportAccountCatalogOrdersAndReturnsWithoutAdditions()
+    public async Task NativeTablesSupportColumnsReviewsRecoveryAndOrdersWithoutNewTables()
     {
         var settings=new NpgsqlConnectionStringBuilder(Environment.GetEnvironmentVariable("FASHIONSTORE_POSTGRES_TEST_CONNECTION")!);
         Assert.Contains(settings.Host,new[]{"127.0.0.1","localhost","::1"});Assert.Equal("fashionstore_test",settings.Database);
@@ -69,9 +69,21 @@ public sealed class Native18IntegrationTests
             async Task<Dictionary<string,string>> Checksums()
             {
                 var values=new Dictionary<string,string>();
-                foreach(var t in nativeTables){var name=t.GetProperty("name").GetString()!;values[name]=await Scalar<string>("SELECT md5(COALESCE(string_agg(to_jsonb(t)::text,',' ORDER BY to_jsonb(t)::text),'')) FROM public."+Q(name)+" t");}
+                foreach(var t in nativeTables){var name=t.GetProperty("name").GetString()!;values[name]=await Scalar<string>("SELECT md5(COALESCE(string_agg(to_jsonb(t)::text,',' ORDER BY to_jsonb(t)::text),'')) FROM (SELECT "+string.Join(',',t.GetProperty("columns").EnumerateArray().Select(col=>Q(col.GetProperty("name").GetString()!)))+" FROM public."+Q(name)+") t");}
                 return values;
             }
+            var originals=await Checksums();
+            var migrationPath=Path.Combine(AppContext.BaseDirectory,"Supabase-BoSungCot-ChucNang.sql");
+            var contractPath=Path.Combine(AppContext.BaseDirectory,"Supabase_public_metadata_20261103.json");
+            var reportPath=Path.Combine(Path.GetTempPath(),database+"-columns.json");
+            await FashionStore.SchemaSetup.ColumnSchemaInstaller.ApplyAsync(settings.ConnectionString,migrationPath,contractPath,reportPath,true);
+            await FashionStore.SchemaSetup.ColumnSchemaInstaller.ApplyAsync(settings.ConnectionString,migrationPath,contractPath,reportPath,true);
+            Assert.Equal(originals.OrderBy(p=>p.Key),(await Checksums()).OrderBy(p=>p.Key));
+            Assert.Equal(19,FashionStore.SchemaSetup.ColumnSchemaInstaller.Added.Sum(p=>p.Value.Count));
+            var tamperPath=Path.Combine(Path.GetTempPath(),database+"-tamper.sql");
+            await File.WriteAllTextAsync(tamperPath,(await File.ReadAllTextAsync(migrationPath))+"\nUPDATE public.sanpham SET dongia=1;");
+            await Assert.ThrowsAsync<InvalidOperationException>(()=>FashionStore.SchemaSetup.ColumnSchemaInstaller.ApplyAsync(settings.ConnectionString,tamperPath,contractPath,reportPath,true));
+            Assert.Equal(originals.OrderBy(p=>p.Key),(await Checksums()).OrderBy(p=>p.Key));
             await using var factory=new WebApplicationFactory<Program>().WithWebHostBuilder(builder=>{builder.UseEnvironment("Development");builder.ConfigureAppConfiguration((_,c)=>c.AddInMemoryCollection(new Dictionary<string,string?>{["Database:Provider"]="Supabase",["Database:EnableSupabaseCustomerFeatures"]="true",["Database:EnableSupabaseOrders"]="true",["Orders:EnableBankTransfer"]="true",["Orders:EmployeeId"]="NV01",["ConnectionStrings:Supabase"]=settings.ConnectionString}));});
             using var client=factory.CreateClient();
             var login=await client.PostAsJsonAsync("/api/account/login",new LoginRequest{UserName="EXISTING",Password="Existing password 123!"});Assert.True(login.IsSuccessStatusCode,await login.Content.ReadAsStringAsync());client.DefaultRequestHeaders.Authorization=new AuthenticationHeaderValue("Bearer",(await login.Content.ReadFromJsonAsync<LoginResponse>())!.AccessToken);
@@ -84,13 +96,92 @@ public sealed class Native18IntegrationTests
             var update=await client.PutAsJsonAsync("/api/orders/"+placed.OrderId+"/information",new UpdateOrderRequest("delivery",order.EditVersion!,"Ten moi","0900000001","Dia chi da duoc cap nhat"));Assert.True(update.IsSuccessStatusCode,await update.Content.ReadAsStringAsync());
             Assert.Equal(HttpStatusCode.Conflict,(await client.PutAsJsonAsync("/api/orders/"+placed.OrderId+"/information",new UpdateOrderRequest("delivery",order.EditVersion!,"Ten cu","0900000001","Dia chi cu khong ghi de"))).StatusCode);
             Assert.Equal(HttpStatusCode.NoContent,(await client.PostAsJsonAsync("/api/orders/"+placed.OrderId+"/cancel",new CancelOrderRequest("Khong con nhu cau"))).StatusCode);
-            var cancelled=(await client.GetFromJsonAsync<OrderDetails>("/api/orders/"+placed.OrderId))!; Assert.Equal("HUY",cancelled.Status); Assert.Contains("Ghi chu goc",cancelled.Note);
+            var cancelled=(await client.GetFromJsonAsync<OrderDetails>("/api/orders/"+placed.OrderId))!; Assert.Equal("HUY",cancelled.Status); Assert.Equal("Ghi chu goc",cancelled.Note); Assert.Equal("Khong con nhu cau",cancelled.CancellationReason); Assert.NotNull(cancelled.CancelledAt);
             Assert.Equal(2,(await client.GetFromJsonAsync<List<OrderSummary>>("/api/orders"))!.Count);
-            Assert.Equal(HttpStatusCode.Gone,(await client.GetAsync("/api/customer/reviews/P1")).StatusCode);Assert.Equal(HttpStatusCode.Gone,(await client.PostAsJsonAsync("/api/account/recovery",new{Email="test@example.test"})).StatusCode);
+            Assert.Equal(HttpStatusCode.OK,(await client.GetAsync("/api/customer/reviews/P1")).StatusCode);Assert.Equal(HttpStatusCode.ServiceUnavailable,(await client.PostAsJsonAsync("/api/account/recovery",new{Email="test@example.test"})).StatusCode);
             var register=await client.PostAsJsonAsync("/api/account/register",new RegisterRequest{UserName="newcustomer",Password="New password 123!",FullName="New customer",Phone="0900000003"});Assert.True(register.IsSuccessStatusCode,await register.Content.ReadAsStringAsync());
             await Exec("UPDATE public.hoadon SET trangthaigiaohang='Hàng giao thành công',trangthaithanhtoan='DA_THANH_TOAN',ngaygiaothanhcong=LOCALTIMESTAMP WHERE sohd='WEB-HISTORY'");
             var ret=await client.PostAsJsonAsync("/api/customer/returns",new{OrderId="WEB-HISTORY",Sku="SKU-M",Quantity=1,Kind="TRA",Reason="Ly do tra hang",RequestId=Guid.NewGuid()});Assert.True(ret.IsSuccessStatusCode,await ret.Content.ReadAsStringAsync());
             Assert.Equal(1L,await Scalar<long>("SELECT count(*) FROM public.phieudoitra"));Assert.Equal(18L,await Scalar<long>("SELECT count(*) FROM pg_tables WHERE schemaname='public'"));
+
+            // Two SKUs of the same product in one invoice still allow only one review.
+            await Exec("""
+                INSERT INTO public.sanpham(masp,masku,maloai,tensanpham,kichco,mausac,dongia,soluong,soluongtonkho,danhmuc)
+                VALUES('P1','SKU-L','AO','Ao thu L','L','Đen',250000,10,10,'NAM');
+                INSERT INTO public.chitiethoadon(sohd,masku,soluong,dongia,thanhtien,giatrithuctra)
+                VALUES('WEB-HISTORY','SKU-L',1,250000,250000,200000);
+                UPDATE public.chitiethoadon SET giatrithuctra=200000 WHERE sohd='WEB-HISTORY' AND masku='SKU-M';
+                UPDATE public.hoadon SET tongcong=500000,khachphaitra=400000 WHERE sohd='WEB-HISTORY';
+                UPDATE public.sanpham SET tensanpham='Ten moi sau mua',kichco='XXL',mausac='Mau moi',hinhanh='https://example.test/new.png' WHERE masku='SKU-M';
+                """);
+            var snapshot=(await client.GetFromJsonAsync<OrderDetails>("/api/orders/"+placed.OrderId))!;
+            Assert.Equal("Áo thun nam",Assert.Single(snapshot.Items).Name);
+            Assert.Equal("M",snapshot.Items[0].Size);Assert.Equal("Đen",snapshot.Items[0].Color);
+            var review=new ReviewInput{ProductId="P1",OrderId="WEB-HISTORY",Stars=5,Body="Nhan xet thu nghiem"};
+            using(var bob=factory.CreateClient()){
+                var bobLogin=await bob.PostAsJsonAsync("/api/account/login",new LoginRequest{UserName="newcustomer",Password="New password 123!"});
+                bob.DefaultRequestHeaders.Authorization=new AuthenticationHeaderValue("Bearer",(await bobLogin.Content.ReadFromJsonAsync<LoginResponse>())!.AccessToken);
+                Assert.Equal(HttpStatusCode.Conflict,(await bob.PostAsJsonAsync("/api/customer/reviews",review)).StatusCode);
+                Assert.Equal(HttpStatusCode.Conflict,(await bob.PostAsJsonAsync("/api/orders/WEB-HISTORY/refund-account",new CancelOrderRequest(AccountHolder:"BOB",AccountNumber:"12345678",BankName:"Test bank"))).StatusCode);
+            }
+            foreach(var state in new[]{("Chờ xác nhận","DA_THANH_TOAN"),("Hàng giao thành công","CHUA_THANH_TOAN")})
+            {
+                await using(var setState=new NpgsqlCommand("UPDATE public.hoadon SET trangthaigiaohang=@s,trangthaithanhtoan=@p WHERE sohd='WEB-HISTORY'",sql)){
+                    setState.Parameters.AddWithValue("s",state.Item1);setState.Parameters.AddWithValue("p",state.Item2);await setState.ExecuteNonQueryAsync();
+                }
+                Assert.Equal(HttpStatusCode.Conflict,(await client.PostAsJsonAsync("/api/customer/reviews",review)).StatusCode);
+            }
+            await Exec("UPDATE public.hoadon SET trangthaigiaohang='Hàng giao thành công',trangthaithanhtoan='DA_THANH_TOAN' WHERE sohd='WEB-HISTORY'");
+            var eligible=await client.GetFromJsonAsync<List<Dictionary<string,JsonElement>>>("/api/customer/reviews/P1/eligible-orders");Assert.Single(eligible!);
+            var race=await Task.WhenAll(client.PostAsJsonAsync("/api/customer/reviews",review),client.PostAsJsonAsync("/api/customer/reviews",review));
+            Assert.Single(race,r=>r.StatusCode==HttpStatusCode.NoContent);Assert.Single(race,r=>r.StatusCode==HttpStatusCode.Conflict);foreach(var response in race)response.Dispose();
+            Assert.Empty((await client.GetFromJsonAsync<List<Dictionary<string,JsonElement>>>("/api/customer/reviews/P1/eligible-orders"))!);
+            using(var anonymous=factory.CreateClient()){
+                var reviews=(await anonymous.GetFromJsonAsync<List<Dictionary<string,JsonElement>>>("/api/customer/reviews/P1"))!;
+                Assert.Equal(review.Body,Assert.Single(reviews)["NoiDung"].GetString());Assert.DoesNotContain("SoHD",reviews[0].Keys);
+                Assert.Equal(HttpStatusCode.Unauthorized,(await anonymous.GetAsync("/api/customer/reviews/P1/mine")).StatusCode);
+            }
+            var otherSku=await Scalar<string>("SELECT masku FROM public.chitiethoadon WHERE sohd='WEB-HISTORY' AND sosao IS NULL LIMIT 1");
+            await using(var duplicate=new NpgsqlCommand("UPDATE public.chitiethoadon SET sosao=4,noidungdanhgia='Lap',ngaydanhgia=CURRENT_TIMESTAMP,trangthaidanhgia='HIEN_THI' WHERE sohd='WEB-HISTORY' AND masku=@sku",sql)){
+                duplicate.Parameters.AddWithValue("sku",otherSku);var violation=await Assert.ThrowsAsync<PostgresException>(()=>duplicate.ExecuteNonQueryAsync());Assert.Equal("23505",violation.SqlState);
+            }
+            // Refund details are kept on the existing return slip; customer cannot confirm a transfer.
+            var account=await client.PostAsJsonAsync("/api/orders/WEB-HISTORY/refund-account",new CancelOrderRequest(AccountHolder:"KHACH THU",AccountNumber:"1234567890",BankName:"Test bank"));
+            Assert.True(account.IsSuccessStatusCode,await account.Content.ReadAsStringAsync());
+            await Exec("UPDATE public.phieudoitra SET sotienhoan=200000,manv='NV01',trangthai='DA_DUYET' WHERE sohd='WEB-HISTORY'");
+            var pending=(await client.GetFromJsonAsync<OrderDetails>("/api/orders/WEB-HISTORY"))!;
+            Assert.Equal("CHO_HOAN_TIEN",pending.Refund!.Status);Assert.Equal("•••• 7890",pending.Refund.MaskedAccountNumber);Assert.Null(pending.Refund.RefundedAt);
+            await Exec("UPDATE public.phieudoitra SET trangthai='HOAN_TAT',mathamchieuhoantien='THU-001',ngayhoantien=CURRENT_TIMESTAMP WHERE sohd='WEB-HISTORY'");
+            Assert.Equal("DA_HOAN_TIEN",(await client.GetFromJsonAsync<OrderDetails>("/api/orders/WEB-HISTORY"))!.Refund!.Status);
+
+            // Test recovery against a closed localhost SMTP port: no real email is sent.
+            await Exec("UPDATE public.khachhang SET email='existing@example.test' WHERE makh='KH-OLD'");
+            var smtpConfig=new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{
+                ["Recovery:SmtpHost"]="127.0.0.1",["Recovery:SmtpPort"]="15440",["Recovery:From"]="shop@example.test",["Recovery:ResetUrl"]="https://example.test/reset"}).Build();
+            var mode=new DatabaseMode(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{["ConnectionStrings:Supabase"]=settings.ConnectionString}).Build());
+            var recovery=new SupabasePasswordRecoveryService(new SupabaseCustomerFeaturesService(mode),smtpConfig,new PasswordHasher<TaiKhoanKhachHang>(),Microsoft.Extensions.Logging.Abstractions.NullLogger<SupabasePasswordRecoveryService>.Instance);
+            await recovery.Request("unknown@example.test",default);Assert.Equal(0L,await Scalar<long>("SELECT count(*) FROM public.khachhang WHERE makhoiphucbam IS NOT NULL"));
+            await recovery.Request("existing@example.test",default);
+            Assert.True(await Scalar<bool>("SELECT length(makhoiphucbam)=64 AND length(phienmatkhaukhoiphuc)=64 AND hethanmakhoiphuc>CURRENT_TIMESTAMP FROM public.khachhang WHERE makh='KH-OLD'"));
+            static string H(string value)=>Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(value)));
+            var passwordBefore=await Scalar<string>("SELECT matkhau FROM public.khachhang WHERE makh='KH-OLD'");
+            async Task Token(string token,DateTime expires,string email){
+                await using var cmd=new NpgsqlCommand("UPDATE public.khachhang SET makhoiphucbam=@token,hethanmakhoiphuc=@expires,phienmatkhaukhoiphuc=@version WHERE makh='KH-OLD'",sql);
+                cmd.Parameters.AddWithValue("token",H(token));cmd.Parameters.AddWithValue("expires",expires);cmd.Parameters.AddWithValue("version",H(passwordBefore+"\n"+email));await cmd.ExecuteNonQueryAsync();
+            }
+            var expiredToken=new string('E',43);await Token(expiredToken,DateTime.UtcNow.AddMinutes(-1),"existing@example.test");
+            Assert.Equal(HttpStatusCode.BadRequest,(await client.PostAsJsonAsync("/api/account/recovery/reset",new {Token=expiredToken,Password="Changed password 456!"})).StatusCode);
+            var oldEmailToken=new string('B',43);await Token(oldEmailToken,DateTime.UtcNow.AddMinutes(20),"existing@example.test");
+            await Exec("UPDATE public.khachhang SET email='changed@example.test' WHERE makh='KH-OLD'");
+            Assert.Equal(HttpStatusCode.BadRequest,(await client.PostAsJsonAsync("/api/account/recovery/reset",new {Token=oldEmailToken,Password="Changed password 456!"})).StatusCode);
+            var validToken=new string('A',43);await Token(validToken,DateTime.UtcNow.AddMinutes(20),"changed@example.test");
+            var resets=await Task.WhenAll(client.PostAsJsonAsync("/api/account/recovery/reset",new {Token=validToken,Password="Changed password 456!"}),client.PostAsJsonAsync("/api/account/recovery/reset",new {Token=validToken,Password="Changed password 456!"}));
+            Assert.Single(resets,r=>r.StatusCode==HttpStatusCode.NoContent);Assert.Single(resets,r=>r.StatusCode==HttpStatusCode.BadRequest);foreach(var response in resets)response.Dispose();
+            Assert.True(await Scalar<bool>("SELECT makhoiphucbam IS NULL AND hethanmakhoiphuc IS NULL AND phienmatkhaukhoiphuc IS NULL FROM public.khachhang WHERE makh='KH-OLD'"));
+            Assert.Equal(HttpStatusCode.BadRequest,(await client.PostAsJsonAsync("/api/account/recovery/reset",new {Token=validToken,Password="Changed password 456!"})).StatusCode);
+            Assert.Equal(HttpStatusCode.Unauthorized,(await client.GetAsync("/api/account/me")).StatusCode);
+            var renewed=await client.PostAsJsonAsync("/api/account/login",new LoginRequest{UserName="existing",Password="Changed password 456!"});Assert.True(renewed.IsSuccessStatusCode,await renewed.Content.ReadAsStringAsync());
+            Assert.Equal(18L,await Scalar<long>("SELECT count(*) FROM pg_tables WHERE schemaname='public'"));
         }
         finally{NpgsqlConnection.ClearAllPools();await using var drop=new NpgsqlCommand("DROP DATABASE "+database+" WITH(FORCE)",admin);await drop.ExecuteNonQueryAsync();}
     }

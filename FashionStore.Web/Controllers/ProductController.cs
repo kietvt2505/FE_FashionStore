@@ -71,6 +71,15 @@ namespace FashionStore.Web.Controllers
                 var model = await new CatalogRepository().GetDetailAsync(id);
                 if (model.Product == null) return HttpNotFound();
                 model.SelectedColor=FashionStore.Web.Helpers.CatalogViewHelper.InitialColor(model.Variants,color);
+                model.Reviews = await new ProductReviewsService().LoadAsync(id,
+                    User.Identity.IsAuthenticated ? FashionStore.Web.Helpers.CustomerAuthentication.Token(Request) : null, reviewPage);
+                model.Reviews.Color = model.SelectedColor;
+                model.Reviews.ReturnUrl = ViewBag.ShoppingReturnUrl;
+                model.Reviews.Draft.OrderId = reviewOrderId;
+                var draft = TempData["ProductReviewDraft"] as ProductReviewDraft;
+                if (draft != null && draft.ProductId == id) model.Reviews.Draft = draft;
+                model.Reviews.Message = TempData["ProductReviewMessage"] as string;
+
                 try {
                     var related = await new CatalogRepository().SearchAsync(null,null,model.Product.MaLoai,"new",1,5);
                     model.Related = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Take(System.Linq.Enumerable.Where(related.Products, p => p.MaSP != id),4));

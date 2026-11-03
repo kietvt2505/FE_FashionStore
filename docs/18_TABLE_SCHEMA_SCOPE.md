@@ -1,5 +1,7 @@
 # Giới hạn 18 bảng theo sơ đồ đã chốt
 
+**Yêu cầu mới nhất:** vẫn giữ 18 bảng gốc nhưng người dùng đã cho phép bổ sung các cột tiếng Việt phù hợp chức năng. Đã áp dụng 19 cột trên 4 bảng; Supabase xác nhận vẫn 18 bảng, dữ liệu cột gốc giữ nguyên. Đánh giá và khôi phục mật khẩu đã được nối lại bằng cột mới (gửi email cần cấu hình SMTP). Xem [NATIVE18_COLUMNS.md](NATIVE18_COLUMNS.md). Các đoạn dưới ghi lại phạm vi trước khi cho phép bổ sung cột.
+
 Người dùng xác nhận ngày 03/11/2026: chỉ dùng đúng 18 bảng gốc và giữ nguyên cả cột theo sơ đồ. Không tạo bảng thay thế trong schema khác, không thêm cột, không dùng cột ghi chú/mật khẩu để chứa dữ liệu chức năng không liên quan.
 
 ## 18 bảng gốc

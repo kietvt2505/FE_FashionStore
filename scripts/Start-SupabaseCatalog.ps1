@@ -32,9 +32,9 @@ try {
     $env:Orders__EmployeeId = $OrderEmployeeId
     $env:Orders__EnableBankTransfer = $EnableBankTransfer.IsPresent.ToString()
     Write-Host "Starting Supabase backend at http://127.0.0.1:$Port"
-    Write-Host 'Uses the 18 existing partner tables without adding tables or columns.'
+    Write-Host 'Uses the 18 existing partner tables with approved Vietnamese columns. Startup does not modify the schema.'
     if ($EnableCustomerFeatures -or $EnableOrders) {
-        Write-Host 'Customer accounts enabled; carts and favorites stay in the browser. Reviews and email recovery are deferred.'
+        Write-Host 'Customer accounts and inline reviews enabled; carts and favorites stay in the browser. Apply database/Supabase-BoSungCot-ChucNang.sql once.'
     } else { Write-Host 'Read-only catalog mode. Customer accounts and carts are disabled.' }
     if ($EnableOrders) { Write-Host "Orders enabled for employee $OrderEmployeeId. Orders use hoadon and chitiethoadon directly." }
     else { Write-Host 'Checkout is disabled.' }

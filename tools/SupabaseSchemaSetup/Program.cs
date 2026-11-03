@@ -67,9 +67,15 @@ public static class SchemaSetupProgram
     {
         try
         {
-            if(args.Length!=3)throw new InvalidOperationException("Can duong dan SQL, metadata va ket qua.");
+            if(args.Length is not (3 or 4))throw new InvalidOperationException("Can duong dan SQL, metadata va ket qua.");
             var connection=Environment.GetEnvironmentVariable("FASHIONSTORE_SCHEMA_SETUP_CONNECTION");
             if(string.IsNullOrWhiteSpace(connection))throw new InvalidOperationException("Chua nhap chuoi ket noi Supabase.");
+            if(args.Length==4 && args[0]=="--columns")
+            {
+                await ColumnSchemaInstaller.ApplyAsync(connection,args[1],args[2],args[3]);
+                Console.WriteLine("DA BO SUNG COT TIENG VIET. Khong tao/xoa bang; du lieu cot goc giu nguyen.");return 0;
+            }
+            if(args.Length!=3)throw new InvalidOperationException("Tham so khong hop le.");
             await SchemaInstaller.ApplyAsync(connection,args[0],args[1],args[2]);
             Console.WriteLine("DA CAI BANG TIENG VIET. Du lieu 18 bang goc duoc giu nguyen.");return 0;
         }
