@@ -59,7 +59,7 @@ public sealed class Native18IntegrationTests
                 INSERT INTO public.hoadon(sohd,makh,nguondon,loaihoadon,phuongthucthanhtoan,trangthaigiaohang,trangthaithanhtoan,tongcong,khachphaitra,tennguoinhan,diachigiao,sodienthoai_kh,manv)
                 VALUES('WEB-HISTORY','KH-OLD','WEB','COD','COD','Chờ xác nhận','CHUA_THANH_TOAN',250000,200000,'Khach cu','Dia chi cu hien tai','0900000001','NV01');
                 INSERT INTO public.chitiethoadon VALUES('WEB-HISTORY','SKU-M',1,250000,250000);
-                INSERT INTO public.khuyenmai(makm,tenchuongtrinh,loaikm,giatrigiam,ngaybatdau,ngayketthuc,trangthai) VALUES('KM1','Giam SKU','PHAN_TRAM',20,CURRENT_DATE-1,CURRENT_DATE+1,true);
+                INSERT INTO public.khuyenmai(makm,tenchuongtrinh,loaikm,giatrigiam,ngaybatdau,ngayketthuc,trangthai) VALUES('KM1','Giam SKU','PHAN_TRAM',20,CURRENT_DATE-2,CURRENT_DATE+2,true);
                 INSERT INTO public.khuyenmaisanpham VALUES('KM1','SKU-M',20);
                 INSERT INTO public.giaodichthanhtoanqr(magd,sohd,nguondon,sotien,malienket,duongdanthanhtoan,manganhang,sotaikhoan,tentaikhoan,noidung,trangthai)
                 VALUES(1,'POS-QR','POS',50000,'native-link','https://pay.payos.vn/native','TEST','123456','SHOP','Native QR','CHO_THANH_TOAN');
@@ -181,6 +181,25 @@ public sealed class Native18IntegrationTests
             Assert.Equal(HttpStatusCode.BadRequest,(await client.PostAsJsonAsync("/api/account/recovery/reset",new {Token=validToken,Password="Changed password 456!"})).StatusCode);
             Assert.Equal(HttpStatusCode.Unauthorized,(await client.GetAsync("/api/account/me")).StatusCode);
             var renewed=await client.PostAsJsonAsync("/api/account/login",new LoginRequest{UserName="existing",Password="Changed password 456!"});Assert.True(renewed.IsSuccessStatusCode,await renewed.Content.ReadAsStringAsync());
+            // Restore only missing credentials on an identified existing profile, never overwrite an account.
+            var restoreReport=Path.Combine(Path.GetTempPath(),database+"-restore.json");
+            var profileQuery="SELECT (to_jsonb(k)-ARRAY['tendangnhap','matkhau','makhoiphucbam','hethanmakhoiphuc','phienmatkhaukhoiphuc'])::text FROM public.khachhang k WHERE makh='KH-POS'";
+            var profileBefore=await Scalar<string>(profileQuery);
+            await Assert.ThrowsAsync<InvalidOperationException>(()=>FashionStore.SchemaSetup.CustomerLoginRestore.RestoreAsync(settings.ConnectionString,"KH-POS","restored-pos","other@example.test","0900000002","Restored password 123!",restoreReport,true));
+            await Assert.ThrowsAsync<InvalidOperationException>(()=>FashionStore.SchemaSetup.CustomerLoginRestore.RestoreAsync(settings.ConnectionString,"KH-POS","existing","pos@example.test","0900000002","Restored password 123!",restoreReport,true));
+            Assert.True(await Scalar<bool>("SELECT tendangnhap IS NULL AND matkhau IS NULL FROM public.khachhang WHERE makh='KH-POS'"));
+            await FashionStore.SchemaSetup.CustomerLoginRestore.RestoreAsync(settings.ConnectionString,"KH-POS","restored-pos","pos@example.test","+84900000002","Restored password 123!",restoreReport,true);
+            Assert.Equal(profileBefore,await Scalar<string>(profileQuery));
+            var restoredHash=await Scalar<string>("SELECT matkhau FROM public.khachhang WHERE makh='KH-POS'");
+            Assert.NotEqual("Restored password 123!",restoredHash);
+            using(var restoredClient=factory.CreateClient()){
+                var restoredLogin=await restoredClient.PostAsJsonAsync("/api/account/login",new LoginRequest{UserName="RESTORED-POS",Password="Restored password 123!"});
+                Assert.True(restoredLogin.IsSuccessStatusCode,await restoredLogin.Content.ReadAsStringAsync());
+                restoredClient.DefaultRequestHeaders.Authorization=new AuthenticationHeaderValue("Bearer",(await restoredLogin.Content.ReadFromJsonAsync<LoginResponse>())!.AccessToken);
+                Assert.Equal("KH-POS",(await restoredClient.GetFromJsonAsync<CustomerResponse>("/api/account/me"))!.Id);
+            }
+            await Assert.ThrowsAsync<InvalidOperationException>(()=>FashionStore.SchemaSetup.CustomerLoginRestore.RestoreAsync(settings.ConnectionString,"KH-POS","restored-pos","pos@example.test","0900000002","Different password 123!",restoreReport,true));
+            Assert.Equal(restoredHash,await Scalar<string>("SELECT matkhau FROM public.khachhang WHERE makh='KH-POS'"));
             Assert.Equal(18L,await Scalar<long>("SELECT count(*) FROM pg_tables WHERE schemaname='public'"));
         }
         finally{NpgsqlConnection.ClearAllPools();await using var drop=new NpgsqlCommand("DROP DATABASE "+database+" WITH(FORCE)",admin);await drop.ExecuteNonQueryAsync();}

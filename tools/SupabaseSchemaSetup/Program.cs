@@ -67,9 +67,16 @@ public static class SchemaSetupProgram
     {
         try
         {
-            if(args.Length is not (3 or 4) && args.FirstOrDefault()!="--audit-logins")throw new InvalidOperationException("Can duong dan SQL, metadata va ket qua.");
+            if(args.Length is not (3 or 4) && args.FirstOrDefault() is not ("--audit-logins" or "--restore-login"))throw new InvalidOperationException("Can duong dan SQL, metadata va ket qua.");
             var connection=Environment.GetEnvironmentVariable("FASHIONSTORE_SCHEMA_SETUP_CONNECTION");
             if(string.IsNullOrWhiteSpace(connection))throw new InvalidOperationException("Chua nhap chuoi ket noi Supabase.");
+            if(args.Length==6 && args[0]=="--restore-login")
+            {
+                var password=Environment.GetEnvironmentVariable("FASHIONSTORE_LOGIN_PASSWORD");
+                Environment.SetEnvironmentVariable("FASHIONSTORE_LOGIN_PASSWORD",null);
+                if(string.IsNullOrWhiteSpace(password))throw new InvalidOperationException("Chua nhap mat khau moi.");
+                await CustomerLoginRestore.RestoreAsync(connection,args[2],args[3],args[4],args[5],password,args[1]);return 0;
+            }
             if(args.Length>=3 && args[0]=="--audit-logins")
             {
                 await LoginAccountAudit.ReadAsync(connection,args[1],args.Skip(2).ToArray());return 0;
