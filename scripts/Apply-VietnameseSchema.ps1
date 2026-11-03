@@ -1,5 +1,6 @@
 param([string]$ResultPath,[switch]$StartBackend,[switch]$EnableBankTransfer,[string]$OrderEmployeeId='NV-001',[int]$Port=5000)
 $ErrorActionPreference='Stop'
+throw 'Bo cai nay da ngung su dung: du an chi duoc dung 18 bang goc va cac cot theo so do da chot. Khong ap dung lai 17 bang bo sung.'
 $schemaRoot=Split-Path -Parent $PSScriptRoot
 if([string]::IsNullOrWhiteSpace($ResultPath)){$ResultPath=Join-Path $schemaRoot 'evidence/vietnamese-schema-live-result.json'}
 $setupProject=Join-Path $schemaRoot 'tools/SupabaseSchemaSetup/SupabaseSchemaSetup.csproj'

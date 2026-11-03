@@ -1,5 +1,7 @@
 # Website dùng bảng tiếng Việt và cấu trúc partner hiện tại
 
+**Đã ngừng áp dụng:** team chốt chỉ dùng 18 bảng gốc và giữ nguyên các cột theo sơ đồ. Bộ cài 17 bảng bổ sung bên dưới chỉ còn dùng làm lịch sử/kiểm thử localhost và đã bị chặn khi chạy trên database thật. Source đang được rà để chuyển về 18 bảng; thông tin triển khai 35 bảng dưới đây ghi lại trạng thái trước khi đổi yêu cầu. Xem [18_TABLE_SCHEMA_SCOPE.md](18_TABLE_SCHEMA_SCOPE.md).
+
 Ngày: 03/11/2026. Project: Khoa Luan Cu Nhan (`oagcfzcslkkiokbmkrlg`), database `postgres`, schema `public`.
 
 ## Cấu trúc đã đọc trực tiếp

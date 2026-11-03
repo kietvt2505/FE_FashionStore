@@ -1,5 +1,7 @@
 # Thống nhất website và partner trong schema public
 
+**Quy định hiện tại:** chỉ dùng 18 bảng gốc, giữ nguyên các cột trong sơ đồ đã chốt. Không chạy lại bộ cài bảng bổ sung. Xem [18_TABLE_SCHEMA_SCOPE.md](18_TABLE_SCHEMA_SCOPE.md) để phân biệt giới hạn hiện tại và lịch sử triển khai bên dưới.
+
 **Cập nhật 03/11/2026:** sau khi partner xóa các bảng tiếng Anh, source hiện dùng tên bảng tiếng Việt và dùng trực tiếp cấu trúc khách hàng/sản phẩm hiện tại. Xem [VIETNAMESE_SCHEMA_SETUP.md](VIETNAMESE_SCHEMA_SETUP.md). Nội dung dưới đây giữ lịch sử lần chuyển schema ngày 02/11.
 
 ## Phạm vi

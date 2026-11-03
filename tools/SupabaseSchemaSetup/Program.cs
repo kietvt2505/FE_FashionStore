@@ -10,16 +10,13 @@ public static class SchemaInstaller
     private static string Q(string value)=>"\""+value.Replace("\"","\"\"")+"\"";
     public static async Task ApplyAsync(string connectionString,string sqlFile,string contractFile,string outputFile,bool localTest=false)
     {
+        if(!localTest)throw new InvalidOperationException("Bo cai 17 bang bo sung da ngung su dung. Du an chi dung 18 bang goc va cac cot theo so do da chot.");
         var settings=new NpgsqlConnectionStringBuilder(connectionString){Timeout=20,CommandTimeout=120,Pooling=false};
         var loopback=settings.Host is "localhost" or "127.0.0.1" or "::1";
         if(localTest)
         {
             if(!loopback||!(settings.Database??"").StartsWith("fashionstore_vietnamese_",StringComparison.Ordinal))throw new InvalidOperationException("Sai database thu nghiem.");
         }
-        else if(settings.Database!="postgres" ||
-            !(settings.Host??"").Contains("oagcfzcslkkiokbmkrlg",StringComparison.OrdinalIgnoreCase) &&
-            !(settings.Username??"").Contains("oagcfzcslkkiokbmkrlg",StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("Chi ap dung cho project Khoa Luan Cu Nhan da thong nhat.");
         using var contract=JsonDocument.Parse(await File.ReadAllTextAsync(contractFile));
         var native=contract.RootElement.GetProperty("relations").EnumerateArray().Where(r=>r.GetProperty("kind").GetString()=="r").ToArray();
         var text=await File.ReadAllTextAsync(sqlFile);

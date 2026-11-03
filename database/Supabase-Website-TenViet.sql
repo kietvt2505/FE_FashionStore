@@ -6,6 +6,12 @@
 BEGIN;
 SET LOCAL lock_timeout='5s';
 SET LOCAL statement_timeout='120s';
+-- Lich su/kiem thu localhost: du an da chot chi 18 bang goc, giu nguyen cac cot.
+DO $$ BEGIN
+    IF current_database() NOT LIKE 'fashionstore_vietnamese_%' THEN
+        RAISE EXCEPTION 'Bo cai 17 bang bo sung da ngung su dung. Khong ap dung tren database that.';
+    END IF;
+END $$;
 DO $$ BEGIN
     PERFORM makh,tendangnhap,matkhau,nhankhuyenmai FROM public.khachhang LIMIT 0;
     PERFORM masp,masku,maloai,dongia,soluongtonkho,danhmuc,danhsachhinhanh,mota FROM public.sanpham LIMIT 0;
