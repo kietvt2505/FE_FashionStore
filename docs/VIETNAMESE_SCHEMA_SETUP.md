@@ -59,6 +59,10 @@ Nếu chỉ chạy backend sau khi đã cài:
 
 ## Kiểm thử
 
+Đã áp dụng thành công lên Supabase lúc 13:43 ngày 03/11/2026 (Asia/Ho_Chi_Minh): 35 bảng public, gồm 17 bảng bổ sung; checksum dữ liệu cả 18 bảng gốc giữ nguyên. Có 16 hóa đơn WEB hiện có được liên kết lại bằng cùng mã hóa đơn. Backend localhost:5000 đã trả trạng thái `database-connected`, danh sách 92 sản phẩm, chi tiết SP-092 và API đánh giá đọc thành công.
+
+Website `http://localhost:58472` đã được khởi động lại. Danh sách sản phẩm Nam và chi tiết SP-092/SP-026 trả HTTP 200; trang chi tiết có phần đánh giá bên dưới sản phẩm. Đây là kiểm tra HTTP thực tế; chưa kiểm tra trực quan bằng trình duyệt vì Local browser use đang tắt.
+
 - 206 kiểm thử đạt trên PostgreSQL localhost; 15 kiểm thử SQL Server được bỏ qua do không có SQL Server thử nghiệm.
 - Dựng lại cấu trúc 18 bảng/cột/khóa/view từ metadata thật, tạo dữ liệu giả, chạy bộ cài hai lần; checksum dữ liệu gốc giữ nguyên, có 35 bảng public và không tạo lại các bảng tiếng Anh cũ.
 - Dùng tài khoản ngay trong khachhang để đăng nhập; đăng ký, sửa hồ sơ, đổi mật khẩu và thu hồi phiên cũ đã được kiểm tra trên cấu trúc hiện tại. Khách tại quầy chưa có thông tin đăng nhập không phát sinh token khôi phục mật khẩu.
