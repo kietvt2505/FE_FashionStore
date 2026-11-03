@@ -10,26 +10,9 @@ namespace FashionStore.Backend.Services;
 public sealed class CartService(FashionStoreDbContext db, TimeProvider clock, DatabaseMode? mode = null)
 {
     public Task<CartResponse> GetAsync(string customerId, CancellationToken ct) => ReadAsync(customerId, ct);
-    public async Task<CartResponse> MergeAsync(string customerId,GuestCartMergeRequest request,CancellationToken ct)
+    public Task<CartResponse> MergeAsync(string customerId,GuestCartMergeRequest request,CancellationToken ct)
     {
-        if(request.RequestId==Guid.Empty || request.Items==null || request.Items.Count is <1 or >50 ||
-           request.Items.Any(i=>i==null || string.IsNullOrWhiteSpace(i.Sku) || i.Sku.Length>40 || i.Quantity<1))
-            throw new CustomerRequestException(400,"Giỏ hàng khách không hợp lệ.");
-        if(!db.Database.IsNpgsql() || mode==null)throw new CustomerRequestException(503,"Gộp giỏ hàng chưa được bật.");
-        await using var c=new Npgsql.NpgsqlConnection(mode.SupabaseConnection);await c.OpenAsync(ct);
-        await using var check=new Npgsql.NpgsqlCommand("""
-            SELECT to_regclass('public.lichsugopgiohang') IS NOT NULL
-               AND to_regprocedure('public.merge_guest_cart(character varying,uuid,jsonb)') IS NOT NULL
-               AND to_regclass('public.giohang') IS NOT NULL
-               AND to_regclass('public.chitietgiohang') IS NOT NULL
-            """,c);
-        if(!Convert.ToBoolean(await check.ExecuteScalarAsync(ct)))throw new CustomerRequestException(503,"Chức năng gộp giỏ hàng chưa sẵn sàng. Sản phẩm bạn đã chọn vẫn được giữ lại; vui lòng thử lại sau.");
-        var json=System.Text.Json.JsonSerializer.Serialize(request.Items.Select(i=>new{sku=i.Sku,quantity=i.Quantity}));
-        await using var cmd=new Npgsql.NpgsqlCommand("SELECT public.merge_guest_cart(@kh,@request,@lines::jsonb)",c);
-        cmd.Parameters.AddWithValue("kh",customerId);cmd.Parameters.AddWithValue("request",request.RequestId);cmd.Parameters.AddWithValue("lines",json);
-        try{await cmd.ExecuteScalarAsync(ct);}catch(Npgsql.PostgresException e) when(e.SqlState=="P0001")
-        {throw new CustomerRequestException(409,"Chưa thể gộp giỏ vì sản phẩm hoặc tồn kho đã thay đổi. Vui lòng kiểm tra lại.");}
-        return await ReadAsync(customerId,ct);
+        throw new CustomerRequestException(410,"Giỏ hàng được lưu trên trình duyệt.");
     }
 
     // PUT quantity is absolute, so retries do not add the same quantity twice.

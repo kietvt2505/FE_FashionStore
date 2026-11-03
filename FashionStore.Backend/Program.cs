@@ -108,6 +108,7 @@ app.Use(async (context, next) =>
 {
     var controller = context.GetEndpoint()?.Metadata.GetMetadata<Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor>();
     var mode = context.RequestServices.GetRequiredService<DatabaseMode>();
+    if(mode.IsSupabase && controller?.ControllerTypeInfo.AsType()==typeof(FashionStore.Backend.Controllers.CartController)){await Results.Problem(statusCode:410,title:"Giỏ hàng được lưu trên trình duyệt.").ExecuteAsync(context);return;}
     var customerController = controller?.ControllerTypeInfo.AsType() == typeof(FashionStore.Backend.Controllers.AccountController) ||
         controller?.ControllerTypeInfo.AsType() == typeof(FashionStore.Backend.Controllers.CartController) ||
         controller?.ControllerTypeInfo.AsType() == typeof(FashionStore.Backend.Controllers.CustomerFeaturesController) ||

@@ -18,7 +18,7 @@ namespace FashionStore.Web.Controllers
             if (String.IsNullOrEmpty(token)) return LoginAgain();
             try
             {
-                var cart = await api.CartAsync(token);
+                var cart = await GuestCartStore.ReadAsync(Session);
                 if (cart.Items.Count == 0 || !cart.CanCheckout || !cart.CheckoutEnabled) return RedirectToAction("Index", "Cart");
                 var customer = await api.ProfileAsync(token);
                 if(addressId.HasValue) {
@@ -50,7 +50,7 @@ namespace FashionStore.Web.Controllers
             {
                 try
                 {
-                    var result = await api.PlaceOrderAsync(token, model);
+                    model.BrowserItems=GuestCartStore.Items(Session); var result = await api.PlaceOrderAsync(token, model); GuestCartStore.Clear(Session);
                     if(result.Status!="CAN_HO_TRO" && CustomerViewHelper.IsOnlinePayment(result.PaymentMethod))
                     {
                         try{return Redirect((await api.StartPaymentAsync(token,result.OrderId,Request.UserHostAddress)).Url);}
@@ -67,7 +67,7 @@ namespace FashionStore.Web.Controllers
                 }
                 catch (Exception) { ModelState.AddModelError("", "Không rõ đơn hàng đã được tạo chưa. Vui lòng kiểm tra lịch sử trước khi thử lại."); }
             }
-            try { model.Cart = await api.CartAsync(token);model.OnlineMethods=await api.PaymentOptionsAsync(token); if(model.Cart.Items.Count>0)await ApplyRequestedQuote(model,token); }
+            try { model.Cart = await GuestCartStore.ReadAsync(Session);model.OnlineMethods=await api.PaymentOptionsAsync(token); if(model.Cart.Items.Count>0)await ApplyRequestedQuote(model,token); }
             catch (CustomerApiException e) { if (e.StatusCode == 401) return LoginAgain(); return Unavailable(); }
             catch (Exception) { return Unavailable(); }
             if (model.Cart.Items.Count == 0) return RedirectToAction("Index", "Orders");
@@ -77,13 +77,13 @@ namespace FashionStore.Web.Controllers
         {
             try {
                 if(!String.IsNullOrWhiteSpace(model.Voucher)&&model.Voucher.Trim().Length>20) {
-                    ModelState.AddModelError("Voucher","Mã giảm giá tối đa 20 ký tự.");ApplyQuote(model,await api.QuoteAsync(token));return;
+                    ModelState.AddModelError("Voucher","Mã giảm giá tối đa 20 ký tự.");ApplyQuote(model,await api.QuoteAsync(token,null,GuestCartStore.Items(Session)));return;
                 }
-                ApplyQuote(model,await api.QuoteAsync(token,model.Voucher));
+                ApplyQuote(model,await api.QuoteAsync(token,model.Voucher,GuestCartStore.Items(Session)));
             }
             catch(CustomerApiException e) when(e.StatusCode!=401&&!String.IsNullOrWhiteSpace(model.Voucher)) {
                 ModelState.AddModelError("Voucher",e.Message);
-                ApplyQuote(model,await api.QuoteAsync(token));
+                ApplyQuote(model,await api.QuoteAsync(token,null,GuestCartStore.Items(Session)));
             }
         }
         private static void ApplyQuote(CheckoutViewModel model,Newtonsoft.Json.Linq.JObject quote)

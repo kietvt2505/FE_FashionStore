@@ -20,7 +20,7 @@ public sealed class SupabaseCatalogDbContext(DbContextOptions<SupabaseCatalogDbC
         c.ToTable("loaisanpham", "public");
         c.HasKey(x => x.maloai);
         var m = model.Entity<CatalogMerchandising>();
-        m.ToTable("thongtinsanpham", "public"); m.HasKey(x => x.masp);
+        m.ToView("sanpham", "public"); m.HasKey(x => x.masp);
         m.Property(x => x.regular_price).HasPrecision(18, 2);
     }
 

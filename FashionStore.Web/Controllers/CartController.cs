@@ -11,7 +11,7 @@ namespace FashionStore.Web.Controllers
     public class CartController:Controller
     {
         private readonly CustomerApiClient api=new CustomerApiClient();
-        private bool Guest {get{return !User.Identity.IsAuthenticated;}}
+        private bool Guest {get{return true;}}
         [HttpGet] public async Task<ActionResult> Count() {
             if(Guest)return Json(new{count=GuestCartStore.Items(Session).Sum(i=>(long)i.Quantity)},JsonRequestBehavior.AllowGet);
             try{return Json(new{count=(await api.CartAsync(CustomerAuthentication.Token(Request))).TotalQuantity},JsonRequestBehavior.AllowGet);}

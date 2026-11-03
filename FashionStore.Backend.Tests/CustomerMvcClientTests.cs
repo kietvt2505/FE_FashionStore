@@ -34,7 +34,7 @@ public sealed class CustomerMvcClientTests
         var api=new CustomerApiClient(http,"http://backend.test/");
         await api.PlaceOrderAsync("owner",new CheckoutViewModel{Recipient="Customer",Phone="0900000001",Address="Delivery address",PaymentMethod="COD",RequestId=Guid.NewGuid(),Voucher="FORGED",MemberRate=100,MemberPoints=999999,QuotedTotal=1});
         var body=Assert.Single(handler.Requests).Body!;
-        Assert.Equal(new[]{"Address","Note","PaymentMethod","Phone","Recipient","RequestId","Voucher"},body.Properties().Select(p=>p.Name).OrderBy(n=>n));
+        Assert.Equal(new[]{"Address","Items","Note","PaymentMethod","Phone","Recipient","RequestId","Voucher"},body.Properties().Select(p=>p.Name).OrderBy(n=>n));
         Assert.Equal("FORGED",(string?)body["Voucher"]);
     }
     private sealed class CaptureHandler : HttpMessageHandler

@@ -18,16 +18,25 @@ Cấu trúc đối chiếu: `database/schema-reference/Supabase_public_metadata_
 | Chương trình và giá khuyến mãi | khuyenmai, khuyenmaisanpham | Dùng quan hệ hiện có |
 | Giao dịch QR | giaodichthanhtoanqr | Phải giữ quy ước của partner; hiện một giao dịch/mã hóa đơn |
 | Đổi trả và chi tiết đổi trả | phieudoitra, chitietdoitra | Dùng trạng thái/yêu cầu có sẵn; cần khớp luồng partner |
-| Giỏ hàng, sản phẩm yêu thích | Không có bảng/cột tương ứng | Có thể giữ tạm trên trình duyệt nếu người dùng chấp nhận, không đồng bộ qua thiết bị |
+| Giỏ hàng, sản phẩm yêu thích | Không có bảng/cột tương ứng | Đã chốt lưu trên trình duyệt bằng cookie có bảo vệ, 30 ngày; không đồng bộ qua thiết bị |
 | Nhiều địa chỉ đã lưu | khachhang chỉ có diachi mặc định | Giữ một địa chỉ mặc định, nhập địa chỉ cho từng hóa đơn |
-| Đánh giá sao/nội dung/người đánh giá | Không có bảng/cột tương ứng | Chưa thể lưu và đọc đánh giá lâu dài bằng cấu trúc đã chốt |
-| Token email khôi phục mật khẩu | Không có bảng/cột tương ứng | Có thể giữ token băm tạm thời trong bộ nhớ backend, có hạn dùng và mất hiệu lực khi khởi động lại; không cần thêm nơi lưu lâu dài. Đổi mật khẩu vẫn ghi vào matkhau hiện có |
+| Đánh giá sao/nội dung/người đánh giá | Không có bảng/cột tương ứng | Đã chốt tạm ngưng; API trả 410 và giao diện có thông báo |
+| Token email khôi phục mật khẩu | Không có bảng/cột tương ứng | Người dùng chọn tạm ngưng khôi phục mật khẩu; đổi mật khẩu khi đang đăng nhập vẫn dùng matkhau hiện có |
 | Lịch sử đối soát/hoàn tiền/điểm chi tiết | Chỉ một phần có trong hoadon, phieudoitra, giaodichthanhtoanqr | Không giả định có thể giữ toàn bộ lịch sử đã lưu ở các bảng bổ sung |
 
-## Trạng thái chuyển đổi
+## Trạng thái kết nối hiện tại
 
-- Lần triển khai trước đã tạo 17 bảng bổ sung và đưa public lên 35 bảng. Đó chưa phải cấu trúc đáp ứng giới hạn mới.
-- Đã chặn bộ cài cũ tạo lại bảng bổ sung trên database thật.
-- Backend/source nghiệp vụ còn phụ thuộc các bảng bổ sung; chưa tuyên bố đã chuyển về 18 bảng.
-- Đang chờ chốt cách xử lý chức năng không được thể hiện trong sơ đồ trước khi thay đổi hành vi của website.
-- Trước khi loại bỏ bảng bổ sung, phải kiểm kê dữ liệu/dependency, chuyển phần có ánh xạ đúng sang bảng gốc và lưu bản sao phần không có chỗ ánh xạ. Không xóa dây chuyền làm mất dữ liệu bảng gốc.
+Theo yêu cầu mới nhất, tập trung kết nối lại 18 bảng sẵn có và để chức năng thiếu nơi lưu sang bước sau.
+
+- Source đọc sản phẩm/khuyến mãi trực tiếp từ bảng và view giá của partner, không phụ thuộc các bảng metadata/snapshot bổ sung.
+- Tài khoản dùng khachhang.tendangnhap/matkhau; đăng ký không tạo giỏ trong database.
+- Đơn hàng, lịch sử và cập nhật địa chỉ/phương thức dùng hoadon/chitiethoadon. Nội dung SKU lấy từ sanpham hiện tại; không có snapshot tên/màu/size riêng.
+- Checkout gửi danh sách SKU/số lượng từ trình duyệt; backend đọc lại giá/tồn kho. Chống trùng bằng dauvantayyeucau có sẵn. Cấp mã HD theo ngày bằng khóa giao dịch và hóa đơn hiện có, không tạo bảng đếm.
+- Hủy đơn chưa thanh toán trước khi chuẩn bị giao, chưa có QR; giữ ghi chú gốc và ghi lý do hủy trong ghi chú nghiệp vụ. Đơn đã có thanh toán/QR cần cửa hàng xử lý. Không tạo kho hoàn tiền riêng.
+- Đổi trả dùng phieudoitra/chitietdoitra ở trạng thái CHO_DUYET, kiểm tra sở hữu, đã nhận và trả tiền, hạn 15 ngày và số lượng; không thay tồn kho khi gửi yêu cầu.
+- Giao dịch QR hiện do partner quản lý; website đọc trạng thái từ giaodichthanhtoanqr. Website hiện mở COD/chuyển khoản theo cấu hình; tạo liên kết và callback cổng thanh toán riêng được để sau, không dùng lại các bảng gateway bổ sung.
+- Giỏ/yêu thích lưu cookie có bảo vệ trên trình duyệt; API giỏ/yêu thích trong database tạm ngưng. Đánh giá và khôi phục qua email tạm ngưng. Điểm hiện tại vẫn lấy từ khachhang; không giả lập sổ lịch sử điểm.
+
+Kiểm chứng: 203 bài đạt, 19 bài bỏ qua (cấu trúc bổ sung lịch sử hoặc SQL Server chưa chạy). Có bài tích hợp dựng đúng 18 bảng/cột từ metadata, thử tài khoản, khuyến mãi, tạo đơn/lặp yêu cầu, cập nhật/chặn phiên cũ, hủy giữ ghi chú và yêu cầu đổi trả; không sinh bảng mới. MVC build cùng Razor views đạt. HTTP thật: backend database-connected, 92 sản phẩm, API đánh giá 410; chi tiết và giỏ HTTP 200, cookie giỏ còn khi bỏ session cũ.
+
+Lần triển khai trước đã có 35 bảng. Lượt kết nối này không chạy DDL hoặc xóa dữ liệu trên Supabase: các bảng bổ sung cũ chưa được dọn, nhưng source hiện tại không dùng chúng. Việc dọn cần kiểm kê dependency và dữ liệu trước; không coi chuyển source là bằng chứng database vật lý đã còn 18 bảng.

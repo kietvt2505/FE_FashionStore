@@ -43,7 +43,7 @@ namespace FashionStore.Web.Services
         public Task<CustomerCart> ClearAsync(string token) => SendAsync<CustomerCart>(HttpMethod.Delete, "api/cart", token);
         public Task<PlacedOrder> PlaceOrderAsync(string token, CheckoutViewModel model) =>
             SendAsync<PlacedOrder>(HttpMethod.Post, "api/orders", token,
-                new { model.Recipient, model.Phone, model.Address, model.PaymentMethod, model.Note, model.RequestId,Voucher=Optional(model.Voucher) });
+                new { model.Recipient, model.Phone, model.Address, model.PaymentMethod, model.Note, model.RequestId,Voucher=Optional(model.Voucher), Items=System.Linq.Enumerable.Select(model.BrowserItems,i=>new{Sku=i.Sku,Quantity=i.Quantity}) });
         public Task<System.Collections.Generic.List<OnlinePaymentOptionModel>> PaymentOptionsAsync(string token)=>SendAsync<System.Collections.Generic.List<OnlinePaymentOptionModel>>(HttpMethod.Get,"api/payments/options",token);
         public Task<JObject> RecheckPaymentAsync(string token,string orderId)=>SendAsync<JObject>(HttpMethod.Post,"api/payments/"+Uri.EscapeDataString(orderId)+"/recheck",token);
         public async Task<PaymentLinkModel> StartPaymentAsync(string token,string orderId,string clientIp=null)
@@ -61,7 +61,7 @@ namespace FashionStore.Web.Services
             SendAsync<OrderDetailsModel>(HttpMethod.Get, "api/orders/"+Uri.EscapeDataString(id), token);
 
         public Task<JArray> FeatureListAsync(string token,string path) => SendAsync<JArray>(HttpMethod.Get,"api/customer/"+path,token);
-        public Task<JObject> QuoteAsync(string token,string voucher=null) => SendAsync<JObject>(HttpMethod.Get,"api/orders/quote"+(String.IsNullOrWhiteSpace(voucher)?"":"?voucher="+Uri.EscapeDataString(voucher)),token);
+        public Task<JObject> QuoteAsync(string token,string voucher=null,System.Collections.Generic.IEnumerable<GuestCartEntry> items=null) => SendAsync<JObject>(HttpMethod.Post,"api/orders/quote",token,new{Voucher=voucher,Items=System.Linq.Enumerable.Select(items??new GuestCartEntry[0],i=>new{Sku=i.Sku,Quantity=i.Quantity})});
         public Task<object> FeatureAsync(string token,string path,object body=null,string method="POST")=>SendAsync<object>(new HttpMethod(method),"api/customer/"+path,token,body);
         public Task<object> CancelAsync(string token,string id,CancelOrderViewModel model=null)=>SendAsync<object>(HttpMethod.Post,"api/orders/"+Uri.EscapeDataString(id)+"/cancel",token,
             model==null?null:new{model.Reason,model.AccountHolder,model.AccountNumber,model.BankName});

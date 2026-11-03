@@ -20,15 +20,7 @@ internal static class CustomerPostgresMapping
         account.Property<uint>("PgVersion").IsRowVersion().HasColumnName("xmin");
         account.HasIndex(a => a.TenDangNhap).IsUnique();
         account.HasOne(a => a.Customer).WithOne().HasForeignKey<TaiKhoanKhachHang>(a => a.MaKH).OnDelete(DeleteBehavior.Restrict);
-        var cart = model.Entity<GioHang>();
-        cart.ToTable("giohang", "public"); cart.HasKey(c => c.MaGioHang);
-        cart.Property(c => c.MaGioHang).UseIdentityByDefaultColumn();
-        cart.HasIndex(c => c.MaKH).IsUnique();
-        cart.HasOne(c => c.Customer).WithOne().HasForeignKey<GioHang>(c => c.MaKH).OnDelete(DeleteBehavior.Restrict);
-        cart.HasMany(c => c.Lines).WithOne(l => l.Cart).HasForeignKey(l => l.MaGioHang).OnDelete(DeleteBehavior.Cascade);
-        var line = model.Entity<ChiTietGioHang>();
-        line.ToTable("chitietgiohang", "public"); line.HasKey(l => new { l.MaGioHang, l.MaSKU });
-        line.Ignore(l => l.Variant);
+        model.Ignore<GioHang>(); model.Ignore<ChiTietGioHang>();
         var product = model.Entity<SupabaseProduct>();
         product.ToTable("sanpham", "public"); product.HasKey(p => p.masku);
         product.Property(p => p.dongia).HasPrecision(18, 2);
@@ -42,7 +34,7 @@ internal static class CustomerPostgresMapping
                 if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
                     property.SetColumnType("timestamp without time zone");
             }
-        account.Property(a => a.TenDangNhap).HasColumnName("tendangnhap").HasMaxLength(50).IsRequired(false);
+        account.Property(a => a.TenDangNhap).HasColumnName("tendangnhap").HasMaxLength(50).IsRequired();
         account.Property(a => a.MatKhauHash).HasColumnName("matkhau").HasMaxLength(200).IsRequired(false);
     }
 }

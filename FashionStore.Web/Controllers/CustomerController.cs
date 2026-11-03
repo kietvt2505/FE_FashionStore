@@ -26,7 +26,7 @@ namespace FashionStore.Web.Controllers
             try{return View(await api.ProfileAsync(Token));}catch(Exception e){return Error(e);}
         }
         public Task<ActionResult> Points(int page=1){return List("Points","points",page);}
-        public Task<ActionResult> Wishlist(){return List("Wishlist","wishlist",1);}
+        public async Task<ActionResult> Wishlist(){var rows=new JArray();foreach(var id in BrowserWishlistStore.Items()){var detail=await new CatalogRepository().GetDetailAsync(id);if(detail.Product!=null)rows.Add(new JObject{{"MaSP",id},{"TenSanPham",detail.Product.TenSanPham},{"ImageUrl",detail.Product.HinhAnh},{"TrangThai",true}});}return View(rows);}
         public async Task<ActionResult> Addresses(long? editId=null){
             try{
                 var addresses=await api.FeatureListAsync(Token,"addresses");
@@ -50,7 +50,7 @@ namespace FashionStore.Web.Controllers
         // A return URL is opened with GET after login. Keep legacy bookmarks safe and non-mutating.
         [HttpGet,ActionName("SaveWishlist")] public ActionResult WishlistAfterLogin(){return RedirectToAction("Wishlist");}
         [HttpPost,AllowAnonymous,ValidateAntiForgeryToken]
-        public async Task<ActionResult> SaveWishlist(string id,string returnUrl=null)
+        public ActionResult SaveWishlist(string id,string returnUrl=null)
         {
             var origin=Url.IsLocalUrl(returnUrl)?returnUrl:Url.Action("Details","Product",new{id});
             var intent=WishlistLoginIntent.Create(id,DateTimeOffset.UtcNow,origin);
@@ -58,7 +58,7 @@ namespace FashionStore.Web.Controllers
             if(!User.Identity.IsAuthenticated)return LoginForWishlist(intent);
             Session.Remove(WishlistLoginIntent.SessionKey);
             try{
-                await api.FeatureAsync(Token,"wishlist/"+Uri.EscapeDataString(intent.ProductId),null,"PUT");
+                BrowserWishlistStore.Save(intent.ProductId);
                 TempData["CustomerMessage"]="Đã thêm sản phẩm vào danh sách yêu thích.";
             }catch(Exception error){
                 if(IsUnauthorized(error))return LoginForWishlist(intent);
@@ -72,7 +72,7 @@ namespace FashionStore.Web.Controllers
             CustomerAuthentication.SignOut();
             return RedirectToAction("Login","Account",new{returnUrl=intent.ReturnUrl});
         }
-        [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> RemoveWishlist(string id){return Change("Wishlist",()=>api.FeatureAsync(Token,"wishlist/"+Uri.EscapeDataString(id??""),null,"DELETE"));}
+        [HttpPost,ValidateAntiForgeryToken] public ActionResult RemoveWishlist(string id){BrowserWishlistStore.Save(id,true);return RedirectToAction("Wishlist");}
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> SaveAddress(string recipient,string phone,string address,long? id=null){return Change("Addresses",()=>api.FeatureAsync(Token,id.HasValue?"addresses/"+id.Value:"addresses",new{Recipient=recipient,Phone=phone,Address=address},id.HasValue?"PUT":"POST"));}
         [HttpPost,ValidateAntiForgeryToken] public Task<ActionResult> RemoveAddress(long id){return Change("Addresses",()=>api.FeatureAsync(Token,"addresses/"+id,null,"DELETE"));}
         [HttpPost,AllowAnonymous,ValidateAntiForgeryToken] public async Task<ActionResult> Review(string productId,string orderId,int stars,string body,string color=null,string returnUrl=null){

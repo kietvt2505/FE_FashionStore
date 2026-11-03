@@ -1,7 +1,7 @@
 @model FashionStore.Web.Models.CustomerCart
 @using FashionStore.Web.Helpers
 @{ ViewBag.Title = "Giỏ hàng";var invalidSku=TempData["InvalidQuantitySku"] as string;var invalidValue=TempData["InvalidQuantityValue"] as string;
-    var pendingGuestCount=Model.IsGuest?0:FashionStore.Web.Helpers.GuestCartStore.Items(Session).Sum(i=>(long)i.Quantity);
+    var pendingGuestCount=0;
     var guestMergeError=TempData.Peek("GuestMergeError") as string;
     if(pendingGuestCount>0){ViewBag.HasPendingGuestCart=true;}
 }

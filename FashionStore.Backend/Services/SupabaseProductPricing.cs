@@ -8,10 +8,10 @@ internal static class SupabaseProductPricing
 {
     internal const string ProductSql="""
         SELECT p.masku,p.masp,p.maloai,p.tensanpham,p.kichco,p.mausac,
-            price.sale_price AS dongia,p.soluongtonkho,p.trangthai,p.hinhanh
-        FROM public.sanpham p JOIN public.giabanthuctesanpham price ON price.masku=p.masku
+            COALESCE(price.giakhuyenmai,p.dongia) AS dongia,p.soluongtonkho,p.trangthai,p.hinhanh
+        FROM public.sanpham p LEFT JOIN public.sanphamkhuyenmai_hientai price ON price.masku=p.masku
         """;
     internal static Task<bool> Installed(DatabaseFacade database,CancellationToken ct)=>database.IsNpgsql()
-        ? database.SqlQueryRaw<bool>("SELECT to_regclass('public.giabanthuctesanpham') IS NOT NULL AS \"Value\"").SingleAsync(ct)
+        ? Task.FromResult(true)
         : Task.FromResult(false);
 }

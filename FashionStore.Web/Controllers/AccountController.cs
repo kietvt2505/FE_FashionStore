@@ -33,7 +33,7 @@ namespace FashionStore.Web.Controllers
                 // Customer uses the existing Forms Authentication ticket and Customer API.
                 var login = await api.LoginAsync(model);
                 var profile = await api.ProfileAsync(login.AccessToken);
-                return await CompleteCustomerLogin(login,profile,model.ReturnUrl);
+                return CompleteCustomerLogin(login,profile,model.ReturnUrl);
             }
             catch (CustomerApiException e) when (e.StatusCode == 401)
             {
@@ -89,11 +89,11 @@ namespace FashionStore.Web.Controllers
             }
             return View(model);
         }
-        private async Task<ActionResult> CompleteCustomerLogin(CustomerLoginResult login,CustomerProfile profile,string returnUrl)
+        private ActionResult CompleteCustomerLogin(CustomerLoginResult login,CustomerProfile profile,string returnUrl)
         {
             // Dùng họ tên từ hồ sơ đã xác thực để hiển thị trên header, không dùng tên đăng nhập.
             CustomerAuthentication.SignIn(HttpContext, profile.FullName, login);
-            if(GuestCartStore.Items(Session).Count>0)TempData["PromptGuestMerge"]=true;
+
             // Prevent a browser from retaining both kinds of active cookies.
             AdminSessionCookie.SignOut(HttpContext);
             var pendingWishlist=Session[WishlistLoginIntent.SessionKey] as WishlistLoginIntent;
@@ -103,7 +103,7 @@ namespace FashionStore.Web.Controllers
                 // Resume only the server-held, CSRF-validated intent. Never replay a POST return URL.
                 // A wishlist error must not turn a successful customer login into an Admin login attempt.
                 try{
-                    await api.FeatureAsync(login.AccessToken,"wishlist/"+Uri.EscapeDataString(pendingWishlist.ProductId),null,"PUT");
+                    BrowserWishlistStore.Save(pendingWishlist.ProductId);
                     TempData["CustomerMessage"]="Đã thêm sản phẩm vào danh sách yêu thích.";
                 }catch(CustomerApiException error){
                     if(error.StatusCode==401){
@@ -173,7 +173,7 @@ namespace FashionStore.Web.Controllers
                 try
                 {
                     var login = await api.LoginAsync(new LoginViewModel{UserName=model.UserName,Password=model.Password});
-                    return await CompleteCustomerLogin(login,profile,model.ReturnUrl);
+                    return CompleteCustomerLogin(login,profile,model.ReturnUrl);
                 }
                 catch(Exception)
                 {

@@ -27,7 +27,7 @@ public sealed class AccountService(FashionStoreDbContext db, IPasswordHasher<Tai
         account.MatKhauHash = hasher.HashPassword(account, request.Password);
         db.CustomerAccounts.Add(account);
         // One SaveChanges transaction creates the customer, account and unique cart together.
-        db.Carts.Add(new GioHang { MaKH = customer.MaKH, Customer = customer, NgayTao = now, NgayCapNhat = now });
+        if(!db.Database.IsNpgsql())db.Carts.Add(new GioHang { MaKH = customer.MaKH, Customer = customer, NgayTao = now, NgayCapNhat = now });
         await db.SaveChangesAsync(ct);
         return Map(customer, name);
     }

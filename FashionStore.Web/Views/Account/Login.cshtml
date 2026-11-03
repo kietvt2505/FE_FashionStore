@@ -20,7 +20,7 @@
             @Html.PasswordFor(m => m.Password, new { @class = "filter-input", autocomplete = "current-password", maxlength = "128", required = "required", placeholder = "Nhập mật khẩu" })
             @Html.ValidationMessageFor(m => m.Password, "", new { @class = "field-validation-error" })
         </div>
-        <div class="account-form-actions"><a href="@Url.Action("Forgot", "Account")">Quên mật khẩu?</a></div>
+        <div class="account-form-actions"><span>Khôi phục mật khẩu đang tạm ngưng. Vui lòng liên hệ cửa hàng.</span></div>
         <button class="mn-btn mn-btn-primary" type="submit">ĐĂNG NHẬP</button>
     }
     <p class="account-form-footer">Chưa có tài khoản? @Html.ActionLink("Đăng ký ngay", "Register", new { returnUrl = Model.ReturnUrl })</p>

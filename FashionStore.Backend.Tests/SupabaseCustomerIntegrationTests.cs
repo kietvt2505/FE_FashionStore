@@ -15,6 +15,7 @@ public sealed class PostgresLocalFactAttribute : FactAttribute
 {
     public PostgresLocalFactAttribute()
     {
+        if (Environment.GetEnvironmentVariable("FASHIONSTORE_RUN_HISTORICAL_SCHEMA_TESTS")!="true") Skip="Historical supplemental-schema tests are opt-in; use Native18IntegrationTests for the fixed schema.";
         if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("FASHIONSTORE_POSTGRES_TEST_CONNECTION")))
             Skip = "Requires a new, empty local fashionstore_test PostgreSQL database; never use Supabase.";
     }

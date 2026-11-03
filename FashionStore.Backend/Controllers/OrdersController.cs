@@ -10,6 +10,7 @@ namespace FashionStore.Backend.Controllers;
  ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed class OrdersController(OrderService orders) : ControllerBase
 {
+    [HttpPost("quote")] public Task<CheckoutQuote> BrowserQuote(BrowserCheckoutQuote input,[FromServices] SupabaseOrderService native,CancellationToken ct)=>native.QuoteBrowserAsync(CustomerId,input.Items,input.Voucher,ct);
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
     [HttpPost] public Task<PlaceOrderResponse> Place(CheckoutRequest request, CancellationToken ct) => orders.PlaceAsync(CustomerId, request, ct);
     [HttpGet] public Task<IReadOnlyList<OrderSummary>> List(CancellationToken ct,[System.ComponentModel.DataAnnotations.StringLength(30)]string? q=null,[System.ComponentModel.DataAnnotations.RegularExpression("^(MOI|XAC_NHAN|DANG_XU_LY|HOAN_TAT|HUY)$")]string? status=null,[System.ComponentModel.DataAnnotations.Range(1,100000)]int page=1) => orders.ListCustomerAsync(CustomerId, ct,q,status,page);

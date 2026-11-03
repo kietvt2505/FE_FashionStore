@@ -33,21 +33,7 @@ public sealed class SupabaseCustomerMappingTests
         Assert.Null(db.Model.FindEntityType(typeof(NhanVien)));
     }
 
-    [Fact]
-    public void CartQueryJoinsBySkuAndScopesToOwner()
-    {
-        using var db = Create();
-        var sql = new CartService(db, TimeProvider.System).ReadQuery("WEB-OWNER").ToQueryString();
-        Assert.Contains("public.chitietgiohang", sql);
-        Assert.Contains("public.giohang", sql);
-        Assert.Contains("public.sanpham", sql);
-        Assert.Contains("masku", sql);
-        Assert.Contains("WEB-OWNER", sql);
-        Assert.Contains("dongia", sql);
-        Assert.DoesNotContain("dbo", sql);
-        Assert.DoesNotContain("BienTheSanPham", sql);
-        Assert.Equal("masku", Assert.Single(db.Model.FindEntityType(typeof(SupabaseProduct))!.FindPrimaryKey()!.Properties).Name);
-    }
+    [Fact] public void NativeMappingDoesNotContainCartTables(){using var db=Create();Assert.Null(db.Model.FindEntityType(typeof(GioHang)));Assert.Null(db.Model.FindEntityType(typeof(ChiTietGioHang)));}
 
     [Fact]
     public async Task EnabledCustomerModeStillRequiresAuthenticationAndBlocksCheckout()
@@ -63,7 +49,7 @@ public sealed class SupabaseCustomerMappingTests
         });
         using var client = factory.CreateClient();
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/account/me")).StatusCode);
-        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/cart")).StatusCode);
+        Assert.Equal(HttpStatusCode.Gone, (await client.GetAsync("/api/cart")).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsync("/api/account/register", new StringContent("{}", System.Text.Encoding.UTF8, "application/json"))).StatusCode);
         // Customer features are routed through authentication; privileged admin routes remain blocked.
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/customer/addresses")).StatusCode);

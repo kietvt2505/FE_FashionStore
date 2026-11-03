@@ -9,7 +9,9 @@ public sealed record CheckoutRequest(
     [param: Required, RegularExpression("^(COD|CHUYEN_KHOAN|VISA|VNPAY|ZALOPAY|PAYOS)$")] string PaymentMethod,
     [param: StringLength(500)] string? Note,
     [param: Required] Guid RequestId,
-    [param: StringLength(20)] string? Voucher = null);
+    [param: StringLength(20)] string? Voucher = null,
+    IReadOnlyList<CartItemRequest>? Items = null);
+public sealed record BrowserCheckoutQuote(IReadOnlyList<CartItemRequest> Items,string? Voucher=null);
 public sealed record CheckoutQuote(decimal Subtotal, decimal Discount, decimal Total)
 {
     public bool MembershipEnabled { get; init; }

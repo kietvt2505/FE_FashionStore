@@ -27,6 +27,7 @@ namespace FashionStore.Web.Models
         public string MemberRank {get;set;}
         public int MemberRate {get;set;}
         public int MemberPoints {get;set;}
+        public List<GuestCartEntry> BrowserItems {get;set;} = new List<GuestCartEntry>();
         public CustomerCart Cart { get; set; }
         public List<OnlinePaymentOptionModel> OnlineMethods {get;set;} = new List<OnlinePaymentOptionModel>();
     }
