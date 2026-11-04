@@ -1,0 +1,25 @@
+{
+  "desktop": {
+    "clip": {
+      "height": 193.5500030517578,
+      "width": 772.0499877929688,
+      "x": 52.400001525878906,
+      "y": 384.8999938964844
+    },
+    "inputType": "number",
+    "max": "6",
+    "min": "1",
+    "sameRow": true
+  },
+  "mobile": {
+    "buttonFits": true,
+    "pageWidth": 360,
+    "sameRow": true,
+    "viewport": 360
+  },
+  "up": 2,
+  "min": 1,
+  "max": 6,
+  "quantity2Total": 118000,
+  "overstockBlocked": true
+}

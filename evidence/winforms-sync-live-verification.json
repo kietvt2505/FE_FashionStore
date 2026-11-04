@@ -1,0 +1,9 @@
+{
+  "VerifiedAt": "2026-11-04T02:27:01.361998+00:00",
+  "BackendLive": 200,
+  "BackendReady": 200,
+  "GuestWishlistLoginRedirect": true,
+  "GuestWishlistOriginPreserved": true,
+  "InvalidLoginShowsCredentialError": true,
+  "LoginUnavailableMessageShown": false
+}

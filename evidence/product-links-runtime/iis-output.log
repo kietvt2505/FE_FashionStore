@@ -1,0 +1,51 @@
+Starting IIS Express ...
+Successfully registered URL "http://localhost:58474/" for site "Development Web Site" application "/"
+Registration completed
+IIS Express is running.
+Enter 'Q' to stop IIS Express
+Request started: "GET" http://localhost:58474/Account/Login?returnUrl=%2FOrders
+Response sent: http://localhost:58474/Account/Login?returnUrl=%2FOrders with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Account/Login
+Response sent: http://localhost:58474/Account/Login with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Orders
+Response sent: http://localhost:58474/Orders with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Cart
+Response sent: http://localhost:58474/Cart with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-002?color=%C4%90en
+Response sent: http://localhost:58474/Product/Details/SP-002?color=%C4%90en with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90en
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90en with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Checkout
+Response sent: http://localhost:58474/Checkout with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-002?color=%C4%90en
+Response sent: http://localhost:58474/Product/Details/SP-002?color=%C4%90en with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90en
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90en with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Orders/Details/HD-NEW
+Response sent: http://localhost:58474/Orders/Details/HD-NEW with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-002?color=%C4%90en
+Response sent: http://localhost:58474/Product/Details/SP-002?color=%C4%90en with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90en
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90en with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Orders/Details/HD-DELIVERED
+Response sent: http://localhost:58474/Orders/Details/HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-002?color=%C4%90en
+Response sent: http://localhost:58474/Product/Details/SP-002?color=%C4%90en with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90en
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90en with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Orders/Details/HD-CANCELLED
+Response sent: http://localhost:58474/Orders/Details/HD-CANCELLED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-002?color=%C4%90en
+Response sent: http://localhost:58474/Product/Details/SP-002?color=%C4%90en with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90en
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90en with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Customer/Wishlist
+Response sent: http://localhost:58474/Customer/Wishlist with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-002
+Response sent: http://localhost:58474/Product/Details/SP-002 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086
+Response sent: http://localhost:58474/Product/Details/SP-086 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Orders
+Response sent: http://localhost:58474/Orders with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Orders?status=HUY
+Response sent: http://localhost:58474/Orders?status=HUY with HTTP status 200.0

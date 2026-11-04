@@ -1,0 +1,159 @@
+Starting IIS Express ...
+Successfully registered URL "http://localhost:58474/" for site "Development Web Site" application "/"
+Registration completed
+IIS Express is running.
+Enter 'Q' to stop IIS Express
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%26reviewOrderId%3DHD-DELIVERED%23product-reviews
+Response sent: http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%26reviewOrderId%3DHD-DELIVERED%23product-reviews with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Account/Login
+Response sent: http://localhost:58474/Account/Login with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%26reviewOrderId%3DHD-DELIVERED%23product-reviews
+Response sent: http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%26reviewOrderId%3DHD-DELIVERED%23product-reviews with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Account/Login
+Response sent: http://localhost:58474/Account/Login with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%26reviewOrderId%3DHD-DELIVERED%23product-reviews
+Response sent: http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%26reviewOrderId%3DHD-DELIVERED%23product-reviews with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Account/Login
+Response sent: http://localhost:58474/Account/Login with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%26reviewOrderId%3DHD-DELIVERED%23product-reviews
+Response sent: http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%26reviewOrderId%3DHD-DELIVERED%23product-reviews with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Account/Login
+Response sent: http://localhost:58474/Account/Login with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED&reviewPage=2
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED&reviewPage=2 with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Customer/Review
+Response sent: http://localhost:58474/Customer/Review with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8
+Response sent: http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8 with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Customer/Review
+Response sent: http://localhost:58474/Customer/Review with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8
+Response sent: http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Customer/Reviews/SP-086?page=2&orderId=HD-DELIVERED
+Response sent: http://localhost:58474/Customer/Reviews/SP-086?page=2&orderId=HD-DELIVERED with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&reviewPage=2
+Response sent: http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&reviewPage=2 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%23product-reviews
+Response sent: http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%23product-reviews with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Content/bootstrap.css
+Response sent: http://localhost:58474/Content/bootstrap.css with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Content/site.css
+Request started: "GET" http://localhost:58474/Content/customer.css?v=639292347188298070
+Request started: "GET" http://localhost:58474/Content/navy-theme.css?v=639287030489905715
+Request started: "GET" http://localhost:58474/Content/moc-nhien.css?v=639286281912379060
+Request started: "GET" http://localhost:58474/Content/customer-account.css?v=639289019587073287
+Response sent: http://localhost:58474/Content/site.css with HTTP status 200.0
+Response sent: http://localhost:58474/Content/customer.css?v=639292347188298070 with HTTP status 200.0
+Response sent: http://localhost:58474/Content/navy-theme.css?v=639287030489905715 with HTTP status 200.0
+Response sent: http://localhost:58474/Content/moc-nhien.css?v=639286281912379060 with HTTP status 200.0
+Response sent: http://localhost:58474/Content/customer-account.css?v=639289019587073287 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Content/storefront-polish.css?v=639289302815344383
+Response sent: http://localhost:58474/Content/storefront-polish.css?v=639289302815344383 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Content/brand.css?v=639289589767071072
+Response sent: http://localhost:58474/Content/brand.css?v=639289589767071072 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Content/product-media.css?v=639290369222388389
+Response sent: http://localhost:58474/Content/product-media.css?v=639290369222388389 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Content/product-cards.css?v=639289877872469525
+Request started: "GET" http://localhost:58474/Scripts/modernizr-2.8.3.js
+Response sent: http://localhost:58474/Content/product-cards.css?v=639289877872469525 with HTTP status 200.0
+Response sent: http://localhost:58474/Scripts/modernizr-2.8.3.js with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Scripts/jquery-3.7.0.js
+Response sent: http://localhost:58474/Scripts/jquery-3.7.0.js with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Scripts/bootstrap.js
+Response sent: http://localhost:58474/Scripts/bootstrap.js with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Scripts/moc-nhien.js?v=639289835737962290
+Request started: "GET" http://localhost:58474/Scripts/storefront.js?v=639292341394653401
+Response sent: http://localhost:58474/Scripts/moc-nhien.js?v=639289835737962290 with HTTP status 200.0
+Response sent: http://localhost:58474/Scripts/storefront.js?v=639292341394653401 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Scripts/storefront-motion.js?v=639289297455097671
+Response sent: http://localhost:58474/Scripts/storefront-motion.js?v=639289297455097671 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Scripts/product-cards.js?v=639289861281639001
+Request started: "GET" http://localhost:58474/Scripts/jquery.validate.js
+Response sent: http://localhost:58474/Scripts/product-cards.js?v=639289861281639001 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Scripts/jquery.validate.unobtrusive.js
+Response sent: http://localhost:58474/Scripts/jquery.validate.js with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Content/images/brand/yody-logo.svg?v=639289590089273041
+Response sent: http://localhost:58474/Scripts/jquery.validate.unobtrusive.js with HTTP status 200.0
+Response sent: http://localhost:58474/Content/images/brand/yody-logo.svg?v=639289590089273041 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Cart/Count
+Response sent: http://localhost:58474/Cart/Count with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Content/images/brand/yody-favicon.svg?v=639289590089273041
+Response sent: http://localhost:58474/Content/images/brand/yody-favicon.svg?v=639289590089273041 with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Account/Login
+Response sent: http://localhost:58474/Account/Login with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Scripts/product-picker.js?v=639289811930608357
+Request started: "GET" http://localhost:58474/Scripts/product-gallery.js?v=639290298001938896
+Response sent: http://localhost:58474/Scripts/product-picker.js?v=639289811930608357 with HTTP status 200.0
+Response sent: http://localhost:58474/Scripts/product-gallery.js?v=639290298001938896 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Cart/Count
+Response sent: http://localhost:58474/Cart/Count with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Customer/Review
+Response sent: http://localhost:58474/Customer/Review with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3FreviewOrderId%3DHD-DELIVERED%26color%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%23product-reviews
+Response sent: http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3FreviewOrderId%3DHD-DELIVERED%26color%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%23product-reviews with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Account/Login
+Response sent: http://localhost:58474/Account/Login with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8
+Response sent: http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%26reviewOrderId%3DHD-DELIVERED%23product-reviews
+Response sent: http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%26reviewOrderId%3DHD-DELIVERED%23product-reviews with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Account/Login
+Response sent: http://localhost:58474/Account/Login with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%26reviewOrderId%3DHD-DELIVERED%23product-reviews
+Response sent: http://localhost:58474/Account/Login?returnUrl=%2FProduct%2FDetails%2FSP-086%3Fcolor%3D%25C4%2590%25E1%25BB%258F%26returnUrl%3D%252FProduct%253Fpage%253D8%26reviewOrderId%3DHD-DELIVERED%23product-reviews with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Account/Login
+Response sent: http://localhost:58474/Account/Login with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED&reviewPage=2
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED&reviewPage=2 with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Customer/Review
+Response sent: http://localhost:58474/Customer/Review with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8
+Response sent: http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8 with HTTP status 200.0
+Request started: "POST" http://localhost:58474/Customer/Review
+Response sent: http://localhost:58474/Customer/Review with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8
+Response sent: http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Customer/Reviews/SP-086?page=2&orderId=HD-DELIVERED
+Response sent: http://localhost:58474/Customer/Reviews/SP-086?page=2&orderId=HD-DELIVERED with HTTP status 302.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&reviewPage=2
+Response sent: http://localhost:58474/Product/Details/SP-086?reviewOrderId=HD-DELIVERED&reviewPage=2 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F&returnUrl=%2FProduct%3Fpage%3D8&reviewOrderId=HD-DELIVERED with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F
+Response sent: http://localhost:58474/Product/Details/SP-086?color=%C4%90%E1%BB%8F with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Content/customer.css?v=639292351784686836
+Response sent: http://localhost:58474/Content/customer.css?v=639292351784686836 with HTTP status 200.0
+Request started: "GET" http://localhost:58474/Scripts/storefront.js?v=639292341394653401
+Response sent: http://localhost:58474/Scripts/storefront.js?v=639292341394653401 with HTTP status 304.0
+Request started: "GET" http://localhost:58474/Cart/Count
+Response sent: http://localhost:58474/Cart/Count with HTTP status 200.0

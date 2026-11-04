@@ -1,0 +1,53 @@
+@model FashionStore.Web.Models.UpdateOrderViewModel
+@using FashionStore.Web.Helpers
+@{
+    ViewBag.Title = "Cập nhật thông tin đơn hàng";
+    var delivery = Model.Section == "delivery";
+    var paymentOptions = new System.Collections.Generic.List<SelectListItem> { new SelectListItem { Text = "Thanh toán khi nhận hàng (COD)", Value = "COD" } };
+    if(Model.Order.SupportsBankTransfer){paymentOptions.Add(new SelectListItem{Text="Chuyển khoản ngân hàng",Value="CHUYEN_KHOAN"});}
+    foreach(var option in Model.OnlineMethods){paymentOptions.Add(new SelectListItem{Text=option.Label+(option.Enabled?"":" — Chưa khả dụng"),Value=option.Code,Disabled=!option.Enabled});}
+    if(!paymentOptions.Any(p=>p.Value==Model.Order.PaymentMethod)){paymentOptions.Add(new SelectListItem{Text="Phương thức hiện tại: "+Model.Order.PaymentMethod,Value=Model.Order.PaymentMethod});}
+}
+<section class="checkout-page yody-checkout-page">
+    <header class="yody-task-heading"><div><p class="eyebrow">YODY / ĐƠN HÀNG @Model.Id</p><h1>@(delivery?"Cập nhật địa chỉ nhận hàng":"Đổi phương thức thanh toán")</h1><p>Cập nhật trên đơn hiện tại. Mã đơn, sản phẩm, số lượng và số tiền được giữ nguyên.</p></div><a class="mn-text-link" href="@Url.Action("Details","Orders",new{id=Model.Id})">← Quay lại đơn hàng</a></header>
+    <div class="checkout-grid yody-checkout-grid">
+        <div class="customer-panel checkout-form yody-checkout-form">
+            @using(Html.BeginForm("Update","Orders",FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m=>m.Id)
+                @Html.HiddenFor(m=>m.Section)
+                @Html.HiddenFor(m=>m.Version)
+                @Html.ValidationSummary(false,"",new{@class="customer-errors",role="alert"})
+                <section class="yody-checkout-step" aria-labelledby="update-order-heading">
+                    <div class="yody-step-heading"><span class="yody-step-number">01</span><div><p class="eyebrow">THÔNG TIN ĐƠN HÀNG</p><h2 id="update-order-heading">@(delivery?"Người nhận và địa chỉ":"Lựa chọn thanh toán")</h2></div></div>
+                    @if(delivery)
+                    {
+                        <div class="yody-checkout-fields">
+                            <div class="yody-checkout-field"><label for="Recipient">Tên người nhận *</label>@Html.TextBoxFor(m=>m.Recipient,new{@class="filter-input",required="required",minlength="2",maxlength="150",autocomplete="name"})</div>
+                            <div class="yody-checkout-field"><label for="Phone">Số điện thoại *</label>@Html.TextBoxFor(m=>m.Phone,new{@class="filter-input",required="required",type="tel",pattern=@"\+?[0-9]{9,15}",maxlength="16",autocomplete="tel"})</div>
+                        </div>
+                        <div class="yody-checkout-field"><label for="Address">Địa chỉ nhận hàng *</label>@Html.TextAreaFor(m=>m.Address,new{@class="filter-input",required="required",minlength="10",maxlength="300",rows="3",autocomplete="street-address"})</div>
+                        <p class="yody-checkout-helper">Thông tin mới chỉ áp dụng cho đơn @Model.Id.</p>
+                    }
+                    else
+                    {
+                        <div class="yody-checkout-field"><label for="PaymentMethod">Phương thức thanh toán *</label>@Html.DropDownListFor(m=>m.PaymentMethod,paymentOptions,new{@class="filter-input",required="required"})</div>
+                        <p class="yody-checkout-helper">Sau khi đổi, đơn trở về bước chờ xác nhận phù hợp với phương thức mới. Bạn có thể thanh toán từ trang chi tiết đơn nếu chọn phương thức online.</p>
+                    }
+                </section>
+                <div class="yody-checkout-submit"><p>Kiểm tra thông tin trước khi cập nhật đơn @Model.Id.</p><button type="submit" class="mn-btn mn-btn-primary">Cập nhật thông tin</button><p><a href="@Url.Action("Update","Orders",new{id=Model.Id,section=Model.Section})">Tải lại thông tin đơn hàng</a></p></div>
+            }
+        </div>
+        <aside class="checkout-summary yody-checkout-summary" aria-labelledby="update-order-summary-heading">
+            <p class="eyebrow">ĐƠN HÀNG HIỆN TẠI</p><h2 id="update-order-summary-heading">@Model.Id</h2>
+            @foreach(var item in Model.Order.Items)
+            {
+                <a class="checkout-line yody-checkout-line product-entry-link" href="@(String.IsNullOrWhiteSpace(item.ProductId)?null:Url.Action("Details","Product",new{id=item.ProductId,color=item.Color}))"><div><strong class="product-entry-name">@item.Name</strong><small>@item.Size · @item.Color · SL: @item.Quantity</small></div><span>@CatalogViewHelper.Vnd(item.Total)</span></a>
+            }
+            <div class="yody-checkout-totals"><div class="yody-summary-row"><span>Tiền sản phẩm</span><strong>@CatalogViewHelper.Vnd(Model.Order.Subtotal)</strong></div><div class="yody-summary-row"><span>Ưu đãi đã áp dụng</span><strong>−@CatalogViewHelper.Vnd(Model.Order.Discount)</strong></div><div class="yody-summary-row"><span>Thuế VAT</span><strong>@CatalogViewHelper.Vnd(Model.Order.VatAmount)</strong></div><div class="yody-summary-row"><span>Phí vận chuyển</span><strong>@CatalogViewHelper.Vnd(Model.Order.ShippingFee)</strong></div><div class="yody-summary-row yody-summary-total"><span>Tổng thanh toán</span><strong>@CatalogViewHelper.Vnd(Model.Order.Total)</strong></div></div>
+            @if(!delivery){<p class="yody-summary-help"><strong>@Model.Order.Recipient · @Model.Order.Phone</strong><br />@Model.Order.Address</p>}
+            <a class="yody-summary-return" href="@Url.Action("Details","Orders",new{id=Model.Id})">← Quay lại đơn hàng</a>
+        </aside>
+    </div>
+</section>

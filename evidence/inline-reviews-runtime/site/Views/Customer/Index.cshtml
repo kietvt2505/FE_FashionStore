@@ -1,0 +1,32 @@
+@model FashionStore.Web.Models.CustomerProfile
+@{ ViewBag.Title = "Tài khoản của tôi"; }
+<div class="yody-account-shell">
+    @Html.Partial("_CustomerNav")
+    <header class="yody-page-heading yody-account-greeting">
+        <h1>Xin chào, @Model.FullName</h1>
+        <p>Mọi điều bạn cần cho hành trình mua sắm.</p>
+    </header>
+    <div class="customer-account-grid">
+        <a class="customer-membership-card" href="@Url.Action("Promotions", "Customer")" aria-label="Thẻ thành viên hạng @Model.Membership, xem ưu đãi">
+            <span class="customer-member-watermark" aria-hidden="true">Y</span>
+            <span class="customer-member-top"><span class="customer-member-logo">@Html.Partial("_BrandLogo")</span><span class="customer-member-rank">HẠNG @Model.Membership</span></span>
+            <span class="customer-member-identity"><span class="customer-member-caption">GẮN KẾT CÙNG YODY</span><strong>Thẻ thành viên</strong><span>@Model.FullName</span></span>
+            <span class="customer-member-bottom"><span>Tích điểm · Nhận ưu đãi</span><span aria-hidden="true">↗</span></span>
+        </a>
+        <a class="customer-overview-card customer-points-card" href="@Url.Action("Promotions", "Customer")">
+            <span class="customer-overview-label"><span class="customer-card-symbol" aria-hidden="true">✦</span> ĐIỂM &amp; ƯU ĐÃI</span>
+            <span class="customer-points-value"><strong>@Model.Points</strong><span>điểm hiện có</span></span>
+            <p>Khám phá quyền lợi dành riêng cho hạng @Model.Membership.</p>
+            <span class="customer-card-link">Xem ưu đãi thành viên <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="customer-overview-card customer-address-card" href="@Url.Action("Addresses", "Customer")">
+            <span class="customer-overview-label"><span class="customer-card-symbol" aria-hidden="true">⌂</span> ĐỊA CHỈ MẶC ĐỊNH</span>
+            <p>@(String.IsNullOrWhiteSpace(Model.Address) ? "Bạn chưa thêm địa chỉ nhận hàng." : Model.Address)</p>
+            <span class="customer-card-link">Quản lý địa chỉ <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="yody-shortcut" href="@Url.Action("Index", "Orders")"><span class="yody-shortcut-icon" aria-hidden="true">01</span><h2>Đơn hàng của tôi</h2><p>Kiểm tra thanh toán, giao nhận và trạng thái đơn hàng.</p><span class="yody-shortcut-arrow" aria-hidden="true">↗</span></a>
+        <a class="yody-shortcut" href="@Url.Action("Wishlist", "Customer")"><span class="yody-shortcut-icon" aria-hidden="true">02</span><h2>Sản phẩm yêu thích</h2><p>Quay lại những thiết kế bạn đã lưu.</p><span class="yody-shortcut-arrow" aria-hidden="true">↗</span></a>
+        <a class="yody-shortcut" href="@Url.Action("Security", "Customer")"><span class="yody-shortcut-icon" aria-hidden="true">03</span><h2>Bảo mật tài khoản</h2><p>Thông tin đăng nhập và đổi mật khẩu.</p><span class="yody-shortcut-arrow" aria-hidden="true">↗</span></a>
+    </div>
+    @Html.Partial("_MembershipRules")
+</div>

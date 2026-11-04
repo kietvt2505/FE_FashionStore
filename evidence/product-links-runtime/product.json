@@ -1,0 +1,193 @@
+{
+  "description": "",
+  "variants": [
+    {
+      "sku": "ASM-002-DEN-L",
+      "size": "L",
+      "color": "Đen",
+      "price": 249000.0,
+      "stock": 23,
+      "originalPrice": null
+    },
+    {
+      "sku": "ASM-002-DEN-M",
+      "size": "M",
+      "color": "Đen",
+      "price": 249000.0,
+      "stock": 8,
+      "originalPrice": null
+    },
+    {
+      "sku": "ASM-002-DEN-S",
+      "size": "S",
+      "color": "Đen",
+      "price": 249000.0,
+      "stock": 16,
+      "originalPrice": null
+    },
+    {
+      "sku": "ASM-002-DEN-XL",
+      "size": "XL",
+      "color": "Đen",
+      "price": 249000.0,
+      "stock": 37,
+      "originalPrice": null
+    },
+    {
+      "sku": "ASM-002-TRANG-M",
+      "size": "M",
+      "color": "Trắng",
+      "price": 249000.0,
+      "stock": 23,
+      "originalPrice": null
+    },
+    {
+      "sku": "ASM-002-TRANG-S",
+      "size": "S",
+      "color": "Trắng",
+      "price": 249000.0,
+      "stock": 8,
+      "originalPrice": null
+    },
+    {
+      "sku": "ASM-002-TRANG-XL",
+      "size": "XL",
+      "color": "Trắng",
+      "price": 249000.0,
+      "stock": 32,
+      "originalPrice": null
+    },
+    {
+      "sku": "AT-002-DO-L",
+      "size": "L",
+      "color": "Đỏ",
+      "price": 249000.0,
+      "stock": 7,
+      "originalPrice": null
+    },
+    {
+      "sku": "AT-002-DO-M",
+      "size": "M",
+      "color": "Đỏ",
+      "price": 249000.0,
+      "stock": 15,
+      "originalPrice": null
+    },
+    {
+      "sku": "AT-002-DO-S",
+      "size": "S",
+      "color": "Đỏ",
+      "price": 249000.0,
+      "stock": 18,
+      "originalPrice": null
+    },
+    {
+      "sku": "AT-002-DO-XL",
+      "size": "XL",
+      "color": "Đỏ",
+      "price": 249000.0,
+      "stock": 16,
+      "originalPrice": null
+    },
+    {
+      "sku": "SP-002",
+      "size": "L",
+      "color": "Trắng",
+      "price": 249000.0,
+      "stock": 35,
+      "originalPrice": null
+    }
+  ],
+  "images": [
+    {
+      "sku": "ASM-002-DEN-L",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/ASM-002-DEN-L/33d44ea785884bf3835c24779c48c563.jpg",
+      "color": "Đen",
+      "alt": null
+    },
+    {
+      "sku": "ASM-002-TRANG-M",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/ASM-002-TRANG-M/9aa6de0394ef4589bb75d04422db4a14.jpg",
+      "color": "Trắng",
+      "alt": null
+    },
+    {
+      "sku": "AT-002-DO-L",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/AT-002-DO-L/5f1534705a3d4728bd1af3ebbd46df17.jpg",
+      "color": "Đỏ",
+      "alt": null
+    },
+    {
+      "sku": "ASM-002-DEN-L",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/ASM-002-DEN-L/4dce082a695142da9582c7ea5d1294b6.jpg",
+      "color": "Đen",
+      "alt": null
+    },
+    {
+      "sku": "ASM-002-DEN-L",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/ASM-002-DEN-L/de9b2d678f3547769b063b39894de388.jpg",
+      "color": "Đen",
+      "alt": null
+    },
+    {
+      "sku": "ASM-002-TRANG-M",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/ASM-002-TRANG-M/3a4ddbe3587e4fdbbdcb0d120adf659b.jpg",
+      "color": "Trắng",
+      "alt": null
+    },
+    {
+      "sku": "ASM-002-TRANG-M",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/ASM-002-TRANG-M/a3107e7547e8420fb310afb956b2b9e3.jpg",
+      "color": "Trắng",
+      "alt": null
+    },
+    {
+      "sku": "AT-002-DO-L",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/AT-002-DO-L/eaf5163395324b2995fc7612ea5351bc.jpg",
+      "color": "Đỏ",
+      "alt": null
+    },
+    {
+      "sku": "AT-002-DO-L",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/AT-002-DO-L/def037fdab874e9ca79b9cc42297cfea.jpg",
+      "color": "Đỏ",
+      "alt": null
+    }
+  ],
+  "id": "SP-002",
+  "name": "Áo thun trơn nam",
+  "category": {
+    "id": "LSP-101",
+    "name": "Áo thun nam"
+  },
+  "audience": "NAM",
+  "kind": "ao-thun",
+  "price": 249000.0,
+  "originalPrice": null,
+  "stock": 238,
+  "imageUrl": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/ASM-002-DEN-L/33d44ea785884bf3835c24779c48c563.jpg",
+  "createdAt": null,
+  "colorOptions": [
+    {
+      "color": "Đen",
+      "imageUrl": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/ASM-002-DEN-L/33d44ea785884bf3835c24779c48c563.jpg",
+      "price": 249000.0,
+      "stock": 84,
+      "originalPrice": null
+    },
+    {
+      "color": "Trắng",
+      "imageUrl": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/ASM-002-TRANG-M/9aa6de0394ef4589bb75d04422db4a14.jpg",
+      "price": 249000.0,
+      "stock": 98,
+      "originalPrice": null
+    },
+    {
+      "color": "Đỏ",
+      "imageUrl": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/AT-002-DO-L/5f1534705a3d4728bd1af3ebbd46df17.jpg",
+      "price": 249000.0,
+      "stock": 56,
+      "originalPrice": null
+    }
+  ]
+}

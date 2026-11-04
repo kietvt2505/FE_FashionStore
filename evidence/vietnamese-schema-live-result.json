@@ -1,0 +1,27 @@
+{
+  "AppliedAt": "2026-11-03T06:43:29.8706414+00:00",
+  "SqlSha256": "3AE4FC0F97D17D7447D1D5A3836832C5AACCCDA1CE49B0FABACA7DB9A4A54D47",
+  "NativeTablesPreserved": 18,
+  "NativeDataUnchanged": true,
+  "WebsiteTables": [
+    "biennhanthanhtoantructuyen",
+    "chitietdonhanglucmua",
+    "chitietgiohang",
+    "danhgiasanpham",
+    "diachikhachhang",
+    "giohang",
+    "lichsugopgiohang",
+    "lichsuhuydonhang",
+    "sanphamyeuthich",
+    "sothutudonhangtheongay",
+    "thongtindonhang",
+    "uudaidonhang",
+    "xacnhanthanhtoanchuyenkhoan",
+    "yeucaudoitra",
+    "yeucauhoantien",
+    "yeucaukhoiphucmatkhau",
+    "yeucauthanhtoantructuyen"
+  ],
+  "PublicTableCount": 35,
+  "WebOrdersLinked": 16
+}

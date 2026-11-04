@@ -1,0 +1,12 @@
+{
+  "VerifiedAt": "2026-11-04T02:58:37.1537871+00:00",
+  "PromotionsPageStatus": 200,
+  "MembershipRulesVisible": true,
+  "VatRuleVisible": true,
+  "NoStackingRuleVisible": true,
+  "ProductPageStatus": 200,
+  "PriceBeforeVatExplained": true,
+  "LoginPageStatus": 200,
+  "NativeReturnCodesAccepted": true,
+  "ExpectedTotalAvailable": true
+}

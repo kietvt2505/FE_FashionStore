@@ -1,0 +1,105 @@
+{
+  "AppliedAt": "2026-11-03T16:16:46.971936+00:00",
+  "SqlSha256": "2979DBDBCF27D0E0BC32548E6D32E70F61ABFDE96BB72F788FE665B21A23B39F",
+  "NativeTablesVerified": 18,
+  "OriginalColumnDataUnchanged": true,
+  "TablesUnchanged": true,
+  "PublicTableCount": 18,
+  "Columns": [
+    {
+      "Table": "khachhang",
+      "Column": "makhoiphucbam",
+      "Type": "character varying(64)"
+    },
+    {
+      "Table": "khachhang",
+      "Column": "hethanmakhoiphuc",
+      "Type": "timestamp with time zone"
+    },
+    {
+      "Table": "khachhang",
+      "Column": "phienmatkhaukhoiphuc",
+      "Type": "character varying(64)"
+    },
+    {
+      "Table": "chitiethoadon",
+      "Column": "masplucmua",
+      "Type": "character varying(20)"
+    },
+    {
+      "Table": "chitiethoadon",
+      "Column": "tensanphamlucmua",
+      "Type": "character varying(200)"
+    },
+    {
+      "Table": "chitiethoadon",
+      "Column": "kichcolucmua",
+      "Type": "character varying(30)"
+    },
+    {
+      "Table": "chitiethoadon",
+      "Column": "mausaclucmua",
+      "Type": "character varying(60)"
+    },
+    {
+      "Table": "chitiethoadon",
+      "Column": "hinhanhlucmua",
+      "Type": "text"
+    },
+    {
+      "Table": "chitiethoadon",
+      "Column": "sosao",
+      "Type": "smallint"
+    },
+    {
+      "Table": "chitiethoadon",
+      "Column": "noidungdanhgia",
+      "Type": "character varying(2000)"
+    },
+    {
+      "Table": "chitiethoadon",
+      "Column": "ngaydanhgia",
+      "Type": "timestamp with time zone"
+    },
+    {
+      "Table": "chitiethoadon",
+      "Column": "trangthaidanhgia",
+      "Type": "character varying(20)"
+    },
+    {
+      "Table": "hoadon",
+      "Column": "lydohuy",
+      "Type": "character varying(500)"
+    },
+    {
+      "Table": "hoadon",
+      "Column": "ngayhuy",
+      "Type": "timestamp with time zone"
+    },
+    {
+      "Table": "phieudoitra",
+      "Column": "tennganhanghoantien",
+      "Type": "character varying(100)"
+    },
+    {
+      "Table": "phieudoitra",
+      "Column": "sotaikhoanhoantien",
+      "Type": "character varying(34)"
+    },
+    {
+      "Table": "phieudoitra",
+      "Column": "chutaikhoanhoantien",
+      "Type": "character varying(150)"
+    },
+    {
+      "Table": "phieudoitra",
+      "Column": "mathamchieuhoantien",
+      "Type": "character varying(100)"
+    },
+    {
+      "Table": "phieudoitra",
+      "Column": "ngayhoantien",
+      "Type": "timestamp with time zone"
+    }
+  ]
+}

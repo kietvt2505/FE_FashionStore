@@ -1,0 +1,11 @@
+{
+  "UpdatedAt": "2026-11-04T00:30:15.5304574+07:00",
+  "CustomerId": "WEB71D8D8182AAE4BAFA",
+  "LoginName": "vanlam",
+  "PasswordConfigured": true,
+  "ProfileDataUnchanged": true,
+  "PasswordFormat": "ASP.NET Identity",
+  "CreatedNewCustomer": false,
+  "BackendStatus": 200,
+  "BackendCustomerConfirmed": true
+}

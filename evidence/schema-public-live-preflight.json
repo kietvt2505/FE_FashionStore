@@ -1,0 +1,225 @@
+{
+  "database": "postgres",
+  "routines": [
+    {
+      "args": "p_day date",
+      "kind": "f",
+      "name": "allocate_order_number"
+    },
+    {
+      "args": "p_customer character varying, p_order character varying",
+      "kind": "f",
+      "name": "can_cancel_order"
+    },
+    {
+      "args": "p_customer character varying, p_order character varying",
+      "kind": "f",
+      "name": "cancel_customer_order"
+    },
+    {
+      "args": "p_customer character varying, p_order character varying, p_reason text, p_account_holder character varying, p_account_number character varying, p_bank_name character varying",
+      "kind": "f",
+      "name": "cancel_customer_order"
+    },
+    {
+      "args": "",
+      "kind": "f",
+      "name": "capture_cancelled_order_payment"
+    },
+    {
+      "args": "p_order character varying, p_employee character varying, p_reference character varying",
+      "kind": "f",
+      "name": "complete_customer_refund"
+    },
+    {
+      "args": "p_order character varying, p_employee character varying, p_amount numeric, p_reference character varying",
+      "kind": "f",
+      "name": "confirm_bank_payment"
+    },
+    {
+      "args": "",
+      "kind": "f",
+      "name": "guard_cancelled_web_order"
+    },
+    {
+      "args": "p_code character varying",
+      "kind": "f",
+      "name": "is_product_promotion"
+    },
+    {
+      "args": "p_customer character varying, p_request uuid, p_lines jsonb",
+      "kind": "f",
+      "name": "merge_guest_cart"
+    },
+    {
+      "args": "p_product character varying, p_percent numeric",
+      "kind": "f",
+      "name": "set_product_discount"
+    },
+    {
+      "args": "p_attempt character varying, p_provider character varying, p_merchant character varying, p_amount numeric, p_transaction character varying",
+      "kind": "f",
+      "name": "settle_gateway_payment"
+    },
+    {
+      "args": "p_customer character varying, p_order character varying, p_account_holder character varying, p_account_number character varying, p_bank_name character varying",
+      "kind": "f",
+      "name": "submit_refund_account"
+    }
+  ],
+  "relations": [
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "address"
+    },
+    {
+      "rls": false,
+      "kind": "S",
+      "name": "address_id_seq"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "cart"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "cart_line"
+    },
+    {
+      "rls": false,
+      "kind": "S",
+      "name": "cart_magiohang_seq"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "catalog_product"
+    },
+    {
+      "rls": false,
+      "kind": "v",
+      "name": "checkout_voucher"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "customer_account"
+    },
+    {
+      "rls": false,
+      "kind": "v",
+      "name": "customer_refund_queue"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "daily_order_number"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "gateway_attempt"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "gateway_receipt"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "guest_cart_merge"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "order_cancellation"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "order_line_snapshot"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "order_pricing"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "order_refund"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "order_snapshot"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "password_reset"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "payment_confirmation"
+    },
+    {
+      "rls": false,
+      "kind": "S",
+      "name": "payos_payment_number"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "product_discount_price"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "product_media"
+    },
+    {
+      "rls": false,
+      "kind": "S",
+      "name": "product_media_id_seq"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "product_review"
+    },
+    {
+      "rls": false,
+      "kind": "S",
+      "name": "product_review_id_seq"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "return_request"
+    },
+    {
+      "rls": false,
+      "kind": "v",
+      "name": "sku_price"
+    },
+    {
+      "rls": false,
+      "kind": "S",
+      "name": "web_order_number"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "wishlist"
+    }
+  ],
+  "existing_journal": null,
+  "routine_collisions": 0,
+  "relation_collisions": 0
+}

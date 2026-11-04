@@ -1,0 +1,45 @@
+{
+  "CheckedAt": "2026-11-03T17:02:06.9299943+00:00",
+  "ReadOnly": true,
+  "Accounts": [
+    {
+      "RequestedName": "vanlam",
+      "Found": true,
+      "CustomerId": "WEB71D8D8182AAE4BAFA",
+      "FullName": "Van Lam",
+      "LoginName": null,
+      "Enabled": true,
+      "PasswordPresent": false,
+      "PasswordFormat": "missing",
+      "MatchedEmail": false,
+      "MatchedLoginName": false,
+      "OrderCount": 0
+    },
+    {
+      "RequestedName": "vanlam@gmail.com",
+      "Found": true,
+      "CustomerId": "WEB71D8D8182AAE4BAFA",
+      "FullName": "Van Lam",
+      "LoginName": null,
+      "Enabled": true,
+      "PasswordPresent": false,
+      "PasswordFormat": "missing",
+      "MatchedEmail": true,
+      "MatchedLoginName": false,
+      "OrderCount": 0
+    },
+    {
+      "RequestedName": "\u002B84322331121",
+      "Found": true,
+      "CustomerId": "WEB71D8D8182AAE4BAFA",
+      "FullName": "Van Lam",
+      "LoginName": null,
+      "Enabled": true,
+      "PasswordPresent": false,
+      "PasswordFormat": "missing",
+      "MatchedEmail": false,
+      "MatchedLoginName": false,
+      "OrderCount": 0
+    }
+  ]
+}

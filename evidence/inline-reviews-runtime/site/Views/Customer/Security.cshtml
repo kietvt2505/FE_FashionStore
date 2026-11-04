@@ -1,0 +1,18 @@
+@model FashionStore.Web.Models.CustomerProfile
+@{ ViewBag.Title = "Bảo mật tài khoản"; }
+<div class="yody-account-shell">
+    @Html.Partial("_CustomerNav")
+    @Html.Partial("_CustomerMessages")
+    <header class="yody-page-heading"><p class="eyebrow">THÔNG TIN ĐĂNG NHẬP</p><h1>Bảo mật tài khoản</h1><p>Quản lý thông tin đăng nhập và mật khẩu của bạn.</p></header>
+    <section class="yody-surface-card customer-security-card" aria-labelledby="security-heading">
+        <h2 id="security-heading">Tài khoản của bạn</h2>
+        <dl class="customer-security-details">
+            <div><dt>Chủ tài khoản</dt><dd>@Model.FullName</dd></div>
+            <div><dt>Tên đăng nhập</dt><dd>@Model.UserName</dd></div>
+            <div><dt>Email</dt><dd>@(String.IsNullOrWhiteSpace(Model.Email) ? "Chưa cập nhật" : Model.Email)</dd></div>
+            <div><dt>Số điện thoại</dt><dd>@Model.Phone</dd></div>
+            <div><dt>Mật khẩu</dt><dd><span aria-label="Mật khẩu được bảo mật">••••••••••••</span></dd></div>
+        </dl>
+        <div class="yody-actions"><a class="mn-btn mn-btn-primary" href="@Url.Action("Password", "Account")">ĐỔI MẬT KHẨU</a><a class="yody-text-link" href="@Url.Action("Profile", "Account")">Cập nhật thông tin cá nhân</a></div>
+    </section>
+</div>

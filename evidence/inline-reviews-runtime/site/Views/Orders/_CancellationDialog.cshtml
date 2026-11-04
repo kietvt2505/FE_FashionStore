@@ -1,0 +1,40 @@
+@model FashionStore.Web.Models.CancelOrderViewModel
+<dialog id="order-cancellation-dialog" class="order-cancellation-dialog" aria-labelledby="cancel-dialog-title" data-open-on-load="@(Model.Open?"true":"false")">
+    <div class="order-cancellation-dialog-heading"><div><p class="eyebrow">YODY / @Model.Id</p><h2 id="cancel-dialog-title">@(Model.RefundAccountOnly?"Thông tin nhận hoàn tiền":"Xác nhận hủy đơn hàng")</h2></div><button type="button" class="order-dialog-close" data-order-dialog-close aria-label="Đóng">×</button></div>
+    @using(Html.BeginForm(Model.RefundAccountOnly?"RefundAccount":"Cancel","Orders",FormMethod.Post,new{@class="order-cancellation-form"})) {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m=>m.Id)
+        @Html.ValidationSummary(false,"",new{@class="customer-errors",role="alert"})
+        if(!Model.RefundAccountOnly) {
+            <div class="yody-field"><label for="ReasonCode">Lý do hủy đơn *</label>
+                @Html.DropDownListFor(m=>m.ReasonCode,new[]{
+                    new SelectListItem{Value="NO_NEED",Text="Tôi không còn nhu cầu mua hàng"},
+                    new SelectListItem{Value="ADDRESS",Text="Tôi muốn thay đổi địa chỉ nhận hàng"},
+                    new SelectListItem{Value="PAYMENT",Text="Tôi muốn thay đổi phương thức thanh toán"},
+                    new SelectListItem{Value="OTHER",Text="Lý do khác"}},"Chọn lý do hủy đơn",new{@class="filter-input",required="required"})
+            </div>
+            <div class="order-change-offer" data-address-offer hidden>
+                @if(Model.CanUpdateDelivery){<p>Bạn có muốn cập nhật địa chỉ nhận hàng mà không cần hủy đơn?</p><a class="mn-btn mn-btn-primary" href="@Url.Action("Update","Orders",new{id=Model.Id,section="delivery"})">CẬP NHẬT ĐỊA CHỈ</a><p class="yody-muted">Hoặc chọn Tiếp tục hủy đơn bên dưới nếu bạn vẫn muốn hủy.</p>}
+                else{<p>Đơn hiện không thể tự cập nhật địa chỉ. Vui lòng liên hệ cửa hàng để được hỗ trợ.</p>}
+            </div>
+            <div class="order-change-offer" data-payment-offer hidden>
+                @if(Model.CanUpdatePayment){<p>Bạn có muốn đổi phương thức thanh toán mà không cần hủy đơn?</p><a class="mn-btn mn-btn-primary" href="@Url.Action("Update","Orders",new{id=Model.Id,section="payment"})">ĐỔI PHƯƠNG THỨC THANH TOÁN</a><p class="yody-muted">Hoặc chọn Tiếp tục hủy đơn bên dưới nếu bạn vẫn muốn hủy.</p>}
+                else{<p>@(Model.PaymentUpdateNotice??"Đơn hiện không thể tự đổi phương thức thanh toán. Vui lòng liên hệ cửa hàng để được hỗ trợ.")</p>}
+            </div>
+            <div class="yody-field" data-other-reason hidden><label for="Reason">Lý do khác *</label>
+                @Html.TextAreaFor(m=>m.Reason,new{rows="3",maxlength="500",minlength="5",placeholder="Vui lòng cho cửa hàng biết lý do bạn muốn hủy đơn",@class="filter-input"})
+            </div>
+        }
+        if(Model.RequiresRefund) {
+            <div class="order-refund-notice" role="status"><strong>Thông tin nhận hoàn tiền</strong><p>Nhập đúng tài khoản bạn muốn nhận tiền. Cửa hàng sẽ kiểm tra yêu cầu và xác nhận sau khi hoàn tiền.</p></div>
+            <div class="yody-field"><label for="AccountHolder">Tên chủ tài khoản *</label>@Html.TextBoxFor(m=>m.AccountHolder,new{@class="filter-input",maxlength="150",required="required",autocomplete="off",placeholder="Tên đầy đủ trên tài khoản ngân hàng"})</div>
+            <div class="order-refund-bank-grid">
+                <div class="yody-field"><label for="AccountNumber">Số tài khoản *</label>@Html.TextBoxFor(m=>m.AccountNumber,new{@class="filter-input",maxlength="34",pattern="[0-9]{6,34}",inputmode="numeric",required="required",autocomplete="off",placeholder="Số tài khoản ngân hàng"})</div>
+                <div class="yody-field"><label for="BankName">Ngân hàng *</label>@Html.TextBoxFor(m=>m.BankName,new{@class="filter-input",maxlength="100",required="required",autocomplete="off",placeholder="Ví dụ: MB, Vietcombank"})</div>
+            </div>
+            <p class="order-refund-privacy">Chỉ cung cấp thông tin nhận tiền. Cửa hàng không yêu cầu mật khẩu, mã OTP, số thẻ hay mã bảo mật thẻ.</p>
+        }
+        else { <p class="yody-muted">Đơn chưa được ghi nhận thanh toán nên chưa phát sinh yêu cầu hoàn tiền.</p> }
+        <div class="order-dialog-actions"><button type="button" class="mn-btn mn-btn-outline" data-order-dialog-close>@(Model.RefundAccountOnly?"ĐỂ SAU":"GIỮ ĐƠN HÀNG")</button><button class="mn-btn mn-btn-primary" type="submit">@(Model.RefundAccountOnly?"GỬI THÔNG TIN":"XÁC NHẬN HỦY ĐƠN")</button></div>
+    }
+</dialog>

@@ -1,0 +1,31 @@
+@model FashionStore.Web.Models.ProductSummary
+@using FashionStore.Web.Helpers
+@{
+    var copy=ProductDescriptionHelper.For(Model);
+    var defaultDescription=String.IsNullOrWhiteSpace(Model.MoTa);
+    var description=String.IsNullOrWhiteSpace(Model.MoTa)?copy.Overview:Model.MoTa.Trim();
+    var longDescription=description.Length>260;
+    var cut=longDescription?description.LastIndexOf(' ',240):description.Length;
+    if(cut<120){cut=240;}
+    var excerpt=longDescription?description.Substring(0,cut).TrimEnd()+"…":description;
+}
+<section class="product-description-card" aria-labelledby="product-description-title">
+    <header><p class="product-description-kicker">HIỂU THÊM VỀ THIẾT KẾ</p><h2 id="product-description-title">Mô tả sản phẩm</h2><p class="product-description-name">@Model.TenSanPham</p></header>
+    <p class="product-description-intro">@excerpt</p>
+    @if(longDescription){<details class="product-description-full"><summary>Đọc mô tả đầy đủ</summary><p>@description</p></details>}
+    @if(defaultDescription&&copy.Material.Publish){
+        <div class="product-material-copy @(copy.Material.IsSuggested?"is-suggested":"")">
+            <div class="product-material-heading"><h3>@copy.Material.Heading</h3><span>@copy.Material.Label</span></div>
+            <p>@copy.Material.Description</p>
+            @if(copy.Material.Features.Count>0){<ul class="product-material-features">@foreach(var feature in copy.Material.Features){<li>@feature</li>}</ul>}
+            @if(!String.IsNullOrWhiteSpace(copy.Material.Note)){<p class="product-composition-note">@copy.Material.Note</p>}
+        </div>
+    }
+    @if(defaultDescription&&copy.Material.DesignNotes.Count>0){
+        <div class="product-design-copy"><h3>Điểm nhấn thiết kế</h3><ul>@foreach(var note in copy.Material.DesignNotes){<li>@note</li>}</ul></div>
+    }
+    <div class="product-description-notes">
+        <div><h3>@copy.AdviceTitle</h3><p>@copy.Advice</p></div>
+        <div><h3>@(defaultDescription&&copy.Material.IsSuggested?"Bảo quản tham khảo":"Chăm sóc sản phẩm")</h3><p>@copy.Care</p></div>
+    </div>
+</section>

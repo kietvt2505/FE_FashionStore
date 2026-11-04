@@ -1,0 +1,38 @@
+{
+  "/Cart": {
+    "productLinks": 2,
+    "correctProductAndColor": true,
+    "independentControls": true
+  },
+  "/Checkout": {
+    "productLinks": 2,
+    "correctProductAndColor": true,
+    "independentControls": true
+  },
+  "/Orders/Details/HD-NEW": {
+    "productLinks": 2,
+    "correctProductAndColor": true,
+    "independentControls": true
+  },
+  "/Orders/Details/HD-DELIVERED": {
+    "productLinks": 2,
+    "correctProductAndColor": true,
+    "independentControls": true
+  },
+  "/Orders/Details/HD-CANCELLED": {
+    "productLinks": 2,
+    "correctProductAndColor": true,
+    "independentControls": true
+  },
+  "/Customer/Wishlist": {
+    "productLinks": 2,
+    "correctProductAndColor": true,
+    "independentControls": true
+  },
+  "/Orders": {
+    "orderLinksPreserved": true
+  },
+  "/Orders?status=HUY": {
+    "orderLinksPreserved": true
+  }
+}

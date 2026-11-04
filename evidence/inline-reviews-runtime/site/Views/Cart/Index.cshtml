@@ -1,0 +1,95 @@
+@model FashionStore.Web.Models.CustomerCart
+@using FashionStore.Web.Helpers
+@{ ViewBag.Title = "Giỏ hàng";var invalidSku=TempData["InvalidQuantitySku"] as string;var invalidValue=TempData["InvalidQuantityValue"] as string;
+    var pendingGuestCount=0;
+    var guestMergeError=TempData.Peek("GuestMergeError") as string;
+    if(pendingGuestCount>0){ViewBag.HasPendingGuestCart=true;}
+}
+<div class="yody-cart-page">
+    @if(!Model.IsGuest){@Html.Partial("_CustomerNav")}
+    @Html.Partial("_CustomerMessages")
+<header class="yody-task-heading"><div><p class="eyebrow">YODY / MUA SẮM</p><h1>Giỏ hàng của bạn</h1><p>Kiểm tra sản phẩm và số lượng trước khi đặt hàng.</p></div>@if(Model.Items.Count>0){<a class="mn-text-link" href="@ViewBag.ContinueUrl">← Quay lại trang vừa xem</a>}</header>
+    @if(pendingGuestCount>0){<section class="guest-cart-pending" aria-label="Giỏ hàng trước đăng nhập"><p>Bạn còn <strong>@pendingGuestCount sản phẩm</strong> đã chọn trước khi đăng nhập, chưa gộp vào tài khoản.</p>@if(!String.IsNullOrEmpty(guestMergeError)){<p class="guest-merge-error" role="alert">@guestMergeError</p>}<button type="button" class="mn-btn mn-btn-outline" data-open-guest-merge>Xem giỏ hàng đã chọn</button></section>}
+    @if (TempData["CartError"] != null)
+    {
+        <div class="catalog-alert" role="alert">@TempData["CartError"]</div>
+    }
+    @if (!String.IsNullOrEmpty(Model.Error))
+    {
+        <div class="catalog-alert" role="alert">@Model.Error</div>
+    }
+    else if (Model.Items.Count == 0)
+    {
+        <div class="yody-cart-empty" role="status"><span aria-hidden="true">♡</span><h2>Giỏ hàng đang trống</h2><p>Bắt đầu tìm những thiết kế dành riêng cho bạn.</p><a class="mn-btn mn-btn-primary" href="@ViewBag.ContinueUrl">Quay lại trang vừa xem <span aria-hidden="true">↗</span></a></div>
+    }
+    else
+    {
+        <div class="yody-cart-layout">
+            <div class="yody-cart-items">
+                <div class="yody-cart-list-heading"><h2>Sản phẩm trong giỏ</h2><span>@Model.TotalQuantity sản phẩm</span></div>
+                <div class="customer-table-wrap yody-cart-table-wrap">
+                    <table class="customer-cart-table yody-cart-table">
+                        <colgroup><col class="cart-col-product" /><col class="cart-col-price" /><col class="cart-col-quantity" /><col class="cart-col-total" /><col class="cart-col-actions" /></colgroup>
+                        <thead><tr><th scope="col">Sản phẩm</th><th scope="col">Đơn giá</th><th scope="col">Số lượng</th><th scope="col">Thành tiền</th><th scope="col"><span class="yody-visually-hidden">Thao tác</span></th></tr></thead>
+                        <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td data-label="Sản phẩm"><a class="yody-cart-product product-entry-link" href="@(String.IsNullOrWhiteSpace(item.ProductId)?null:Url.Action("Details", "Product", new { id = item.ProductId, color = item.Color }))" aria-label="Xem chi tiết @item.ProductName - @item.Color"><span class="yody-cart-thumb"><img src="@Url.Content(CatalogViewHelper.ImagePath(item.ImageUrl))" alt="@item.ProductName" loading="lazy" /></span><div class="yody-cart-product-copy"><strong class="yody-cart-product-name product-entry-name">@item.ProductName</strong><span>@item.Size · @item.Color</span><small>Mã phân loại: <span class="yody-cart-sku">@item.Sku</span></small>@if (!item.Available) { <p class="customer-errors" role="alert">@item.Issue</p> }</div></a></td>
+                                <td data-label="Đơn giá"><span class="yody-cart-cell-value">@CatalogViewHelper.Vnd(item.UnitPrice)</span></td>
+                                <td data-label="Số lượng">
+                                    <div class="yody-cart-quantity-control">
+                                    @using (Html.BeginForm("Update", "Cart", FormMethod.Post, new { @class = "yody-cart-update",novalidate="novalidate" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="sku" value="@item.Sku" />
+                                        <input class="filter-input cart-quantity" type="number" inputmode="numeric" min="1" max="@item.Stock" step="1" name="quantity" value="@(invalidSku==item.Sku?invalidValue:item.Quantity.ToString())" data-max="@item.Stock" data-focus-quantity="@(invalidSku==item.Sku?"true":"false")" aria-label="Số lượng @item.ProductName" required />
+                                        <button class="mn-btn mn-btn-outline" type="submit">Cập nhật</button>
+                                    }
+                                    <small class="yody-cart-stock">Tồn hiện tại: @item.Stock</small>
+                                    </div>
+                                </td>
+                                <td data-label="Thành tiền"><strong class="yody-cart-line-total">@CatalogViewHelper.Vnd(item.LineTotal)</strong></td>
+                                <td data-label="Thao tác">
+                                    @using (Html.BeginForm("Remove", "Cart", FormMethod.Post))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="sku" value="@item.Sku" />
+                                        <button class="yody-cart-remove" type="submit" aria-label="Xóa @item.ProductName khỏi giỏ hàng">Xóa</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="yody-cart-bottom-actions">
+                    @using (Html.BeginForm("Clear", "Cart", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button class="yody-cart-clear" type="submit" data-confirm="Bạn muốn xóa toàn bộ giỏ hàng?">Xóa toàn bộ giỏ</button>
+                    }
+                </div>
+            </div>
+            <aside class="yody-cart-summary" aria-labelledby="yody-cart-summary-heading">
+                <p class="eyebrow">THÔNG TIN THANH TOÁN</p><h2 id="yody-cart-summary-heading">Tóm tắt giỏ hàng</h2>
+                <div class="yody-summary-row"><span>Số lượng</span><strong>@Model.TotalQuantity sản phẩm</strong></div>
+                <div class="yody-summary-row yody-summary-total"><span>Tiền hàng chưa VAT</span><strong>@CatalogViewHelper.Vnd(Model.Subtotal)</strong></div>
+                <p class="yody-summary-help">Đã tính giá khuyến mãi sản phẩm. Khi thanh toán, hệ thống chọn ưu đãi tốt hơn giữa thành viên và voucher, tính VAT 8% sau giảm rồi cộng phí giao hàng. Giá và tồn kho được kiểm tra lại khi đặt hàng. Giỏ hàng không giữ hàng.</p>
+                @if(Model.IsGuest){<p class="yody-summary-help">Bạn có thể lưu giỏ hàng mà chưa cần tài khoản. Đăng nhập khi sẵn sàng thanh toán.</p><a class="mn-btn mn-btn-primary yody-summary-cta" href="@Url.Action("Login","Account",new{returnUrl=Url.Action("Index","Cart")})">Đăng nhập để thanh toán →</a><a class="yody-text-link" href="@Url.Action("Register","Account")">Tạo tài khoản</a>}
+                else if (!Model.CheckoutEnabled)
+                {
+                    <p class="catalog-alert" role="status">Thanh toán trực tuyến tạm thời chưa mở. Bạn vẫn có thể lưu và cập nhật giỏ hàng.</p>
+                }
+                else if (Model.CanCheckout)
+                {
+                    <a class="mn-btn mn-btn-primary yody-summary-cta" href="@Url.Action("Index", "Checkout")">Tiến hành thanh toán <span aria-hidden="true">↗</span></a>
+                }
+                else
+                {
+                    <p class="catalog-alert" role="alert">Vui lòng kiểm tra sản phẩm hoặc số lượng không khả dụng trước khi thanh toán.</p>
+                }
+            </aside>
+        </div>
+    }
+</div>

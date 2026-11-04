@@ -1,0 +1,12 @@
+{
+  "guest_public_reviews_and_login_return": true,
+  "expired_session_login_restores_product_and_draft": true,
+  "not_delivered_has_no_form": true,
+  "delivered_has_inline_form_and_selected_order": true,
+  "pagination_preserves_product_color_and_back_link": true,
+  "rejected_submission_keeps_body_stars_and_inline_error": true,
+  "published_on_details_and_duplicate_form_removed": true,
+  "published_review_visible_to_guest": true,
+  "legacy_review_link_redirects_to_details": true,
+  "eligibility_outage_keeps_product_and_blocks_form": true
+}

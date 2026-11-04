@@ -1,0 +1,9 @@
+{
+  "environment": "Isolated IIS Express + fixture API, no production data",
+  "passed": [
+    "Wrong password retry preserves server-held origin and saves wishlist",
+    "Registration auto-login restores exact origin and selected wishlist product",
+    "Guest cart updates persist and reject zero/overstock quantities",
+    "External and admin return URLs cannot redirect customer login"
+  ]
+}

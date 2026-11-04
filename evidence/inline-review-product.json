@@ -1,0 +1,121 @@
+{
+  "description": null,
+  "variants": [
+    {
+      "sku": "VO-086-DEN-FS",
+      "size": "Free size",
+      "color": "Đen",
+      "price": 59000.0,
+      "stock": 33,
+      "originalPrice": null
+    },
+    {
+      "sku": "VO-086-DO-FS",
+      "size": "Free size",
+      "color": "Đỏ",
+      "price": 59000.0,
+      "stock": 6,
+      "originalPrice": null
+    },
+    {
+      "sku": "VO-086-TRANG-FS",
+      "size": "Free size",
+      "color": "Trắng",
+      "price": 59000.0,
+      "stock": 13,
+      "originalPrice": null
+    }
+  ],
+  "images": [
+    {
+      "sku": "VO-086-DEN-FS",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/VO-086-DEN-FS/7e36f28668e8449d92815f769038d622.jpg",
+      "color": "Đen",
+      "alt": null
+    },
+    {
+      "sku": "VO-086-DO-FS",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/VO-086-DO-FS/e940aaa25fd34c959a733ec087c3a166.jpg",
+      "color": "Đỏ",
+      "alt": null
+    },
+    {
+      "sku": "VO-086-TRANG-FS",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/VO-086-TRANG-FS/58846f4b1d2e431f911c088b03609efe.jpg",
+      "color": "Trắng",
+      "alt": null
+    },
+    {
+      "sku": "VO-086-DEN-FS",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/VO-086-DEN-FS/91c0c9d5f60e47d7a6228a5598977b86.jpg",
+      "color": "Đen",
+      "alt": null
+    },
+    {
+      "sku": "VO-086-DEN-FS",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/VO-086-DEN-FS/3536bd1148244fe690e7eb080327d874.jpg",
+      "color": "Đen",
+      "alt": null
+    },
+    {
+      "sku": "VO-086-DO-FS",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/VO-086-DO-FS/aa644777b4ae4cd7872ee565df4ed66b.jpg",
+      "color": "Đỏ",
+      "alt": null
+    },
+    {
+      "sku": "VO-086-DO-FS",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/VO-086-DO-FS/b25f55b12ced4560aa61273f92b93697.jpg",
+      "color": "Đỏ",
+      "alt": null
+    },
+    {
+      "sku": "VO-086-TRANG-FS",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/VO-086-TRANG-FS/f306e413e84e4360a8881accc81efd84.jpg",
+      "color": "Trắng",
+      "alt": null
+    },
+    {
+      "sku": "VO-086-TRANG-FS",
+      "url": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/VO-086-TRANG-FS/177e803be9eb41d590cff296a6d48828.jpg",
+      "color": "Trắng",
+      "alt": null
+    }
+  ],
+  "id": "SP-086",
+  "name": "Vớ cổ trung",
+  "category": {
+    "id": "LSP-118",
+    "name": "Vớ"
+  },
+  "audience": "UNISEX",
+  "kind": "vo",
+  "price": 59000.0,
+  "originalPrice": null,
+  "stock": 52,
+  "imageUrl": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/VO-086-DEN-FS/7e36f28668e8449d92815f769038d622.jpg",
+  "createdAt": null,
+  "colorOptions": [
+    {
+      "color": "Đen",
+      "imageUrl": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/VO-086-DEN-FS/7e36f28668e8449d92815f769038d622.jpg",
+      "price": 59000.0,
+      "stock": 33,
+      "originalPrice": null
+    },
+    {
+      "color": "Đỏ",
+      "imageUrl": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/VO-086-DO-FS/e940aaa25fd34c959a733ec087c3a166.jpg",
+      "price": 59000.0,
+      "stock": 6,
+      "originalPrice": null
+    },
+    {
+      "color": "Trắng",
+      "imageUrl": "https://oagcfzcslkkiokbmkrlg.supabase.co/storage/v1/object/public/product-images/VO-086-TRANG-FS/58846f4b1d2e431f911c088b03609efe.jpg",
+      "price": 59000.0,
+      "stock": 13,
+      "originalPrice": null
+    }
+  ]
+}

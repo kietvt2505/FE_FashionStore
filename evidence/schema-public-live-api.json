@@ -1,0 +1,40 @@
+[
+  {
+    "Path": "/health/ready",
+    "Status": 200,
+    "Total": null
+  },
+  {
+    "Path": "/api/products?q=SP-092&pageSize=100",
+    "Status": 200,
+    "Total": 1
+  },
+  {
+    "Path": "/api/customer/reviews/SP-002",
+    "Status": 200,
+    "Total": null
+  },
+  {
+    "Path": "/api/customer/promotions",
+    "Status": 200,
+    "Total": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "Path": "/api/account/me",
+    "Status": 401
+  },
+  {
+    "Path": "/api/cart",
+    "Status": 401
+  },
+  {
+    "Path": "/api/customer/returns",
+    "Status": 401
+  }
+]

@@ -1,0 +1,43 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  FashionStore.Backend -> D:\KhoaLuanCuNhan\UIUX_Skill\FashionStore_Task3_Customer\tmp\schema-public-build\bin\FashionStore.Backend\debug\FashionStore.Backend.dll
+  FashionStore.Backend.Tests -> D:\KhoaLuanCuNhan\UIUX_Skill\FashionStore_Task3_Customer\tmp\schema-public-build\bin\FashionStore.Backend.Tests\debug\FashionStore.Backend.Tests.dll
+Test run for D:\KhoaLuanCuNhan\UIUX_Skill\FashionStore_Task3_Customer\tmp\schema-public-build\bin\FashionStore.Backend.Tests\debug\FashionStore.Backend.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.14.1 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.CustomerSqlIntegrationTests.ProfileUsesActualRowVersionAndDoesNotAllowLoyaltyOverposting [SKIP]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.CustomerSqlIntegrationTests.PasswordChangeChecksCurrentPasswordAndInvalidatesAllExistingSessions [SKIP]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.CustomerSqlIntegrationTests.ConcurrentRegistrationCreatesExactlyOneAccountForDuplicateRequest [SKIP]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.CustomerSqlIntegrationTests.RegistrationIsAtomicAndDuplicateUserOrPhoneDoesNotCreatePartialRows [SKIP]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.CustomerSqlIntegrationTests.CartRecalculatesCurrentSqlPriceAndFlagsStockChanges [SKIP]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.CustomerSqlIntegrationTests.InvalidStockAndDisabledVariantsAreRejectedWithoutChangingInventory [SKIP]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.CustomerSqlIntegrationTests.CartIsOwnedByAuthenticatedCustomerAndPutDeleteAreIdempotent [SKIP]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.CustomerSqlIntegrationTests.ConcurrentAddsDoNotLoseUpdatesOrDuplicateCartLines [SKIP]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.SqlCatalogIntegrationTests.NewSortUsesActualCreatedAtAndSoldOutProductsRemainVisible [SKIP]
+  Skipped FashionStore.Backend.Tests.CustomerSqlIntegrationTests.ProfileUsesActualRowVersionAndDoesNotAllowLoyaltyOverposting [1 ms]
+  Skipped FashionStore.Backend.Tests.CustomerSqlIntegrationTests.PasswordChangeChecksCurrentPasswordAndInvalidatesAllExistingSessions [1 ms]
+  Skipped FashionStore.Backend.Tests.CustomerSqlIntegrationTests.ConcurrentRegistrationCreatesExactlyOneAccountForDuplicateRequest [1 ms]
+  Skipped FashionStore.Backend.Tests.CustomerSqlIntegrationTests.RegistrationIsAtomicAndDuplicateUserOrPhoneDoesNotCreatePartialRows [1 ms]
+  Skipped FashionStore.Backend.Tests.CustomerSqlIntegrationTests.CartRecalculatesCurrentSqlPriceAndFlagsStockChanges [1 ms]
+  Skipped FashionStore.Backend.Tests.CustomerSqlIntegrationTests.InvalidStockAndDisabledVariantsAreRejectedWithoutChangingInventory [1 ms]
+  Skipped FashionStore.Backend.Tests.CustomerSqlIntegrationTests.CartIsOwnedByAuthenticatedCustomerAndPutDeleteAreIdempotent [1 ms]
+  Skipped FashionStore.Backend.Tests.CustomerSqlIntegrationTests.ConcurrentAddsDoNotLoseUpdatesOrDuplicateCartLines [1 ms]
+  Skipped FashionStore.Backend.Tests.SqlCatalogIntegrationTests.NewSortUsesActualCreatedAtAndSoldOutProductsRemainVisible [1 ms]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.SqlCatalogIntegrationTests.DetailsReturnActualVariantsPricesStockAndVisibleImages [SKIP]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.SqlCatalogIntegrationTests.MissingOrInactiveProductIs404 [SKIP]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.SqlCatalogIntegrationTests.FiltersAndVisibilityUseSqlData [SKIP]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.SqlCatalogIntegrationTests.CategoriesAndUnicodeSearchUseDatabase [SKIP]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.SqlCatalogIntegrationTests.MvcRepositoryMapsActualApiAndSqlResponses [SKIP]
+[xUnit.net 00:00:18.92]     FashionStore.Backend.Tests.SqlCatalogIntegrationTests.PagingAndPriceSortAreExecutedBySql [SKIP]
+  Skipped FashionStore.Backend.Tests.SqlCatalogIntegrationTests.DetailsReturnActualVariantsPricesStockAndVisibleImages [1 ms]
+  Skipped FashionStore.Backend.Tests.SqlCatalogIntegrationTests.MissingOrInactiveProductIs404 [1 ms]
+  Skipped FashionStore.Backend.Tests.SqlCatalogIntegrationTests.FiltersAndVisibilityUseSqlData [1 ms]
+  Skipped FashionStore.Backend.Tests.SqlCatalogIntegrationTests.CategoriesAndUnicodeSearchUseDatabase [1 ms]
+  Skipped FashionStore.Backend.Tests.SqlCatalogIntegrationTests.MvcRepositoryMapsActualApiAndSqlResponses [1 ms]
+  Skipped FashionStore.Backend.Tests.SqlCatalogIntegrationTests.PagingAndPriceSortAreExecutedBySql [1 ms]
+WARNING: Overwriting results file: D:\KhoaLuanCuNhan\UIUX_Skill\FashionStore_Task3_Customer\FashionStore.Backend.Tests\TestResults\schema-publics.trx
+Results File: D:\KhoaLuanCuNhan\UIUX_Skill\FashionStore_Task3_Customer\FashionStore.Backend.Tests\TestResults\schema-publics.trx
+
+Passed!  - Failed:     0, Passed:   197, Skipped:    15, Total:   212, Duration: 18 s - FashionStore.Backend.Tests.dll (net8.0)

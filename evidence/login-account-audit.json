@@ -1,0 +1,16 @@
+{
+  "CheckedAt": "2026-11-03T16:48:56.156795+00:00",
+  "ReadOnly": true,
+  "Accounts": [
+    {
+      "RequestedName": "Ann",
+      "Found": false,
+      "DisplayNameMatches": []
+    },
+    {
+      "RequestedName": "vanlam",
+      "Found": false,
+      "DisplayNameMatches": []
+    }
+  ]
+}

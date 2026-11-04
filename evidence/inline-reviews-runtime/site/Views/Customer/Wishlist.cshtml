@@ -1,0 +1,47 @@
+@model Newtonsoft.Json.Linq.JArray
+@using FashionStore.Web.Helpers
+@{ ViewBag.Title = "Sản phẩm yêu thích"; }
+<div class="yody-account-shell">
+    @Html.Partial("_CustomerNav")
+    @Html.Partial("_CustomerMessages")
+    <header class="yody-page-heading"><p class="eyebrow">YODY / DANH SÁCH CỦA BẠN</p><h1>Sản phẩm yêu thích</h1><p>Sản phẩm được lưu trên trình duyệt này trong 30 ngày.</p></header>
+    @if (Model.Count == 0)
+    {
+        <div class="yody-empty-state"><h2>Chưa có sản phẩm yêu thích</h2><p>Bắt đầu khám phá và lưu những thiết kế phù hợp với bạn.</p><a class="mn-btn mn-btn-primary" href="@Url.Action("Index", "Product")">KHÁM PHÁ SẢN PHẨM</a></div>
+    }
+    else
+    {
+        <div class="yody-feature-grid yody-wishlist-grid">
+            @foreach (var p in Model)
+            {
+                var image=CatalogViewHelper.PhotoPath((string)p["ImageUrl"]);
+                var detailUrl=Url.Action("Details","Product",new{id=(string)p["MaSP"]});
+                var active=(bool)p["TrangThai"];
+                <article class="product-card catalog-product-card wishlist-product-card" data-product-card data-product-name="@p["TenSanPham"]">
+                    @if(active) {
+                        <a class="product-image" href="@detailUrl" aria-label="Xem chi tiết @p["TenSanPham"]"><img data-card-image data-managed-image src="@(image==null?null:Url.Content(image))" hidden="@(image==null?"hidden":null)" alt="@p["TenSanPham"]" loading="lazy" width="600" height="800" /></a>
+                    } else {
+                        <div class="product-image"><img data-card-image data-managed-image src="@(image==null?null:Url.Content(image))" hidden="@(image==null?"hidden":null)" alt="@p["TenSanPham"]" loading="lazy" width="600" height="800" /></div>
+                    }
+                    <div class="product-detail wishlist-product-detail">
+                    <h2 title="@p["TenSanPham"]">@if(active){<a class="product-entry-link" href="@detailUrl"><span class="product-entry-name">@p["TenSanPham"]</span></a>}else{@p["TenSanPham"]}</h2>
+                    @if (active)
+                    {
+                        <a class="yody-text-link" href="@detailUrl">Chọn kích cỡ, màu sắc và mua sắm →</a>
+                    }
+                    else
+                    {
+                        <p class="yody-muted">Sản phẩm hiện ngừng kinh doanh.</p>
+                    }
+                    @using (Html.BeginForm("RemoveWishlist", "Customer", FormMethod.Post, new { @class = "yody-inline-form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@p["MaSP"]" />
+                        <button type="submit" class="mn-btn mn-btn-outline">BỎ YÊU THÍCH</button>
+                    }
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</div>
