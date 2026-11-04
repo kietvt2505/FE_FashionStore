@@ -10,7 +10,8 @@ public sealed record CheckoutRequest(
     [param: StringLength(500)] string? Note,
     [param: Required] Guid RequestId,
     [param: StringLength(20)] string? Voucher = null,
-    IReadOnlyList<CartItemRequest>? Items = null);
+    IReadOnlyList<CartItemRequest>? Items = null,
+    decimal? ExpectedTotal = null);
 public sealed record BrowserCheckoutQuote(IReadOnlyList<CartItemRequest> Items,string? Voucher=null);
 public sealed record CheckoutQuote(decimal Subtotal, decimal Discount, decimal Total)
 {
@@ -21,6 +22,9 @@ public sealed record CheckoutQuote(decimal Subtotal, decimal Discount, decimal T
     public decimal MemberDiscount {get;init;}
     public string? Voucher {get;init;}
     public decimal VoucherDiscount {get;init;}
+    public decimal VatAmount {get;init;}
+    public int VatRate {get;init;}
+    public bool VoucherIgnored {get;init;}
 }
 
 public sealed record PlaceOrderResponse(string OrderId, string Status, decimal Total, string PaymentMethod);
@@ -34,6 +38,8 @@ public sealed record OrderDetails(string OrderId, DateTime CreatedAt, string Sta
     string PaymentStatus, string PaymentMethod, decimal Total, string Recipient, string Phone, string Address,
     string? Note, IReadOnlyList<OrderLine> Items, decimal Subtotal=0, decimal Discount=0, string? Voucher=null)
 {
+    public decimal VatAmount {get;init;}
+    public decimal ShippingFee {get;init;}
     public bool SupportsHistory { get; init; } = true;
     public bool SupportsReturns { get; init; } = true;
     public bool CanCancel { get; init; }

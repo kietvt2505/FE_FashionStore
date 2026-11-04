@@ -26,6 +26,7 @@
                 <h1 id="detail-product-name">@Model.Product.TenSanPham</h1>
                 <p class="yody-product-code">Mã sản phẩm: @Model.Product.MaSP</p>
                 <div class="yody-product-price" id="detail-price">@CatalogViewHelper.Vnd(Model.Product.DonGia)</div>
+                <p class="yody-muted">Giá chưa gồm VAT. Tổng sau ưu đãi và thuế được hiển thị tại bước thanh toán.</p>
                 <p class="detail-original-price" id="detail-original-price" hidden="@(Model.Product.GiaGoc.HasValue?null:"hidden")"><del>@(Model.Product.GiaGoc.HasValue?CatalogViewHelper.Vnd(Model.Product.GiaGoc.Value):"")</del> <span>Giá khuyến mãi</span></p>
                 <p class="stock-note @(Model.Product.ConHang ? "in-stock" : "out-of-stock")" id="detail-stock" role="status" aria-live="polite">@(Model.Product.ConHang ? "● Còn hàng" : "● Tạm hết hàng")</p>
                 <div class="yody-product-divider"></div>

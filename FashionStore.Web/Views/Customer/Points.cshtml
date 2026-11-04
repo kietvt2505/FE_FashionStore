@@ -4,7 +4,7 @@
 <div class="yody-account-shell">
     @Html.Partial("_CustomerNav")
     @Html.Partial("_CustomerMessages")
-    <header class="yody-page-heading"><p class="eyebrow">YODY / QUYỀN LỢI THÀNH VIÊN</p><h1>Điểm thưởng &amp; thành viên</h1><p>1 điểm cho mỗi 10.000đ tiền hàng đủ điều kiện sau giảm giá, không tính phí vận chuyển. Số dư và hạng hiện tại lấy từ hồ sơ. Danh sách bên dưới hiển thị những lần đối soát chuyển khoản đã được ghi nhận trên website; chưa bao gồm toàn bộ giao dịch tại quầy.</p><a class="yody-text-link" href="@Url.Action("Index", "Customer")">Xem số dư và hạng hiện tại →</a></header>
+    <header class="yody-page-heading"><p class="eyebrow">YODY / QUYỀN LỢI THÀNH VIÊN</p><h1>Điểm thưởng &amp; thành viên</h1><p>Điểm và hạng hiện tại lấy từ hồ sơ đã được cửa hàng ghi nhận. Cứ mỗi 10.000đ giá trị hóa đơn được ghi nhận tương ứng 1 điểm, làm tròn xuống theo quy trình cửa hàng. Hệ thống hiện chưa có sổ lịch sử điểm đầy đủ; xem điều kiện lên hạng bên dưới.</p><a class="yody-text-link" href="@Url.Action("Index", "Customer")">Xem số dư và hạng hiện tại →</a></header>
     <section class="yody-surface-card yody-table-section" aria-labelledby="point-history-heading">
         <div class="yody-card-heading"><h2 id="point-history-heading">Lịch sử giao dịch điểm</h2></div>
         @if (Model.Count == 0)
@@ -22,4 +22,5 @@
         }
     </section>
     @Html.Partial("_FeaturePaging", Model)
+    @Html.Partial("_MembershipRules")
 </div>

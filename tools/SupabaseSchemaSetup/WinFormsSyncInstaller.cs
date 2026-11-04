@@ -1,5 +1,7 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
+using System.Text;
 using Npgsql;
 
 namespace FashionStore.SchemaSetup;
@@ -37,7 +39,9 @@ public static class WinFormsSyncInstaller
             var result=new Dictionary<string,string>();
             foreach(var table in tables)
             {
-                var remove=table=="hoadon"?"-ARRAY['loaihoadon','trangthaigiaohang','datrutonkho','daghinhanthanhtoan']::text[]":"";
+                var remove=table switch{
+                    "hoadon"=>"-ARRAY['loaihoadon','trangthaigiaohang','datrutonkho','daghinhanthanhtoan']::text[]",
+                    "phieudoitra"=>"-'hinhthucxuly'","chitietdoitra"=>"-'loaigiaodich'",_=>""};
                 result[table]=await Scalar<string>("SELECT md5(COALESCE(string_agg(v::text,',' ORDER BY v::text),'')) FROM(SELECT to_jsonb(t)"+remove+" AS v FROM public.\""+table+"\" t) q");
             }
             return result;
@@ -48,8 +52,16 @@ public static class WinFormsSyncInstaller
         if(!before.OrderBy(p=>p.Key).SequenceEqual(after.OrderBy(p=>p.Key)))throw new InvalidOperationException("Du lieu ngoai cac truong dong bo bi thay doi; hoan tac.");
         if(await Scalar<long>("SELECT count(*) FROM pg_tables WHERE schemaname='public'")!=18)throw new InvalidOperationException("So bang bi thay doi; hoan tac.");
         if(await Scalar<long>("SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='hoadon' AND column_name IN ('datrutonkho','daghinhanthanhtoan') AND data_type='boolean'")!=2)throw new InvalidOperationException("Cot giu kho khong dung kieu.");
+        var pendingCodes=await Scalar<long>("""
+            SELECT (SELECT count(*) FROM public.phieudoitra WHERE upper(btrim(nguondon)) IN ('WEB','WEBSITE')
+                AND trangthai IN ('CHO_DUYET','CHO_TIEP_NHAN') AND hinhthucxuly IN ('TRA','DOI'))
+              +(SELECT count(*) FROM public.chitietdoitra d JOIN public.phieudoitra p USING(sophieudt)
+                WHERE upper(btrim(p.nguondon)) IN ('WEB','WEBSITE') AND p.trangthai IN ('CHO_DUYET','CHO_TIEP_NHAN') AND d.loaigiaodich IN ('TRA','DOI'))
+            """);
+        if(pendingCodes!=0)throw new InvalidOperationException("Con ma doi tra cu chua dong bo; hoan tac.");
         await tx.CommitAsync();
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(reportFile))!);
-        await File.WriteAllTextAsync(reportFile,JsonSerializer.Serialize(new{AppliedAt=DateTimeOffset.UtcNow,NativeTables=18,OtherDataUnchanged=true,PartnerCommit="6d11b10"}));
+        await File.WriteAllTextAsync(reportFile,JsonSerializer.Serialize(new{AppliedAt=DateTimeOffset.UtcNow,NativeTables=18,OtherDataUnchanged=true,PartnerCommit="6d11b10",
+            SqlSha256=Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(script))),PendingReturnCodesRemaining=pendingCodes}));
     }
 }

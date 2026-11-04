@@ -39,13 +39,14 @@ namespace FashionStore.Web.Controllers
             catch (Exception) { return Unavailable(); }
         }
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<ActionResult> Index([Bind(Include="Recipient,Phone,Address,PaymentMethod,Note,RequestId,Voucher")]CheckoutViewModel model,string checkoutAction=null)
+        public async Task<ActionResult> Index([Bind(Include="Recipient,Phone,Address,PaymentMethod,Note,RequestId,Voucher,ExpectedTotal")]CheckoutViewModel model,string checkoutAction=null)
         {
             var token = CustomerAuthentication.Token(Request);
             if (String.IsNullOrEmpty(token)) return LoginAgain();
             var preview=checkoutAction=="applyVoucher"||checkoutAction=="removeVoucher";
             if(preview) {ModelState.Clear();if(checkoutAction=="removeVoucher")model.Voucher=null;if(model.RequestId==Guid.Empty)model.RequestId=Guid.NewGuid();}
             else if (model.RequestId == Guid.Empty) ModelState.AddModelError("", "Mã yêu cầu không hợp lệ. Vui lòng tải lại trang thanh toán.");
+            if(!preview&&!model.ExpectedTotal.HasValue)ModelState.AddModelError("","Vui lòng kiểm tra tổng thanh toán mới rồi xác nhận lại.");
             if (!preview && ModelState.IsValid)
             {
                 try
@@ -86,14 +87,17 @@ namespace FashionStore.Web.Controllers
                 ApplyQuote(model,await api.QuoteAsync(token,null,GuestCartStore.Items(Session)));
             }
         }
-        private static void ApplyQuote(CheckoutViewModel model,Newtonsoft.Json.Linq.JObject quote)
+        private void ApplyQuote(CheckoutViewModel model,Newtonsoft.Json.Linq.JObject quote)
         {
             model.QuotedDiscount=(decimal)quote["discount"];model.QuotedTotal=(decimal)quote["total"];
+            model.ExpectedTotal=model.QuotedTotal;ModelState.Remove("ExpectedTotal");
             model.MembershipEnabled=(bool?)quote["membershipEnabled"]??false;
             model.MemberRank=(string)quote["memberRank"];model.MemberRate=(int?)quote["memberRate"]??0;
             model.MemberPoints=(int?)quote["memberPoints"]??0;
             model.QuotedMemberDiscount=(decimal?)quote["memberDiscount"]??(model.MembershipEnabled?(model.QuotedDiscount??0):0);
             model.QuotedVoucherDiscount=(decimal?)quote["voucherDiscount"]??0;model.AppliedVoucher=(string)quote["voucher"];
+            model.QuotedVatAmount=(decimal?)quote["vatAmount"]??0;model.QuotedVatRate=(int?)quote["vatRate"]??0;
+            model.VoucherIgnored=(bool?)quote["voucherIgnored"]??false;
         }
         private ActionResult LoginAgain() { CustomerAuthentication.SignOut(); return RedirectToAction("Login","Account",new { returnUrl=Url.Action("Index") }); }
         private ActionResult Unavailable() { Response.StatusCode = 503; Response.TrySkipIisCustomErrors = true; ViewBag.CustomerError="Không thể tải dữ liệu thanh toán. Vui lòng thử lại sau."; return View("~/Views/Account/CustomerError.cshtml"); }

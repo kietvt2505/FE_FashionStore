@@ -137,7 +137,7 @@ public sealed class ReturnInput
     [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.StringLength(30)] public string OrderId {get;set;}="";
     [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.StringLength(40)] public string Sku {get;set;}="";
     [System.ComponentModel.DataAnnotations.Range(1,100000)] public int Quantity {get;set;}
-    [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.RegularExpression("^(DOI|TRA)$")] public string Kind {get;set;}="TRA";
+    [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.RegularExpression("^(DOI|TRA|HOAN_TIEN|DOI_SAN_PHAM)$")] public string Kind {get;set;}="HOAN_TIEN";
     [System.ComponentModel.DataAnnotations.StringLength(40)] public string? NewSku {get;set;}
     [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.StringLength(500,MinimumLength=5)] public string Reason {get;set;}="";
 }

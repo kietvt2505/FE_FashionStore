@@ -326,6 +326,7 @@
     <Content Include="Content\images\brand\yody-logo.svg" />
     <Content Include="Content\images\brand\yody-favicon.svg" />
     <Content Include="Views\Shared\_BrandLogo.cshtml" />
+    <Content Include="Views\Shared\_MembershipRules.cshtml" />
     <Compile Include="Controllers\CustomerController.cs" />
     <Compile Include="Controllers\PaymentsController.cs" />
     <Compile Include="Helpers\CustomerViewHelper.cs" />

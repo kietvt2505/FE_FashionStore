@@ -69,7 +69,10 @@
                 <div class="yody-card-heading"><h2 id="order-total-heading">Tóm tắt thanh toán</h2></div>
                 <div class="yody-summary-row"><span>Tổng tiền hàng</span><strong>@CatalogViewHelper.Vnd(Model.Subtotal)</strong></div>
                 @if (!String.IsNullOrEmpty(Model.MemberRank)) { <div class="yody-summary-row"><span>Ưu đãi hạng @Model.MemberRank (@Model.MemberRate%)</span><strong>−@CatalogViewHelper.Vnd(Model.MemberDiscount)</strong></div> }
-                @if (!String.IsNullOrEmpty(Model.Voucher)) { <div class="yody-summary-row"><span>Mã giảm giá @Model.Voucher</span><strong>−@CatalogViewHelper.Vnd(Model.VoucherDiscount)</strong></div> }
+                @if (String.IsNullOrEmpty(Model.MemberRank)&&Model.Discount>0) { <div class="yody-summary-row"><span>Ưu đãi đã áp dụng @Model.Voucher</span><strong>−@CatalogViewHelper.Vnd(Model.Discount)</strong></div> }
+                else if (!String.IsNullOrEmpty(Model.Voucher)) { <div class="yody-summary-row"><span>Mã giảm giá @Model.Voucher</span><strong>−@CatalogViewHelper.Vnd(Model.VoucherDiscount)</strong></div> }
+                <div class="yody-summary-row"><span>Thuế VAT</span><strong>@CatalogViewHelper.Vnd(Model.VatAmount)</strong></div>
+                <div class="yody-summary-row"><span>Phí vận chuyển</span><strong>@CatalogViewHelper.Vnd(Model.ShippingFee)</strong></div>
                 <div class="yody-summary-row yody-summary-total"><span>Tổng cộng</span><strong>@CatalogViewHelper.Vnd(Model.Total)</strong></div>
             </section>
             @if(CustomerViewHelper.IsOnlinePayment(Model.PaymentMethod) && Model.PaymentStatus=="CHUA_THANH_TOAN" && Model.Status=="MOI") {

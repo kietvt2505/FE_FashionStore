@@ -20,8 +20,12 @@ namespace FashionStore.Web.Models
         [StringLength(20, ErrorMessage="{0} vượt giới hạn hoặc chưa đủ độ dài yêu cầu."),Display(Name="Mã ưu đãi")] public string Voucher {get;set;}
         public decimal? QuotedDiscount {get;set;}
         public decimal? QuotedTotal {get;set;}
+        public decimal? ExpectedTotal {get;set;}
         public decimal QuotedMemberDiscount {get;set;}
         public decimal QuotedVoucherDiscount {get;set;}
+        public decimal QuotedVatAmount {get;set;}
+        public int QuotedVatRate {get;set;}
+        public bool VoucherIgnored {get;set;}
         public string AppliedVoucher {get;set;}
         public bool MembershipEnabled {get;set;}
         public string MemberRank {get;set;}
@@ -89,6 +93,8 @@ namespace FashionStore.Web.Models
         public string Note { get; set; }
         public decimal Subtotal {get;set;}
         public decimal Discount {get;set;}
+        public decimal VatAmount {get;set;}
+        public decimal ShippingFee {get;set;}
         public string MemberRank {get;set;}
         public int MemberRate {get;set;}
         public int? MemberPoints {get;set;}

@@ -68,4 +68,16 @@ WHERE upper(btrim(h.nguondon))='WEB' AND h.dauvantayyeucau IS NOT NULL
 UPDATE public.hoadon
 SET loaihoadon=CASE WHEN phuongthucthanhtoan='COD' THEN 'COD' ELSE 'GIAO_HANG' END
 WHERE nguondon='WEB' AND loaihoadon='WEB_HUY' AND trangthaigiaohang='Đã hủy';
+
+-- Fix only unprocessed website requests. Staff-completed records and all amounts,
+-- quantities, replacement SKUs and reasons remain unchanged.
+UPDATE public.chitietdoitra d
+SET loaigiaodich=CASE d.loaigiaodich WHEN 'TRA' THEN 'HOAN_TIEN' WHEN 'DOI' THEN 'DOI_SAN_PHAM' END
+FROM public.phieudoitra p
+WHERE p.sophieudt=d.sophieudt AND upper(btrim(p.nguondon)) IN ('WEB','WEBSITE')
+  AND p.trangthai IN ('CHO_DUYET','CHO_TIEP_NHAN') AND d.loaigiaodich IN ('TRA','DOI');
+UPDATE public.phieudoitra
+SET hinhthucxuly=CASE hinhthucxuly WHEN 'TRA' THEN 'HOAN_TIEN' WHEN 'DOI' THEN 'DOI_SAN_PHAM' END
+WHERE upper(btrim(nguondon)) IN ('WEB','WEBSITE') AND trangthai IN ('CHO_DUYET','CHO_TIEP_NHAN')
+  AND hinhthucxuly IN ('TRA','DOI');
 COMMIT;

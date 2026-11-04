@@ -40,24 +40,25 @@ public sealed partial class SupabaseOrderService(DatabaseMode mode,PaymentGatewa
     public async Task<CheckoutQuote> QuoteBrowserAsync(string customer,IReadOnlyList<CartItemRequest> items,string? voucher,CancellationToken ct){
         await using var c=Connection();await c.OpenAsync(ct);await using var tx=await c.BeginTransactionAsync(IsolationLevel.RepeatableRead,ct);
         var lines=await BrowserLines(c,tx,items,false,ct);var p=await SupabaseCheckoutPricing.Calculate(c,tx,true,customer,voucher,lines.Sum(l=>l.Total),ct);await tx.CommitAsync(ct);
-        return new(p.Subtotal,p.Discount,p.Total){MembershipEnabled=true,MemberRank=p.Rank,MemberRate=p.Rate,MemberPoints=p.Points,MemberDiscount=p.MemberDiscount,Voucher=p.Voucher,VoucherDiscount=p.VoucherDiscount};
+        return new(p.Subtotal,p.Discount,p.Total){MembershipEnabled=true,MemberRank=p.Rank,MemberRate=p.Rate,MemberPoints=p.Points,MemberDiscount=p.MemberDiscount,Voucher=p.Voucher,VoucherDiscount=p.VoucherDiscount,VatAmount=p.VatAmount,VatRate=8,VoucherIgnored=p.VoucherIgnored};
     }
     public async Task<PlaceOrderResponse> PlaceAsync(string customer,CheckoutRequest request,CancellationToken ct){
         if(request.RequestId==Guid.Empty||request.PaymentMethod is not ("COD" or "CHUYEN_KHOAN" or "PAYOS"))throw new CustomerRequestException(400,"Phương thức thanh toán hoặc mã yêu cầu không hợp lệ.");
         if(request.Items==null||request.Items.Count is <1 or >50||request.Items.Any(i=>i==null||string.IsNullOrWhiteSpace(i.Sku)||i.Quantity<1))throw new CustomerRequestException(400,"Giỏ hàng không hợp lệ.");
         if(request.PaymentMethod=="CHUYEN_KHOAN"&&!mode.BankTransferEnabled)throw new CustomerRequestException(409,"Chuyển khoản chưa được bật.");
         if(request.PaymentMethod=="PAYOS"&&paymentSettings?.Ready("PAYOS")!=true)throw new CustomerRequestException(409,"QR payOS chưa được cấu hình.");
-        var fingerprint=Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(customer+":"+request.RequestId.ToString("D"))));
+        var fingerprint=NativeOrderRequestFingerprint.Create(customer,request);
         await using var c=Connection();await c.OpenAsync(ct);await using var tx=await c.BeginTransactionAsync(IsolationLevel.ReadCommitted,ct);
         // Serialize web retries without locking the customer before products. WinForms takes
         // product locks before updating loyalty, so both systems must follow that lock order.
         await Execute(c,tx,"SELECT pg_advisory_xact_lock(19580,hashtext(@kh))",ct,("kh",customer));
         await using(var owner=Sql(c,tx,"SELECT makh FROM public.khachhang WHERE makh=@kh AND trangthai",("kh",customer)))if(await owner.ExecuteScalarAsync(ct)==null)throw new CustomerRequestException(401,"Vui lòng đăng nhập lại.");
         string? previous=null;
-        await using(var old=Sql(c,tx,"SELECT sohd,tennguoinhan,sodienthoai_kh,diachigiao,phuongthucthanhtoan,COALESCE(ghichugiaohang,''),makm FROM public.hoadon WHERE makh=@kh AND dauvantayyeucau=@fp",("kh",customer),("fp",fingerprint)))
+        await using(var old=Sql(c,tx,"SELECT sohd,tennguoinhan,sodienthoai_kh,diachigiao,phuongthucthanhtoan,COALESCE(ghichugiaohang,''),makm,dauvantayyeucau FROM public.hoadon WHERE makh=@kh AND (dauvantayyeucau=@legacy OR left(dauvantayyeucau,32)=@prefix)",("kh",customer),("legacy",fingerprint.Legacy),("prefix",fingerprint.Prefix)))
         await using(var r=await old.ExecuteReaderAsync(ct)){if(await r.ReadAsync(ct)){
             previous=r.GetString(0);
-            if(r.GetString(1)!=request.Recipient.Trim()||r.GetString(2)!=request.Phone.Trim()||r.GetString(3)!=request.Address.Trim()||r.GetString(4)!=request.PaymentMethod||r.GetString(5)!=(request.Note?.Trim()??"")||(!r.IsDBNull(6)?r.GetString(6):null)!=(string.IsNullOrWhiteSpace(request.Voucher)?null:request.Voucher.Trim().ToUpperInvariant()))throw new CustomerRequestException(409,"Mã yêu cầu đã được dùng với thông tin khác. Vui lòng tải lại biểu mẫu.");
+            var legacy=r.GetString(7)==fingerprint.Legacy;
+            if((!legacy&&r.GetString(7)!=fingerprint.Value)||(legacy&&(r.GetString(1)!=request.Recipient.Trim()||r.GetString(2)!=request.Phone.Trim()||r.GetString(3)!=request.Address.Trim()||r.GetString(4)!=request.PaymentMethod||r.GetString(5)!=(request.Note?.Trim()??"")||(!r.IsDBNull(6)?r.GetString(6):null)!=(string.IsNullOrWhiteSpace(request.Voucher)?null:request.Voucher.Trim().ToUpperInvariant()))))throw new CustomerRequestException(409,"Mã yêu cầu đã được dùng với thông tin khác. Vui lòng tải lại biểu mẫu.");
         }}
         if(previous!=null){
             var expected=request.Items.GroupBy(i=>i.Sku).ToDictionary(g=>g.Key,g=>g.Sum(i=>(long)i.Quantity));var actual=new Dictionary<string,long>();
@@ -67,7 +68,8 @@ public sealed partial class SupabaseOrderService(DatabaseMode mode,PaymentGatewa
         }
         await using(var emp=Sql(c,tx,"SELECT 1 FROM public.nhanvien WHERE manv=@id AND trangthai FOR SHARE",("id",mode.WebOrderEmployeeId)))if(await emp.ExecuteScalarAsync(ct)==null)throw new CustomerRequestException(503,"Nhân viên tiếp nhận đơn chưa được cấu hình hợp lệ.");
         var lines=await BrowserLines(c,tx,request.Items,true,ct);var p=await SupabaseCheckoutPricing.Calculate(c,tx,true,customer,request.Voucher,lines.Sum(l=>l.Total),ct);
-        if(p.Total<=0||p.Subtotal>9999999999999999m)throw new CustomerRequestException(400,"Giá trị đơn không hợp lệ.");
+        if(request.ExpectedTotal.HasValue&&request.ExpectedTotal.Value!=p.Total)throw new CustomerRequestException(409,"Giá, ưu đãi hoặc thuế đã thay đổi. Vui lòng kiểm tra tổng thanh toán mới rồi xác nhận lại.");
+        if(p.Total<=0||p.Subtotal>9999999999999999m||p.Total>9999999999999999m)throw new CustomerRequestException(400,"Giá trị đơn không hợp lệ.");
         if(request.PaymentMethod=="PAYOS")PaymentGatewaySettings.Amount(p.Total);
         await Execute(c,tx,"SELECT pg_advisory_xact_lock(19579,((CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')::date-DATE '2000-01-01'))",ct);
         string id;
@@ -80,10 +82,10 @@ public sealed partial class SupabaseOrderService(DatabaseMode mode,PaymentGatewa
         await Execute(c,tx,"""
             INSERT INTO public.hoadon(sohd,ngaylap,loaihoadon,phuongthucthanhtoan,tongcong,chietkhau,thuevat,khachphaitra,tienkhachdua,tienthua,
                 sodienthoai_kh,makh,diachigiao,donvivanchuyen,trangthaigiaohang,trangthaithanhtoan,phiship,tiencod,manv,tennguoinhan,nguondon,ghichugiaohang,makm,dauvantayyeucau,datrutonkho,daghinhanthanhtoan)
-            VALUES(@id,LOCALTIMESTAMP,@kind,@method,@subtotal,@discount,0,@total,0,0,@phone,@kh,@address,'Nội bộ',@shipping,'CHUA_THANH_TOAN',0,@cod,@emp,@name,'WEB',@note,@voucher,@fp,FALSE,FALSE)
-            """,ct,("id",id),("kind",request.PaymentMethod=="COD"?"COD":"WEB_CHO_THANH_TOAN"),("method",request.PaymentMethod),("subtotal",p.Subtotal),("discount",p.Discount),("total",p.Total),("phone",request.Phone.Trim()),("kh",customer),("address",request.Address.Trim()),("shipping",request.PaymentMethod=="COD"?"Vừa xác nhận đơn":"Chờ xác nhận thanh toán"),("cod",request.PaymentMethod=="COD"?p.Total:0m),("emp",mode.WebOrderEmployeeId),("name",request.Recipient.Trim()),("note",request.Note?.Trim()??""),("voucher",p.Voucher),("fp",fingerprint));
-        var remaining=p.Total;
-        for(var i=0;i<lines.Count;i++){var l=lines[i];var actual=i==lines.Count-1?remaining:Math.Round(l.Total*p.Total/p.Subtotal,2,MidpointRounding.AwayFromZero);remaining-=actual;
+            VALUES(@id,LOCALTIMESTAMP,@kind,@method,@subtotal,@discount,@vat,@total,0,0,@phone,@kh,@address,'Nội bộ',@shipping,'CHUA_THANH_TOAN',0,@cod,@emp,@name,'WEB',@note,@voucher,@fp,FALSE,FALSE)
+            """,ct,("id",id),("kind",request.PaymentMethod=="COD"?"COD":"WEB_CHO_THANH_TOAN"),("method",request.PaymentMethod),("subtotal",p.Subtotal),("discount",p.Discount),("vat",p.VatAmount),("total",p.Total),("phone",request.Phone.Trim()),("kh",customer),("address",request.Address.Trim()),("shipping",NativeStoreCodes.ShippingFor(request.PaymentMethod)),("cod",request.PaymentMethod=="COD"?p.Total:0m),("emp",mode.WebOrderEmployeeId),("name",request.Recipient.Trim()),("note",request.Note?.Trim()??""),("voucher",p.Voucher),("fp",fingerprint.Value));
+        decimal cumulative=0,allocated=0;
+        for(var i=0;i<lines.Count;i++){var l=lines[i];cumulative+=l.Total;var next=Math.Round(p.Total*cumulative/p.Subtotal,0,MidpointRounding.AwayFromZero);var actual=next-allocated;allocated=next;
             await Execute(c,tx,"INSERT INTO public.chitiethoadon(sohd,masku,soluong,dongia,thanhtien,giatrithuctra) VALUES(@id,@sku,@qty,@price,@total,@actual)",ct,("id",id),("sku",l.Sku),("qty",l.Quantity),("price",l.UnitPrice),("total",l.Total),("actual",actual));}
         await ReserveInvoiceStock(c,tx,id,ct);
         await tx.CommitAsync(ct);return new(id,request.PaymentMethod=="COD"?"XAC_NHAN":"MOI",p.Total,request.PaymentMethod);
@@ -94,9 +96,9 @@ public sealed partial class SupabaseOrderService(DatabaseMode mode,PaymentGatewa
     }
     public async Task<OrderDetails> DetailAsync(string id,string customer,CancellationToken ct){
         await using var c=Connection();await c.OpenAsync(ct);await using var tx=await c.BeginTransactionAsync(IsolationLevel.RepeatableRead,ct);OrderDetails order;
-        await using(var cmd=Sql(c,tx,$"SELECT h.sohd,h.ngaylap,{StatusSql},COALESCE(h.trangthaigiaohang,''),h.trangthaithanhtoan,h.phuongthucthanhtoan,h.khachphaitra,COALESCE(h.tennguoinhan,''),COALESCE(h.sodienthoai_kh,''),COALESCE(h.diachigiao,''),h.ghichugiaohang,h.tongcong,h.chietkhau,h.makm,h.lydohuy,h.ngayhuy FROM public.hoadon h WHERE h.sohd=@id AND h.makh=@kh",("id",id),("kh",customer)))await using(var r=await cmd.ExecuteReaderAsync(ct)){
+        await using(var cmd=Sql(c,tx,$"SELECT h.sohd,h.ngaylap,{StatusSql},COALESCE(h.trangthaigiaohang,''),h.trangthaithanhtoan,h.phuongthucthanhtoan,h.khachphaitra,COALESCE(h.tennguoinhan,''),COALESCE(h.sodienthoai_kh,''),COALESCE(h.diachigiao,''),h.ghichugiaohang,h.tongcong,h.chietkhau,h.makm,h.lydohuy,h.ngayhuy,h.thuevat,COALESCE(h.phiship,0) FROM public.hoadon h WHERE h.sohd=@id AND h.makh=@kh",("id",id),("kh",customer)))await using(var r=await cmd.ExecuteReaderAsync(ct)){
             if(!await r.ReadAsync(ct))throw new CustomerRequestException(404,"Không tìm thấy đơn hàng.");
-            order=new(r.GetString(0),r.GetDateTime(1),r.GetString(2),r.GetString(3),r.GetString(4),r.GetString(5),r.GetDecimal(6),r.GetString(7),r.GetString(8),r.GetString(9),r.IsDBNull(10)?null:r.GetString(10),[],r.GetDecimal(11),r.GetDecimal(12),r.IsDBNull(13)?null:r.GetString(13)){CancellationReason=r.IsDBNull(14)?null:r.GetString(14),CancelledAt=r.IsDBNull(15)?null:r.GetDateTime(15)};
+            order=new(r.GetString(0),r.GetDateTime(1),r.GetString(2),r.GetString(3),r.GetString(4),r.GetString(5),r.GetDecimal(6),r.GetString(7),r.GetString(8),r.GetString(9),r.IsDBNull(10)?null:r.GetString(10),[],r.GetDecimal(11),r.GetDecimal(12),r.IsDBNull(13)?null:r.GetString(13)){CancellationReason=r.IsDBNull(14)?null:r.GetString(14),CancelledAt=r.IsDBNull(15)?null:r.GetDateTime(15),VatAmount=r.GetDecimal(16),ShippingFee=r.GetDecimal(17)};
         }
         var lines=new List<OrderLine>();await using(var cmd=Sql(c,tx,"SELECT l.masku,COALESCE(l.tensanphamlucmua,p.tensanpham),COALESCE(l.kichcolucmua,p.kichco),COALESCE(l.mausaclucmua,p.mausac),l.soluong,l.dongia,l.thanhtien,l.hinhanhlucmua,COALESCE(l.masplucmua,p.masp) FROM public.chitiethoadon l JOIN public.sanpham p USING(masku) WHERE l.sohd=@id ORDER BY l.masku",("id",id)))await using(var r=await cmd.ExecuteReaderAsync(ct))while(await r.ReadAsync(ct))lines.Add(new(r.GetString(0),r.GetString(1),r.GetString(2),r.GetString(3),r.GetInt32(4),r.GetDecimal(5),r.GetDecimal(6),r.IsDBNull(7)?null:r.GetString(7)){ProductId=r.GetString(8)});
         order=await WithRefundDetails(c,tx,order with{Items=lines,SupportsHistory=true,SupportsReturns=await IsWebOrder(c,tx,id,ct)},customer,ct);order=await WithUpdateCapabilities(c,tx,order,customer,ct);await tx.CommitAsync(ct);return order;

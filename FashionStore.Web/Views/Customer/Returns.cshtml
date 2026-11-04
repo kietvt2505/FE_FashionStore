@@ -16,7 +16,7 @@
             {
                 <article class="yody-surface-card yody-return-card">
                     <div class="yody-record-top"><span class="eyebrow">@p["SoPhieuDT"] · @CustomerViewHelper.VietnamDate((DateTime)p["NgayLap"],"dd/MM/yyyy")</span><span class="status-pill">@CustomerViewHelper.Status((string)p["TrangThai"])</span></div>
-                    <h2>@CustomerViewHelper.Status((string)p["HinhThucXuLy"])</h2>
+                    <h2>@CustomerViewHelper.ReturnKind((string)p["HinhThucXuLy"])</h2>
                     <p>Đơn hàng: <a class="yody-text-link" href="@Url.Action("Details", "Orders", new { id = (string)p["SoHD"] })">@p["SoHD"]</a></p>
                     <p>@p["LyDo"]</p>
                     @if (!String.IsNullOrWhiteSpace((string)p["LyDoTuChoi"]))

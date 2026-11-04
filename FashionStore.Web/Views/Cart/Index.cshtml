@@ -74,8 +74,8 @@
             <aside class="yody-cart-summary" aria-labelledby="yody-cart-summary-heading">
                 <p class="eyebrow">THÔNG TIN THANH TOÁN</p><h2 id="yody-cart-summary-heading">Tóm tắt giỏ hàng</h2>
                 <div class="yody-summary-row"><span>Số lượng</span><strong>@Model.TotalQuantity sản phẩm</strong></div>
-                <div class="yody-summary-row yody-summary-total"><span>Tạm tính</span><strong>@CatalogViewHelper.Vnd(Model.Subtotal)</strong></div>
-                <p class="yody-summary-help">Tạm tính đã bao gồm giảm giá sản phẩm. Ưu đãi thành viên và phí vận chuyển được tính khi thanh toán. Giá và tồn kho được kiểm tra lại khi đặt hàng. Giỏ hàng không giữ hàng.</p>
+                <div class="yody-summary-row yody-summary-total"><span>Tiền hàng chưa VAT</span><strong>@CatalogViewHelper.Vnd(Model.Subtotal)</strong></div>
+                <p class="yody-summary-help">Đã tính giá khuyến mãi sản phẩm. Khi thanh toán, hệ thống chọn ưu đãi tốt hơn giữa thành viên và voucher, tính VAT 8% sau giảm rồi cộng phí giao hàng. Giá và tồn kho được kiểm tra lại khi đặt hàng. Giỏ hàng không giữ hàng.</p>
                 @if(Model.IsGuest){<p class="yody-summary-help">Bạn có thể lưu giỏ hàng mà chưa cần tài khoản. Đăng nhập khi sẵn sàng thanh toán.</p><a class="mn-btn mn-btn-primary yody-summary-cta" href="@Url.Action("Login","Account",new{returnUrl=Url.Action("Index","Cart")})">Đăng nhập để thanh toán →</a><a class="yody-text-link" href="@Url.Action("Register","Account")">Tạo tài khoản</a>}
                 else if (!Model.CheckoutEnabled)
                 {

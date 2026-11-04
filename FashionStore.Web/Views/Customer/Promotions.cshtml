@@ -33,7 +33,7 @@
                         <p class="yody-muted">Còn @((int)p["SoLuotToiDa"] - (int)p["SoLuotDaDung"]) lượt tại thời điểm tải trang</p>
                     }
                     @if((bool?)p["CheckoutSupported"]==true) {
-                        <p class="yody-muted">Nhập mã tại trang thanh toán. Mức giảm được tính thêm sau ưu đãi hạng thành viên; hệ thống kiểm tra lại điều kiện khi đặt hàng.</p>
+                        <p class="yody-muted">Nhập mã tại trang thanh toán. Hệ thống chọn khoản giảm tốt hơn giữa mã này và hạng thành viên, không cộng dồn; nếu bằng nhau, ưu tiên thành viên.</p>
                         <a class="mn-btn mn-btn-outline voucher-use-link" href="@Url.Action("Index","Checkout",new{voucher=(string)p["MaKM"]})">DÙNG KHI THANH TOÁN</a>
                     }
                     else if((bool?)p["ProductPromotion"]==true) {<p class="yody-muted">Ưu đãi áp dụng riêng cho sản phẩm và đã tính trong giá bán. Không nhập thêm mã này để giảm toàn đơn.</p><a class="yody-text-link voucher-use-link" href="@Url.Action("Index","Product",new{saleOnly=true,sort="price_asc"})">Xem sản phẩm khuyến mãi →</a>}
@@ -42,4 +42,5 @@
             }
         </div>
     }
+    @Html.Partial("_MembershipRules")
 </div>

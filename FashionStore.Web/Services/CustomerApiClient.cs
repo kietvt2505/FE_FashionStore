@@ -43,7 +43,7 @@ namespace FashionStore.Web.Services
         public Task<CustomerCart> ClearAsync(string token) => SendAsync<CustomerCart>(HttpMethod.Delete, "api/cart", token);
         public Task<PlacedOrder> PlaceOrderAsync(string token, CheckoutViewModel model) =>
             SendAsync<PlacedOrder>(HttpMethod.Post, "api/orders", token,
-                new { model.Recipient, model.Phone, model.Address, model.PaymentMethod, model.Note, model.RequestId,Voucher=Optional(model.Voucher), Items=System.Linq.Enumerable.Select(model.BrowserItems,i=>new{Sku=i.Sku,Quantity=i.Quantity}) });
+                new { model.Recipient, model.Phone, model.Address, model.PaymentMethod, model.Note, model.RequestId,model.ExpectedTotal,Voucher=Optional(model.Voucher), Items=System.Linq.Enumerable.Select(model.BrowserItems,i=>new{Sku=i.Sku,Quantity=i.Quantity}) });
         public Task<System.Collections.Generic.List<OnlinePaymentOptionModel>> PaymentOptionsAsync(string token)=>SendAsync<System.Collections.Generic.List<OnlinePaymentOptionModel>>(HttpMethod.Get,"api/payments/options",token);
         public Task<JObject> RecheckPaymentAsync(string token,string orderId)=>SendAsync<JObject>(HttpMethod.Post,"api/payments/"+Uri.EscapeDataString(orderId)+"/recheck",token);
         public async Task<PaymentLinkModel> StartPaymentAsync(string token,string orderId,string clientIp=null)

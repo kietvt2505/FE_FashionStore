@@ -20,6 +20,8 @@ Web tiếp tục tạo mật khẩu Identity V3. Chế độ Supabase chỉ chuy
 
 ## Đơn hàng và tồn kho
 
+Đối chiếu bổ sung về VAT, mã đổi/trả và ưu đãi không cộng dồn: [WEB_WINFORMS_10_ISSUES.md](WEB_WINFORMS_10_ISSUES.md).
+
 - COD mới: `loaihoadon=COD`, `nguondon=WEB`, `trangthaigiaohang=Vừa xác nhận đơn`, `CHUA_THANH_TOAN`. Đây là trạng thái đầu tiên form hiện có chấp nhận; không có bước nhân viên xác nhận riêng trước nó khi giữ nguyên form.
 - Website giữ tồn trong cùng transaction tạo hóa đơn/chi tiết, rồi ghi `datrutonkho=TRUE`, `daghinhanthanhtoan=FALSE`. Form thấy cờ đã giữ và không trừ kho thêm; giao thành công ghi nhận thanh toán/tích điểm theo form.
 - Khóa sản phẩm theo thứ tự SKU; không khóa hàng khách hàng trước sản phẩm vì form cập nhật điểm sau khi giữ khóa sản phẩm. Gửi lại cùng request không tạo đơn/trừ tồn lần hai.

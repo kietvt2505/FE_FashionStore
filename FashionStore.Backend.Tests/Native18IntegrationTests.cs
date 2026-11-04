@@ -120,7 +120,7 @@ public sealed class Native18IntegrationTests
             using var client=factory.CreateClient();
             var login=await client.PostAsJsonAsync("/api/account/login",new LoginRequest{UserName="EXISTING",Password="Existing password 123!"});Assert.True(login.IsSuccessStatusCode,await login.Content.ReadAsStringAsync());client.DefaultRequestHeaders.Authorization=new AuthenticationHeaderValue("Bearer",(await login.Content.ReadFromJsonAsync<LoginResponse>())!.AccessToken);
             var products=await client.GetFromJsonAsync<ProductListResponse>("/api/products?audience=NAM");Assert.Equal(200000,Assert.Single(products!.Items).Price);
-            var request=new CheckoutRequest("Khach thu","0900000001","Dia chi giao hang hop le","COD","Ghi chu goc",Guid.NewGuid(),Items:new[]{new CartItemRequest{Sku="SKU-M",Quantity=1}});
+            var request=new CheckoutRequest("Khach thu","0900000001","Dia chi giao hang hop le","COD","Ghi chu goc",Guid.NewGuid(),Items:new[]{new CartItemRequest{Sku="SKU-M",Quantity=1}},ExpectedTotal:216000m);
             var place=await client.PostAsJsonAsync("/api/orders",request);Assert.True(place.IsSuccessStatusCode,await place.Content.ReadAsStringAsync());var placed=(await place.Content.ReadFromJsonAsync<PlaceOrderResponse>())!;
             var retry=await client.PostAsJsonAsync("/api/orders",request);Assert.True(retry.IsSuccessStatusCode,await retry.Content.ReadAsStringAsync());Assert.Equal(placed.OrderId,(await retry.Content.ReadFromJsonAsync<PlaceOrderResponse>())!.OrderId);
             Assert.Equal("XAC_NHAN",placed.Status);
@@ -161,7 +161,7 @@ public sealed class Native18IntegrationTests
             var delivered=(await client.GetFromJsonAsync<OrderDetails>("/api/orders/"+dispatchId))!;
             Assert.Equal("HOAN_TAT",delivered.Status);Assert.Equal("DA_THANH_TOAN",delivered.PaymentStatus);
             Assert.True(await Scalar<bool>("SELECT daghinhanthanhtoan FROM public.hoadon WHERE sohd='"+dispatchId+"'"));
-            Assert.Equal(200000m,await Scalar<decimal>("SELECT tongchitieu FROM public.khachhang WHERE makh='KH-OLD'"));
+            Assert.Equal(216000m,await Scalar<decimal>("SELECT tongchitieu FROM public.khachhang WHERE makh='KH-OLD'"));
             await Exec("""
                 INSERT INTO public.hoadon(sohd,makh,nguondon,loaihoadon,phuongthucthanhtoan,trangthaigiaohang,trangthaithanhtoan,tongcong,khachphaitra,tienkhachdua,manv,dauvantayyeucau,datrutonkho)
                 VALUES('WEB-OLD-COD','KH-OLD','WEB','COD','COD','Chờ xác nhận','CHUA_THANH_TOAN',250000,250000,0,'NV01',repeat('B',64),NULL);
@@ -311,6 +311,7 @@ public sealed class Native18IntegrationTests
                 Assert.NotEqual(PasswordVerificationResult.Failed,new PasswordHasher<TaiKhoanKhachHang>().VerifyHashedPassword(new(),upgraded,"Form changed 123!"));
                 Assert.Equal(HttpStatusCode.Unauthorized,(await formClient.PostAsJsonAsync("/api/account/login",new LoginRequest{UserName="form-customer",Password=upgraded})).StatusCode);
             }
+            await NativeStoreParityScenarios.RunAsync(settings.ConnectionString);
             Assert.Equal(18L,await Scalar<long>("SELECT count(*) FROM pg_tables WHERE schemaname='public'"));
         }
         finally{NpgsqlConnection.ClearAllPools();await using var drop=new NpgsqlCommand("DROP DATABASE "+database+" WITH(FORCE)",admin);await drop.ExecuteNonQueryAsync();}

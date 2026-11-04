@@ -29,7 +29,7 @@ public sealed partial class SupabaseOrderService {
  else{if(!s.CanPayment)throw new CustomerRequestException(409,"Đơn không còn được đổi phương thức thanh toán.");var method=input.PaymentMethod;
  if(method is not ("COD" or "CHUYEN_KHOAN")||method=="CHUYEN_KHOAN"&&!mode.BankTransferEnabled)throw new CustomerRequestException(409,"Phương thức chưa khả dụng.");
  if(method=="COD"){await EnsureInventoryContract(c,tx,ct);await ReserveInvoiceStock(c,tx,id,ct);}
- await Execute(c,tx,"UPDATE public.hoadon SET phuongthucthanhtoan=@method,loaihoadon=@kind,trangthaigiaohang=@shipping,tiencod=@cod WHERE sohd=@id",ct,("id",id),("method",method),("kind",method=="COD"?"COD":"WEB_CHO_THANH_TOAN"),("shipping",method=="COD"?"Vừa xác nhận đơn":"Chờ xác nhận thanh toán"),("cod",method=="COD"?s.Total:0m));}
+ await Execute(c,tx,"UPDATE public.hoadon SET phuongthucthanhtoan=@method,loaihoadon=@kind,trangthaigiaohang=@shipping,tiencod=@cod WHERE sohd=@id",ct,("id",id),("method",method),("kind",method=="COD"?"COD":"WEB_CHO_THANH_TOAN"),("shipping",NativeStoreCodes.ShippingFor(method)),("cod",method=="COD"?s.Total:0m));}
  await tx.CommitAsync(ct);
  }
 }

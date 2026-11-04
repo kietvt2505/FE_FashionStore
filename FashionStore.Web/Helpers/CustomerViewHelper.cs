@@ -91,8 +91,9 @@ namespace FashionStore.Web.Helpers {
    {"Cần liên hệ cửa hàng","Cần liên hệ cửa hàng"},{"MOI","Đơn mới"},{"XAC_NHAN","Đã xác nhận"},{"DANG_XU_LY","Đang xử lý"},{"HOAN_TAT","Hoàn thành"},{"HUY","Đã hủy"},
    {"CHO_XAC_NHAN","Chờ xác nhận"},{"CHUA_GIAO","Chưa giao"},{"DANG_CHUAN_BI","Đang chuẩn bị"},{"DANG_GIAO","Đang giao"},{"DA_GIAO","Đã giao"},{"HOAN","Hoàn trả"},
    {"CHUA_THANH_TOAN","Chưa thanh toán"},{"DA_THANH_TOAN","Đã thanh toán"},{"HOAN_TIEN","Đã hoàn tiền"},{"HOAN_MOT_PHAN","Hoàn tiền một phần"},{"THAT_BAI","Không thành công"},
-   {"CHO_DUYET","Chờ duyệt"},{"DA_DUYET","Đã duyệt"},{"TU_CHOI","Từ chối"},{"TICH","Tích điểm"},{"SU_DUNG","Sử dụng điểm"},{"DIEU_CHINH","Điều chỉnh"},
+   {"CHO_DUYET","Chờ duyệt"},{"CHO_TIEP_NHAN","Chờ tiếp nhận"},{"DOI_SAN_PHAM","Đổi sản phẩm"},{"DA_DUYET","Đã duyệt"},{"TU_CHOI","Từ chối"},{"TICH","Tích điểm"},{"SU_DUNG","Sử dụng điểm"},{"DIEU_CHINH","Điều chỉnh"},
    {"TRA","Trả hàng"},{"DOI","Đổi hàng"},{"DOI_VA_TRA","Đổi và trả"},{"DON_HANG","Đơn hàng"},{"GIAO_HANG","Giao hàng"},{"THANH_TOAN","Thanh toán"}};
   public static string Status(string value){string text;return value!=null&&Labels.TryGetValue(value,out text)?text:"Đang cập nhật";}
+  public static string ReturnKind(string value){switch(value){case "TRA":case "HOAN_TIEN":return "Trả hàng, hoàn tiền";case "DOI":case "DOI_SAN_PHAM":return "Đổi sản phẩm";case "DOI_VA_TRA":return "Đổi và trả";default:return "Đang cập nhật";}}
  }
 }

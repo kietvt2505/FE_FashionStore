@@ -32,10 +32,11 @@ public sealed class CustomerMvcClientTests
     {
         var handler=new CaptureHandler();using var http=new HttpClient(handler);
         var api=new CustomerApiClient(http,"http://backend.test/");
-        await api.PlaceOrderAsync("owner",new CheckoutViewModel{Recipient="Customer",Phone="0900000001",Address="Delivery address",PaymentMethod="COD",RequestId=Guid.NewGuid(),Voucher="FORGED",MemberRate=100,MemberPoints=999999,QuotedTotal=1});
+        await api.PlaceOrderAsync("owner",new CheckoutViewModel{Recipient="Customer",Phone="0900000001",Address="Delivery address",PaymentMethod="COD",RequestId=Guid.NewGuid(),Voucher="FORGED",MemberRate=100,MemberPoints=999999,QuotedTotal=1,ExpectedTotal=972000});
         var body=Assert.Single(handler.Requests).Body!;
-        Assert.Equal(new[]{"Address","Items","Note","PaymentMethod","Phone","Recipient","RequestId","Voucher"},body.Properties().Select(p=>p.Name).OrderBy(n=>n));
+        Assert.Equal(new[]{"Address","ExpectedTotal","Items","Note","PaymentMethod","Phone","Recipient","RequestId","Voucher"},body.Properties().Select(p=>p.Name).OrderBy(n=>n));
         Assert.Equal("FORGED",(string?)body["Voucher"]);
+        Assert.Equal(972000m,(decimal)body["ExpectedTotal"]!);
     }
     private sealed class CaptureHandler : HttpMessageHandler
     {
