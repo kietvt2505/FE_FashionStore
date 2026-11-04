@@ -1,6 +1,7 @@
 # 2026-11-04: Đồng bộ website với WinForms 6d11b10
 
 - Bổ sung đối chiếu 10 mục: mã đổi/trả chuẩn, ưu đãi chọn mức lớn hơn, VAT 8%, thông tin lên hạng và kiểm tra lại tổng tiền trước khi xác nhận. Xem `docs/WEB_WINFORMS_10_ISSUES.md`.
+- Rà soát thêm 5 vấn đề API form; chặn phương thức online chưa hỗ trợ ngay trước khi website tạo đơn. Source form giữ nguyên trong lần rà soát này. Xem `docs/WINFORMS_5_ADDITIONAL_FINDINGS.md`.
 - Giữ nguyên source form; website chuyển đổi mật khẩu chữ thường cũ sau đăng nhập đúng, tiếp tục lưu hash Identity.
 - COD dùng trạng thái đầu của form và cờ giữ tồn để không trừ kho hai lần; đơn hủy dùng loại giao hàng form đọc được.
 - Lịch sử mua hàng hiển thị cả hóa đơn POS thuộc đúng khách; quyền sửa/hủy đơn POS không mở trên web.

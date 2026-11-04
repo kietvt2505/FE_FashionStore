@@ -1,6 +1,4 @@
 using System.Data;
-using System.Security.Cryptography;
-using System.Text;
 using FashionStore.Backend.Data;
 using FashionStore.Backend.DTOs;
 using FashionStore.Backend.Middleware;
@@ -8,7 +6,7 @@ using Npgsql;
 namespace FashionStore.Backend.Services;
 
 // The fixed partner invoice and invoice-line tables own all persisted orders.
-public sealed partial class SupabaseOrderService(DatabaseMode mode,PaymentGatewaySettings? paymentSettings=null)
+public sealed partial class SupabaseOrderService(DatabaseMode mode)
 {
     private NpgsqlConnection Connection(){if(!mode.OrdersEnabled)throw new CustomerRequestException(503,"Đặt hàng chưa được bật.");return new(mode.SupabaseConnection);}
     internal static NpgsqlCommand Sql(NpgsqlConnection c,NpgsqlTransaction? tx,string text,params (string Name,object? Value)[] args){var cmd=new NpgsqlCommand(text,c,tx){CommandTimeout=20};foreach(var (name,value) in args)cmd.Parameters.AddWithValue(name,value??DBNull.Value);return cmd;}
@@ -43,10 +41,10 @@ public sealed partial class SupabaseOrderService(DatabaseMode mode,PaymentGatewa
         return new(p.Subtotal,p.Discount,p.Total){MembershipEnabled=true,MemberRank=p.Rank,MemberRate=p.Rate,MemberPoints=p.Points,MemberDiscount=p.MemberDiscount,Voucher=p.Voucher,VoucherDiscount=p.VoucherDiscount,VatAmount=p.VatAmount,VatRate=8,VoucherIgnored=p.VoucherIgnored};
     }
     public async Task<PlaceOrderResponse> PlaceAsync(string customer,CheckoutRequest request,CancellationToken ct){
-        if(request.RequestId==Guid.Empty||request.PaymentMethod is not ("COD" or "CHUYEN_KHOAN" or "PAYOS"))throw new CustomerRequestException(400,"Phương thức thanh toán hoặc mã yêu cầu không hợp lệ.");
+        if(request.RequestId==Guid.Empty)throw new CustomerRequestException(400,"Mã yêu cầu không hợp lệ.");
+        if(request.PaymentMethod is not (NativeStoreCodes.Cod or NativeStoreCodes.Transfer))throw new CustomerRequestException(409,"Website hiện chỉ hỗ trợ COD hoặc chuyển khoản. Thanh toán QR trực tuyến chưa được mở.");
         if(request.Items==null||request.Items.Count is <1 or >50||request.Items.Any(i=>i==null||string.IsNullOrWhiteSpace(i.Sku)||i.Quantity<1))throw new CustomerRequestException(400,"Giỏ hàng không hợp lệ.");
         if(request.PaymentMethod=="CHUYEN_KHOAN"&&!mode.BankTransferEnabled)throw new CustomerRequestException(409,"Chuyển khoản chưa được bật.");
-        if(request.PaymentMethod=="PAYOS"&&paymentSettings?.Ready("PAYOS")!=true)throw new CustomerRequestException(409,"QR payOS chưa được cấu hình.");
         var fingerprint=NativeOrderRequestFingerprint.Create(customer,request);
         await using var c=Connection();await c.OpenAsync(ct);await using var tx=await c.BeginTransactionAsync(IsolationLevel.ReadCommitted,ct);
         // Serialize web retries without locking the customer before products. WinForms takes
@@ -70,7 +68,6 @@ public sealed partial class SupabaseOrderService(DatabaseMode mode,PaymentGatewa
         var lines=await BrowserLines(c,tx,request.Items,true,ct);var p=await SupabaseCheckoutPricing.Calculate(c,tx,true,customer,request.Voucher,lines.Sum(l=>l.Total),ct);
         if(request.ExpectedTotal.HasValue&&request.ExpectedTotal.Value!=p.Total)throw new CustomerRequestException(409,"Giá, ưu đãi hoặc thuế đã thay đổi. Vui lòng kiểm tra tổng thanh toán mới rồi xác nhận lại.");
         if(p.Total<=0||p.Subtotal>9999999999999999m||p.Total>9999999999999999m)throw new CustomerRequestException(400,"Giá trị đơn không hợp lệ.");
-        if(request.PaymentMethod=="PAYOS")PaymentGatewaySettings.Amount(p.Total);
         await Execute(c,tx,"SELECT pg_advisory_xact_lock(19579,((CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')::date-DATE '2000-01-01'))",ct);
         string id;
         await using(var number=Sql(c,tx,"""
