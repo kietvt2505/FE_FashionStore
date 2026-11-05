@@ -35,6 +35,9 @@
                             @if (CustomerViewHelper.CanReviewOrder(Model) && !String.IsNullOrWhiteSpace(item.ProductId)) {
                                 <a class="yody-text-link yody-order-review-link" href="@(Url.Action("Details","Product",new{id=item.ProductId,color=item.Color,reviewOrderId=Model.OrderId})+"#product-reviews")">Viết đánh giá</a>
                             }
+                            @if (Model.Status == "HOAN_TAT" && Model.SupportsReturns) {
+                                <a class="yody-text-link" href="@Url.Action("Return","Customer",new{id=Model.OrderId,sku=item.Sku})">Đổi / trả sản phẩm này</a>
+                            }
                         </td><td data-label="Đơn giá">@CatalogViewHelper.Vnd(item.UnitPrice)</td><td data-label="Số lượng">@item.Quantity</td><td data-label="Thành tiền"><strong>@CatalogViewHelper.Vnd(item.Total)</strong></td></tr>
                     }
                 </tbody></table></div>

@@ -1,7 +1,29 @@
 param([int]$Port = 5000, [switch]$EnableCustomerFeatures, [switch]$EnableOrders, [string]$OrderEmployeeId = "NV-001", [switch]$EnableBankTransfer)
 $ErrorActionPreference = 'Stop'
 if ($EnableBankTransfer -and -not $EnableOrders) { throw '-EnableBankTransfer requires -EnableOrders.' }
-$projectPath = Join-Path $PSScriptRoot '..\FashionStore.Backend\FashionStore.Backend.csproj'
+$projectPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\FashionStore.Backend\FashionStore.Backend.csproj'))
+function Stop-ExistingProjectBackend {
+    $outputDirectory = Join-Path (Split-Path -Parent $projectPath) 'bin\Debug\net8.0'
+    $backendExe = Join-Path $outputDirectory 'FashionStore.Backend.exe'
+    $backendDll = Join-Path $outputDirectory 'FashionStore.Backend.dll'
+    $dllArgument = '(?i)(?:^|[\s"])' + [regex]::Escape($backendDll) + '(?:$|[\s"])'
+    $candidates = Get-CimInstance Win32_Process -Filter "Name='dotnet.exe' OR Name='FashionStore.Backend.exe'"
+    foreach ($candidate in $candidates) {
+        $ownsOutput = $candidate.ExecutablePath -eq $backendExe
+        if ($candidate.Name -eq 'dotnet.exe' -and $candidate.CommandLine) {
+            $ownsOutput = $candidate.CommandLine.Replace('/', '\') -match $dllArgument
+        }
+        if (-not $ownsOutput) { continue }
+        $backendProcess = Get-Process -Id $candidate.ProcessId -ErrorAction SilentlyContinue
+        if (-not $backendProcess) { continue }
+        if ([Math]::Abs(($backendProcess.StartTime - $candidate.CreationDate).TotalSeconds) -gt 1) {
+            throw 'Backend process changed while checking ownership. Run the command again.'
+        }
+        Write-Host "Stopping this project's previous backend (PID $($candidate.ProcessId)) before rebuilding."
+        Stop-Process -InputObject $backendProcess -ErrorAction Stop
+        if (-not $backendProcess.WaitForExit(10000)) { throw 'Previous backend did not stop; build was not started.' }
+    }
+}
 $previousProvider = $env:Database__Provider
 $previousConnection = $env:ConnectionStrings__Supabase
 $previousEnvironment = $env:ASPNETCORE_ENVIRONMENT
@@ -24,6 +46,7 @@ try {
         $secureConnection.Dispose()
     }
     if ([string]::IsNullOrWhiteSpace($connection)) { throw 'A PostgreSQL connection string is required.' }
+    Stop-ExistingProjectBackend
     $env:Database__Provider = 'Supabase'
     $env:ConnectionStrings__Supabase = $connection
     $env:ASPNETCORE_ENVIRONMENT = 'Development'

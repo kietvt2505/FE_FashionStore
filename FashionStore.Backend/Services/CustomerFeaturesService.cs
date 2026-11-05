@@ -1,5 +1,6 @@
 using System.Data;
 using FashionStore.Backend.Data;
+using FashionStore.Backend.DTOs;
 using FashionStore.Backend.Middleware;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,10 @@ namespace FashionStore.Backend.Services;
 // All SQL is fixed application text, values are parameters. No table/column comes from the caller.
 public sealed class CustomerFeaturesService(FashionStoreDbContext db, SupabaseCustomerFeaturesService? postgres = null)
 {
+    public Task<CustomerReturnOptions> ReturnOptions(string kh,string order,CancellationToken ct)=>
+        db.Database.IsNpgsql()?postgres!.ReturnOptions(kh,order,ct):throw new CustomerRequestException(503,"Luồng đổi biến thể hiện hỗ trợ database Supabase.");
+    public Task SaveReturnRefundAccount(string kh,string id,CancelOrderRequest input,CancellationToken ct)=>
+        db.Database.IsNpgsql()?postgres!.SaveReturnRefundAccount(kh,id,input,ct):throw new CustomerRequestException(503,"Luồng đổi trả hiện hỗ trợ database Supabase.");
     internal SqlConnection Connection()
     {
         var b = new SqlConnectionStringBuilder(db.Database.GetConnectionString());
@@ -139,5 +144,12 @@ public sealed class ReturnInput
     [System.ComponentModel.DataAnnotations.Range(1,100000)] public int Quantity {get;set;}
     [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.RegularExpression("^(DOI|TRA|HOAN_TIEN|DOI_SAN_PHAM)$")] public string Kind {get;set;}="HOAN_TIEN";
     [System.ComponentModel.DataAnnotations.StringLength(40)] public string? NewSku {get;set;}
+    [System.ComponentModel.DataAnnotations.Range(1,100000)] public int? NewQuantity {get;set;}
+    [System.ComponentModel.DataAnnotations.StringLength(150)] public string? Recipient {get;set;}
+    [System.ComponentModel.DataAnnotations.StringLength(20)] public string? Phone {get;set;}
+    [System.ComponentModel.DataAnnotations.StringLength(300)] public string? ExchangeAddress {get;set;}
+    [System.ComponentModel.DataAnnotations.StringLength(150)] public string? AccountHolder {get;set;}
+    [System.ComponentModel.DataAnnotations.StringLength(34)] public string? AccountNumber {get;set;}
+    [System.ComponentModel.DataAnnotations.StringLength(100)] public string? BankName {get;set;}
     [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.StringLength(500,MinimumLength=5)] public string Reason {get;set;}="";
 }

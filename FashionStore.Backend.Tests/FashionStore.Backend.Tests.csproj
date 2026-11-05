@@ -7,6 +7,7 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="../database/Supabase-DoiTra-CungSanPham.sql" Link="Supabase-DoiTra-CungSanPham.sql" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../database/Supabase-DongBoWinForms.sql" Link="Supabase-DongBoWinForms.sql" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../FashionStore.Web/Helpers/WishlistSelection.cs" Link="MvcClient/WishlistSelection.cs" />
     <Content Include="../database/Supabase-BoSungCot-ChucNang.sql" Link="Supabase-BoSungCot-ChucNang.sql" CopyToOutputDirectory="PreserveNewest" />
@@ -63,7 +64,9 @@
     <DefineConstants>$(DefineConstants);PARTNER_WINFORMS</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition="'$(PartnerSourceRoot)' != ''">
+    <Content Include="$(PartnerSourceRoot)/database/BoSung-KiemNhanDoiTra.sql" Link="Partner-KiemNhanDoiTra.sql" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(PartnerSourceRoot)/api/QLIShopThoiTrang.Api/Data/StoreRepository*.cs" Link="Partner/%(Filename).cs" />
+    <Compile Include="$(PartnerSourceRoot)/api/QLIShopThoiTrang.Api/Data/StoreValidationException.cs" Link="Partner/StoreValidationException.cs" />
     <Compile Include="$(PartnerSourceRoot)/api/QLIShopThoiTrang.Api/Data/SqlServerConnectionFactory.cs" Link="Partner/SqlServerConnectionFactory.cs" />
     <Compile Include="$(PartnerSourceRoot)/api/QLIShopThoiTrang.Api/Models/StoreModels.cs" Link="Partner/StoreModels.cs" />
     <Using Include="Microsoft.Extensions.Configuration" />

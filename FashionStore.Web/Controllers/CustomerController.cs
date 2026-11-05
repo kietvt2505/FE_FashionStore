@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using FashionStore.Web.Helpers;
@@ -43,9 +44,15 @@ namespace FashionStore.Web.Controllers
             if(page<1||page>100000)return new HttpStatusCodeResult(400);
             return Redirect(ProductReviewUrl(id,orderId,page,null,null));
         }
-        public async Task<ActionResult> Return(string id) {
+        public async Task<ActionResult> Return(string id,string sku=null) {
             if(String.IsNullOrWhiteSpace(id)||id.Length>30)return HttpNotFound();
-            try{ViewBag.RequestId=Guid.NewGuid();return View(await api.OrderAsync(Token,id));}catch(Exception e){return Error(e);}
+            try{
+                var options=await api.ReturnOptionsAsync(Token,id);
+                var selected=options.Items.FirstOrDefault(x=>x.Sku==sku)??options.Items.FirstOrDefault(x=>x.RemainingQuantity>0)??options.Items.FirstOrDefault();
+                if(selected==null)return HttpNotFound();
+                var quantity=Math.Min(selected.PurchasedQuantity,selected.RemainingQuantity);
+                return View(new ReturnRequestViewModel{Options=options,OrderId=id,RequestId=Guid.NewGuid(),Sku=selected.Sku,NewSku=selected.Sku,Quantity=quantity,NewQuantity=quantity,Recipient=options.Recipient,Phone=options.Phone,ExchangeAddress=options.Address});
+            }catch(Exception e){return Error(e);}
         }
         // A return URL is opened with GET after login. Keep legacy bookmarks safe and non-mutating.
         [HttpGet,ActionName("SaveWishlist")] public ActionResult WishlistAfterLogin(){return RedirectToAction("Wishlist");}
@@ -108,9 +115,20 @@ namespace FashionStore.Web.Controllers
                 reviewPage=page>1?(int?)page:null,color=color,
                 returnUrl=Url.IsLocalUrl(returnUrl)&&returnUrl.StartsWith("/Product",StringComparison.OrdinalIgnoreCase)?returnUrl:null})+"#product-reviews";
         }
-        [HttpPost,ValidateAntiForgeryToken] public async Task<ActionResult> SendReturn(string orderId,string sku,int quantity,string kind,string newSku,string reason,Guid requestId){
-            try{await api.FeatureAsync(Token,"returns",new{OrderId=orderId,Sku=sku,Quantity=quantity,Kind=kind,NewSku=newSku,Reason=reason,RequestId=requestId});TempData["CustomerMessage"]="Đã gửi yêu cầu. Cửa hàng sẽ kiểm tra trước khi duyệt.";return RedirectToAction("Returns");}
-            catch(Exception e){if(IsUnauthorized(e))return Error(e);TempData["CustomerError"]=Message(e);return RedirectToAction("Return",new{id=orderId});}
+        [HttpPost,ValidateAntiForgeryToken] public async Task<ActionResult> SendReturn(ReturnRequestViewModel model){
+            if(String.IsNullOrWhiteSpace(model.OrderId)||model.OrderId.Length>30)return HttpNotFound();
+            try{
+                model.Options=await api.ReturnOptionsAsync(Token,model.OrderId);
+                if(model.RequestId==Guid.Empty)ModelState.AddModelError("","Vui lòng tải lại biểu mẫu.");
+                if(ModelState.IsValid){await api.FeatureAsync(Token,"returns",new{model.OrderId,model.Sku,model.Quantity,model.Kind,NewSku=model.Kind=="DOI_SAN_PHAM"?model.NewSku:null,NewQuantity=model.Kind=="DOI_SAN_PHAM"?model.NewQuantity:null,model.Reason,model.RequestId,model.Recipient,model.Phone,model.ExchangeAddress,model.AccountHolder,model.AccountNumber,model.BankName});TempData["CustomerMessage"]="Đã gửi yêu cầu. Cửa hàng sẽ kiểm tra biến thể, số lượng và chênh lệch trước khi duyệt.";return RedirectToAction("Returns");}
+            }catch(Exception e){if(IsUnauthorized(e))return Error(e);ModelState.AddModelError("",Message(e));if(model.Options==null)return Error(e);}
+            return View("Return",model);
+        }
+        [HttpPost,ValidateAntiForgeryToken] public async Task<ActionResult> SaveReturnRefund(string returnId,string accountHolder,string accountNumber,string bankName){
+            if(String.IsNullOrWhiteSpace(returnId)||returnId.Length>30)return HttpNotFound();
+            try{await api.FeatureAsync(Token,"returns/"+Uri.EscapeDataString(returnId)+"/refund-account",new{AccountHolder=accountHolder,AccountNumber=accountNumber,BankName=bankName});TempData["CustomerMessage"]="Đã lưu tài khoản cho đúng phiếu đổi/trả. Cửa hàng sẽ đối soát trước khi hoàn tiền.";}
+            catch(Exception e){if(IsUnauthorized(e))return Error(e);TempData["CustomerError"]=Message(e);}
+            return RedirectToAction("Returns");
         }
         private async Task<ActionResult> List(string view,string path,int page){
             if(page<1||page>100000)return new HttpStatusCodeResult(400);

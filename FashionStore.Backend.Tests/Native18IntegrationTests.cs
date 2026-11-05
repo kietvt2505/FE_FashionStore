@@ -84,6 +84,7 @@ public sealed class Native18IntegrationTests
             await File.WriteAllTextAsync(tamperPath,(await File.ReadAllTextAsync(migrationPath))+"\nUPDATE public.sanpham SET dongia=1;");
             await Assert.ThrowsAsync<InvalidOperationException>(()=>FashionStore.SchemaSetup.ColumnSchemaInstaller.ApplyAsync(settings.ConnectionString,tamperPath,contractPath,reportPath,true));
             Assert.Equal(originals.OrderBy(p=>p.Key),(await Checksums()).OrderBy(p=>p.Key));
+            await Exec(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,"Supabase-DoiTra-CungSanPham.sql")));
             await using var factory=new WebApplicationFactory<Program>().WithWebHostBuilder(builder=>{builder.UseEnvironment("Development");builder.ConfigureAppConfiguration((_,c)=>c.AddInMemoryCollection(new Dictionary<string,string?>{["Database:Provider"]="Supabase",["Database:EnableSupabaseCustomerFeatures"]="true",["Database:EnableSupabaseOrders"]="true",["Orders:EnableBankTransfer"]="true",["Orders:EmployeeId"]="NV01",["ConnectionStrings:Supabase"]=settings.ConnectionString}));});
             // Reproduce the real database: dropped supplemental tables can leave PL/pgSQL
             // trigger functions behind because their SQL dependencies were not recorded.
@@ -312,6 +313,7 @@ public sealed class Native18IntegrationTests
                 Assert.Equal(HttpStatusCode.Unauthorized,(await formClient.PostAsJsonAsync("/api/account/login",new LoginRequest{UserName="form-customer",Password=upgraded})).StatusCode);
             }
             await NativeStoreParityScenarios.RunAsync(settings.ConnectionString);
+            await NativeWebReturnScenarios.RunAsync(settings.ConnectionString,factory);
             Assert.Equal(18L,await Scalar<long>("SELECT count(*) FROM pg_tables WHERE schemaname='public'"));
         }
         finally{NpgsqlConnection.ClearAllPools();await using var drop=new NpgsqlCommand("DROP DATABASE "+database+" WITH(FORCE)",admin);await drop.ExecuteNonQueryAsync();}

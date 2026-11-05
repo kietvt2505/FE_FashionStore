@@ -343,6 +343,7 @@
     <Content Include="Views\Shared\_ProductReviews.cshtml" />
     <Compile Include="Services\ProductReviewsService.cs" />
     <Content Include="Views\Customer\Return.cshtml" />
+    <Content Include="Scripts\customer-returns.js" />
     <Content Include="Views\Account\Reset.cshtml" />
     <Content Include="Views\Account\Forgot.cshtml" />
   </ItemGroup>

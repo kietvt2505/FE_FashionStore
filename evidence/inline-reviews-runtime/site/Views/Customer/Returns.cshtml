@@ -5,6 +5,7 @@
     @Html.Partial("_CustomerNav")
     @Html.Partial("_CustomerMessages")
     <header class="yody-page-heading"><p class="eyebrow">YODY / SAU MUA HÀNG</p><h1>Yêu cầu đổi / trả</h1><p>Bạn có thể gửi yêu cầu từ <a href="@Url.Action("Index", "Orders")">chi tiết đơn hàng</a>. Thời hạn 15 ngày tính từ mốc giao hàng được ghi nhận; cửa hàng sẽ kiểm tra điều kiện trước khi duyệt.</p></header>
+    <section class="yody-surface-card"><p>Nếu muốn mua thêm sản phẩm, bạn có thể quay lại trang chủ để đặt một đơn hàng mới.</p><a class="mn-btn mn-btn-primary" id="return-home-link" href="@Url.Action("Index","Home")">QUAY LẠI TRANG CHỦ</a></section>
     @if (Model.Count == 0)
     {
         <div class="yody-empty-state"><h2>Chưa có yêu cầu đổi trả</h2><p>Hãy mở đơn hàng đủ điều kiện nếu bạn cần hỗ trợ sau khi nhận sản phẩm.</p><a class="mn-btn mn-btn-primary" href="@Url.Action("Index", "Orders")">XEM ĐƠN HÀNG</a></div>
@@ -14,11 +15,35 @@
         <div class="yody-record-list">
             @foreach (var p in Model)
             {
-                <article class="yody-surface-card yody-return-card">
-                    <div class="yody-record-top"><span class="eyebrow">@p["SoPhieuDT"] · @CustomerViewHelper.VietnamDate((DateTime)p["NgayLap"],"dd/MM/yyyy")</span><span class="status-pill">@CustomerViewHelper.Status((string)p["TrangThai"])</span></div>
+                var returnId=(string)p["SoPhieuDT"];
+                var approved=(string)p["TrangThai"]=="HOAN_TAT";
+                var refund=p.Value<decimal?>("SoTienHoan")??0;
+                var extra=p.Value<decimal?>("SoTienThuThem")??0;
+                var refunded=p.Value<DateTime?>("NgayHoanTien");
+                <article class="yody-surface-card yody-return-card" id="return-@returnId">
+                    <div class="yody-record-top"><span class="eyebrow">@returnId · @CustomerViewHelper.VietnamDate((DateTime)p["NgayLap"],"dd/MM/yyyy")</span><span class="status-pill">@(approved?"Đã duyệt yêu cầu":CustomerViewHelper.Status((string)p["TrangThai"]))</span></div>
                     <h2>@CustomerViewHelper.ReturnKind((string)p["HinhThucXuLy"])</h2>
                     <p>Đơn hàng: <a class="yody-text-link" href="@Url.Action("Details", "Orders", new { id = (string)p["SoHD"] })">@p["SoHD"]</a></p>
                     <p>@p["LyDo"]</p>
+                    <p>@p["SanPham"]</p>
+                    @if(approved){
+                        <p>Hàng gửi lại đã nhận/kiểm: @(p.Value<int?>("DaKiem")??0) / @(p.Value<int?>("SoLuongTra")??0). Nhập lại kho chỉ sau khi cửa hàng kiểm hàng đạt.</p>
+                        <p>@(extra>0?"Cần đối soát thu thêm: "+extra.ToString("N0")+" ₫":refund>0?"Số tiền cần hoàn: "+refund.ToString("N0")+" ₫":"Không phát sinh chênh lệch tiền.")</p>
+                    }else if((string)p["TrangThai"]!="TU_CHOI"){<p>Cửa hàng đang kiểm tra yêu cầu, số lượng và chênh lệch. Hàng mới chưa được giữ và tiền chưa được thu/hoàn tự động.</p>}
+                    @if(approved&&refund>0){
+                        if(refunded.HasValue){<p class="customer-message">Đã ghi nhận hoàn tiền ngày @CustomerViewHelper.VietnamDate(refunded.Value,"dd/MM/yyyy").</p>}
+                        else{
+                            <p class="customer-message">Yêu cầu đã được duyệt và có khoản hoàn. Bạn bổ sung tài khoản nhận tiền cho phiếu này để cửa hàng đối soát.</p>
+                            if(!String.IsNullOrWhiteSpace((string)p["TaiKhoanAn"])){<p>Tài khoản đã lưu: @p["TaiKhoanAn"] · @p["NganHang"] · @p["ChuTaiKhoan"]. Chưa xác nhận đã chuyển tiền.</p>}
+                            using(Html.BeginForm("SaveReturnRefund","Customer",FormMethod.Post,new{@class="yody-account-form"})){
+                                @Html.AntiForgeryToken()<input type="hidden" name="returnId" value="@returnId" />
+                                <label>Tên chủ tài khoản<input name="accountHolder" class="filter-input" maxlength="150" value="@p["ChuTaiKhoan"]" required /></label>
+                                <label>Số tài khoản<input name="accountNumber" class="filter-input" inputmode="numeric" pattern="[0-9]{6,34}" maxlength="34" autocomplete="off" required /></label>
+                                <label>Ngân hàng<input name="bankName" class="filter-input" maxlength="100" value="@p["NganHang"]" required /></label>
+                                <button class="mn-btn mn-btn-primary" type="submit">LƯU TÀI KHOẢN CHO PHIẾU NÀY</button>
+                            }
+                        }
+                    }
                     @if (!String.IsNullOrWhiteSpace((string)p["LyDoTuChoi"]))
                     {
                         <p class="customer-errors">@p["LyDoTuChoi"]</p>

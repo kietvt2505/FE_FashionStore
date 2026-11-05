@@ -16,6 +16,8 @@ public sealed class CustomerFeaturesController(CustomerFeaturesService service):
     [HttpGet("reviews/{id}/mine")] public Task<List<Dictionary<string,object?>>> MyReviews([StringLength(20,MinimumLength=1)]string id,CancellationToken ct,[Range(1,100000)]int page=1)=>service.MyReviews(Id,id,page,ct);
     [HttpPost("reviews")] public async Task<IActionResult> Review(ReviewInput input,CancellationToken ct){await service.Review(Id,input,ct);return NoContent();}
     [HttpGet("returns")] public Task<List<Dictionary<string,object?>>> Returns(CancellationToken ct,[Range(1,100000)]int page=1)=>service.Returns(Id,page,ct);
+    [HttpGet("returns/options/{orderId}")] public Task<CustomerReturnOptions> ReturnOptions([StringLength(30,MinimumLength=1)]string orderId,CancellationToken ct)=>service.ReturnOptions(Id,orderId,ct);
+    [HttpPost("returns/{id}/refund-account")] public async Task<IActionResult> ReturnRefundAccount([StringLength(30,MinimumLength=1)]string id,FashionStore.Backend.DTOs.CancelOrderRequest input,CancellationToken ct){await service.SaveReturnRefundAccount(Id,id,input,ct);return NoContent();}
     [HttpPost("returns")] public async Task<IActionResult> Return(ReturnInput input,CancellationToken ct){await service.CreateReturn(Id,input,ct);return NoContent();}
     [HttpGet("wishlist")] public Task<List<Dictionary<string,object?>>> Wishlist(CancellationToken ct)=>service.Wishlist(Id,ct);
     [HttpPut("wishlist/{id}")] public async Task<IActionResult> SaveWishlist([StringLength(20,MinimumLength=1)]string id,CancellationToken ct){await service.SaveWishlist(Id,id,false,ct);return NoContent();}

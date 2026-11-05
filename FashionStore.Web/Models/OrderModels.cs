@@ -112,6 +112,41 @@ namespace FashionStore.Web.Models
         public string BankName {get;set;}
         public DateTime? RefundedAt {get;set;}
     }
+    public sealed class ReturnOptionsModel
+    {
+        public string OrderId{get;set;} public string Recipient{get;set;} public string Phone{get;set;} public string Address{get;set;}
+        public DateTime DeliveredAt{get;set;} public DateTime Deadline{get;set;} public int VatRate{get;set;}
+        public List<ReturnLineOptionsModel> Items{get;set;}=new List<ReturnLineOptionsModel>();
+    }
+    public sealed class ReturnLineOptionsModel
+    {
+        public string Sku{get;set;} public string ProductId{get;set;} public string Name{get;set;} public string Color{get;set;} public string Size{get;set;}
+        public int PurchasedQuantity{get;set;} public int RemainingQuantity{get;set;} public int ProcessedQuantity{get;set;}
+        public decimal PaidTotal{get;set;} public decimal ProcessedValue{get;set;}
+        public List<ReturnVariantModel> Variants{get;set;}=new List<ReturnVariantModel>();
+    }
+    public sealed class ReturnVariantModel
+    {
+        public string Sku{get;set;} public string Color{get;set;} public string Size{get;set;} public decimal UnitPrice{get;set;} public int Stock{get;set;} public bool Available{get;set;}
+    }
+    public sealed class ReturnRequestViewModel
+    {
+        public ReturnOptionsModel Options{get;set;}
+        public Guid RequestId{get;set;}
+        [Required,StringLength(30)] public string OrderId{get;set;}
+        [Required,StringLength(40)] public string Sku{get;set;}
+        [Required,RegularExpression("^(DOI_SAN_PHAM|HOAN_TIEN)$")] public string Kind{get;set;}="DOI_SAN_PHAM";
+        [Range(1,100000)] public int Quantity{get;set;}
+        [StringLength(40)] public string NewSku{get;set;}
+        [Range(1,100000)] public int? NewQuantity{get;set;}
+        [Required,StringLength(150)] public string Recipient{get;set;}
+        [Required,RegularExpression("^0[0-9]{9,10}$")] public string Phone{get;set;}
+        [StringLength(300)] public string ExchangeAddress{get;set;}
+        [Required,StringLength(500,MinimumLength=5)] public string Reason{get;set;}
+        [StringLength(150)] public string AccountHolder{get;set;}
+        [StringLength(34)] public string AccountNumber{get;set;}
+        [StringLength(100)] public string BankName{get;set;}
+    }
     public sealed class CancelOrderViewModel
     {
         public string Id {get;set;}

@@ -24,7 +24,7 @@ internal static class NativeStoreParityScenarios
         await Exec("""
             INSERT INTO public.khachhang(makh,hoten,sodienthoai,tongchitieu) VALUES('KH-PRICE','Pricing customer','0900000010',0);
             INSERT INTO public.sanpham(masp,masku,maloai,tensanpham,kichco,mausac,dongia,soluong,soluongtonkho,danhmuc)
-            VALUES('PRICE','PRICE-A','AO','Pricing A','M','Den',1000000,100,100,'NAM'),('PRICE-B','PRICE-B','AO','Pricing B','L','Den',666667,100,100,'NAM');
+            VALUES('PRICE','PRICE-A','AO','Pricing A','M','Den',1000000,100,100,'NAM'),('PRICE','PRICE-B','AO','Pricing B','L','Den',666667,100,100,'NAM');
             INSERT INTO public.khuyenmai(makm,tenchuongtrinh,loaikm,giatrigiam,ngaybatdau,ngayketthuc,trangthai,giatridonhangtoithieu)
             SELECT code,code,kind,amount,(CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')-INTERVAL '1 day',
                 (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')+INTERVAL '1 day',true,0

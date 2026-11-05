@@ -36,7 +36,7 @@ public sealed partial class SupabaseOrderService
         await using(var find=Sql(c,tx,"""
             SELECT p.sophieudt FROM public.phieudoitra p JOIN public.hoadon h USING(sohd)
             WHERE h.sohd=@id AND h.makh=@kh AND h.nguondon='WEB' AND p.nguondon='WEB'
-              AND p.trangthai IN ('CHO_DUYET','CHO_TIEP_NHAN','DA_DUYET') AND p.ngayhoantien IS NULL
+              AND (p.trangthai IN ('CHO_DUYET','CHO_TIEP_NHAN','DA_DUYET') OR (p.trangthai='HOAN_TAT' AND p.sotienhoan>0)) AND p.ngayhoantien IS NULL
             ORDER BY p.ngaylap DESC,p.sophieudt DESC LIMIT 1 FOR UPDATE OF p
             """,("id",id),("kh",customer)))
             requestId=await find.ExecuteScalarAsync(ct) as string??throw new CustomerRequestException(409,"Chưa có phiếu đổi trả đang chờ xử lý hoặc phiếu đã hoàn tất. Vui lòng liên hệ cửa hàng.");

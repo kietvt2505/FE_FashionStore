@@ -1,4 +1,19 @@
 /* Customer area: Navy / Cream / Copper. Other storefront and admin pages keep their palette. */
+.customer-site #membership-rules {--membership-inset:28px;}
+.customer-site #membership-rules .yody-card-heading {padding:27px var(--membership-inset) 18px;}
+.customer-site #membership-rules > p {margin:0;padding:0 var(--membership-inset) 22px;}
+.customer-site #membership-rules > p:last-child {padding-top:20px;padding-bottom:26px;}
+.customer-site #membership-rules .yody-data-table th,
+.customer-site #membership-rules .yody-data-table td {padding:18px var(--membership-inset);}
+@media(max-width:767px) {
+    .customer-site #membership-rules {--membership-inset:19px;}
+    .customer-site #membership-rules .yody-card-heading {padding-top:22px;padding-bottom:14px;}
+    .customer-site #membership-rules .yody-data-table tbody tr {padding:14px var(--membership-inset);}
+    .customer-site #membership-rules .yody-data-table tbody td {padding:9px 0;}
+}
+.customer-site #customer-return-form .return-fixed-quantity {background:transparent;opacity:.65;cursor:default;appearance:textfield;-moz-appearance:textfield;}
+.customer-site #customer-return-form .return-fixed-quantity::-webkit-inner-spin-button,
+.customer-site #customer-return-form .return-fixed-quantity::-webkit-outer-spin-button {-webkit-appearance:none;margin:0;}
 .checkout-voucher-input {display:flex;align-items:stretch;gap:10px;}
 .checkout-voucher-input .filter-input {flex:1;min-width:0;}
 .customer-site .checkout-voucher-input .mn-btn {flex:none;min-width:104px;margin:0;padding:10px 15px;font-size:12px;}

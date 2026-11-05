@@ -63,6 +63,7 @@ namespace FashionStore.Web.Services
         public Task<JArray> FeatureListAsync(string token,string path) => SendAsync<JArray>(HttpMethod.Get,"api/customer/"+path,token);
         public Task<JObject> QuoteAsync(string token,string voucher=null,System.Collections.Generic.IEnumerable<GuestCartEntry> items=null) => SendAsync<JObject>(HttpMethod.Post,"api/orders/quote",token,new{Voucher=voucher,Items=System.Linq.Enumerable.Select(items??new GuestCartEntry[0],i=>new{Sku=i.Sku,Quantity=i.Quantity})});
         public Task<object> FeatureAsync(string token,string path,object body=null,string method="POST")=>SendAsync<object>(new HttpMethod(method),"api/customer/"+path,token,body);
+        public Task<ReturnOptionsModel> ReturnOptionsAsync(string token,string order)=>SendAsync<ReturnOptionsModel>(HttpMethod.Get,"api/customer/returns/options/"+Uri.EscapeDataString(order),token);
         public Task<object> CancelAsync(string token,string id,CancelOrderViewModel model=null)=>SendAsync<object>(HttpMethod.Post,"api/orders/"+Uri.EscapeDataString(id)+"/cancel",token,
             model==null?null:new{model.Reason,model.AccountHolder,model.AccountNumber,model.BankName});
         public Task<object> UpdateOrderAsync(string token,UpdateOrderViewModel model)=>SendAsync<object>(HttpMethod.Put,
